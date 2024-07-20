@@ -1,0 +1,17 @@
+*.a
+*.dep
+*.o
+aclocal.m4
+autom4te.cache
+buildsys.mk
+config.cfg
+config.log
+config.status
+configure
+configure~
+data
+extra.mk
+packages
+servers.cfg
+src/client
+src/client.exe
