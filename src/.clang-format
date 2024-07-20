@@ -1,0 +1,6 @@
+IndentWidth: 8
+TabWidth: 8
+UseTab: ForIndentation
+BreakBeforeBraces: Linux
+AlwaysBreakAfterReturnType: AllDefinitions
+AlignAfterOpenBracket: DontAlign
