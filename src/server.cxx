@@ -460,18 +460,18 @@ serverslice(int seconds,
 		}
 		case ENET_EVENT_TYPE_RECEIVE:
 			brec += event.packet->dataLength;
-			process(event.packet, (int)event.peer->data);
+			process(event.packet, (intptr_t)event.peer->data);
 			if (event.packet->referenceCount == 0)
 				enet_packet_destroy(event.packet);
 			break;
 
 		case ENET_EVENT_TYPE_DISCONNECT:
-			if ((int)event.peer->data < 0)
+			if ((intptr_t)event.peer->data < 0)
 				break;
 			printf("disconnected client (%s)\n",
-			    clients[(int)event.peer->data].hostname);
-			clients[(int)event.peer->data].type = ST_EMPTY;
-			send2(true, -1, SV_CDIS, (int)event.peer->data);
+			    clients[(intptr_t)event.peer->data].hostname);
+			clients[(intptr_t)event.peer->data].type = ST_EMPTY;
+			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);
 			event.peer->data = (void *)-1;
 			break;
 		};

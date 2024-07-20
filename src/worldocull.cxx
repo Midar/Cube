@@ -154,7 +154,7 @@ isoccluded(float vx, float vy, float cx, float cy,
 				h = ca(cy + csize - vy, -(cx + csize - vx)) + 2;
 				l = ca(cy - vy, -(cx - vx)) + 2;
 			}; // F
-		} else     // BG
+		} else // BG
 		{
 			if (cy <= vy) {
 				if (cy + csize < vy) {

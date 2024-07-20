@@ -247,7 +247,7 @@ keypress(int code, bool isdown, int cooked)
 			default:
 				resetcomplete();
 				if (cooked) {
-					char add[] = {cooked, 0};
+					char add[] = {(char)cooked, 0};
 					strcat_s(commandbuf, add);
 				};
 			};

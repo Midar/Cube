@@ -184,7 +184,7 @@ renderents() // show sparkly thingies for map entities in edit mode
 		entity &e = ents[i];
 		if (e.type == NOTUSED)
 			continue;
-		vec v = {e.x, e.y, e.z};
+		vec v = {(float)e.x, (float)e.y, (float)e.z};
 		particle_splash(2, 2, 40, v);
 	};
 	int e = closestent();

@@ -317,7 +317,8 @@ checkitems()
 			continue;
 		if (OUTBORD(e.x, e.y))
 			continue;
-		vec v = {e.x, e.y, S(e.x, e.y)->floor + player1->eyeheight};
+		vec v = {(float)e.x, (float)e.y,
+		    (float)S(e.x, e.y)->floor + player1->eyeheight};
 		vdist(dist, t, player1->o, v);
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);

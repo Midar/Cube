@@ -273,7 +273,8 @@ localservertoclient(
 			setspawn(i, true);
 			if (i >= (uint)ents.length())
 				break;
-			vec v = {ents[i].x, ents[i].y, ents[i].z};
+			vec v = {(float)ents[i].x, (float)ents[i].y,
+			    (float)ents[i].z};
 			playsound(S_ITEMSPAWN, &v);
 			break;
 		};

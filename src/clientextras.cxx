@@ -18,14 +18,14 @@ renderclient(dynent *d, bool team, char *mdlname, bool hellpig, float scale)
 	int n = 3;
 	float speed = 100.0f;
 	float mz = d->o.z - d->eyeheight + 1.55f * scale;
-	int basetime = -((int)d & 0xFFF);
+	int basetime = -((intptr_t)d & 0xFFF);
 	if (d->state == CS_DEAD) {
 		int r;
 		if (hellpig) {
 			n = 2;
 			r = range[3];
 		} else {
-			n = (int)d % 3;
+			n = (intptr_t)d % 3;
 			r = range[n];
 		};
 		basetime = d->lastaction;

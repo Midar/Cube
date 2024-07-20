@@ -378,7 +378,7 @@ monsterthink()
 			continue;
 		if (OUTBORD(e.x, e.y))
 			continue;
-		vec v = {e.x, e.y, S(e.x, e.y)->floor};
+		vec v = {(float)e.x, (float)e.y, (float)S(e.x, e.y)->floor};
 		loopv(monsters) if (monsters[i]->state == CS_DEAD)
 		{
 			if (lastmillis - monsters[i]->lastaction < 2000) {

@@ -42,7 +42,6 @@ CPPFLAGS += -I../enet/include	\
 	    ${GLU_CFLAGS}	\
 	    ${X11_CFLAGS}	\
 	    ${ZLIB_CFLAGS}
-CXXFLAGS += -fpermissive
 LIBS += -L../enet -lenet	\
 	${SDL_LIBS}		\
 	${GL_LIBS}		\
