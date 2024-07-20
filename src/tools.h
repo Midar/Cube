@@ -187,6 +187,8 @@ struct pool {
 	void allocnext(size_t allocsize);
 };
 
+pool *gp();
+
 template <class T> struct vector {
 	T *buf;
 	int alen;
@@ -376,7 +378,6 @@ template <class T> struct hashtable {
 		b;                                                             \
 	}
 
-pool *gp();
 inline char *
 newstring(char *s)
 {

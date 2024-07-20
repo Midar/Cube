@@ -1,37 +1,37 @@
 PROG = client
 
-SRCS = client.o			\
-       clientextras.o		\
-       clientgame.o		\
-       clients2c.o		\
-       command.o		\
-       console.o		\
-       editing.o		\
-       entities.o		\
-       main.o			\
-       menus.o			\
-       monster.o		\
-       physics.o		\
-       rendercubes.o		\
-       renderextras.o		\
-       rendergl.o		\
-       rendermd2.o		\
-       renderparticles.o	\
-       rendertext.o		\
-       rndmap.o			\
-       savegamedemo.o		\
-       server.o			\
-       serverbrowser.o		\
-       serverms.o		\
-       serverutil.o		\
-       sound.o			\
-       tools.o			\
-       weapon.o			\
-       world.o			\
-       worldio.o		\
-       worldlight.o		\
-       worldocull.o		\
-       worldrender.o
+SRCS = client.cxx		\
+       clientextras.cxx		\
+       clientgame.cxx		\
+       clients2c.cxx		\
+       command.cxx		\
+       console.cxx		\
+       editing.cxx		\
+       entities.cxx		\
+       main.cxx			\
+       menus.cxx		\
+       monster.cxx		\
+       physics.cxx		\
+       rendercubes.cxx		\
+       renderextras.cxx		\
+       rendergl.cxx		\
+       rendermd2.cxx		\
+       renderparticles.cxx	\
+       rendertext.cxx		\
+       rndmap.cxx		\
+       savegamedemo.cxx		\
+       server.cxx		\
+       serverbrowser.cxx	\
+       serverms.cxx		\
+       serverutil.cxx		\
+       sound.cxx		\
+       tools.cxx		\
+       weapon.cxx		\
+       world.cxx		\
+       worldio.cxx		\
+       worldlight.cxx		\
+       worldocull.cxx		\
+       worldrender.cxx
 
 include ../buildsys.mk
 include ../extra.mk

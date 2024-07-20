@@ -2,6 +2,7 @@
 *.dep
 *.o
 */.deps
+.deps
 aclocal.m4
 autom4te.cache
 buildsys.mk
