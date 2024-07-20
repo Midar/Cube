@@ -2,7 +2,7 @@
  @file  unix.c
  @brief ENet Unix system specific functions
 */
-#ifndef WIN32
+#ifndef _WIN32
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -25,7 +25,7 @@
 #include <sys/poll.h>
 #endif
 
-#ifndef HAS_SOCKLEN_T
+#if 0
 typedef int socklen_t;
 #endif
 

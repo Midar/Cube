@@ -2,7 +2,7 @@
 
 #include "cube.h"
 
-//#ifndef WIN32    // NOTE: fmod not being supported for the moment as it does not allow stereo pan/vol updating during playback
+//#ifndef _WIN32    // NOTE: fmod not being supported for the moment as it does not allow stereo pan/vol updating during playback
 #define USE_MIXER
 //#endif
 

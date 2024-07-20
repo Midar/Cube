@@ -38,7 +38,7 @@ void conline(const char *sf, bool highlight)        // add a line to the console
         strcpy_s(cl.cref, sf);
     };
     puts(cl.cref);
-    #ifndef WIN32
+    #ifndef _WIN32
         fflush(stdout);
     #endif
 };
@@ -113,14 +113,14 @@ void mapmsg(char *s) { strn0cpy(hdr.maptitle, s, 128); };
 COMMAND(saycommand, ARG_VARI);
 COMMAND(mapmsg, ARG_1STR);
 
-#ifndef WIN32
+#ifndef _WIN32
 #include <X11/Xlib.h>
 #include <SDL_syswm.h>
 #endif
 
 void pasteconsole()
 {
-    #ifdef WIN32
+    #ifdef _WIN32
     if(!IsClipboardFormatAvailable(CF_TEXT)) return; 
     if(!OpenClipboard(NULL)) return;
     char *cb = (char *)GlobalLock(GetClipboardData(CF_TEXT));

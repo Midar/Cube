@@ -13,7 +13,7 @@ void cleanup(char *msg)         // single program exit point;
     SDL_ShowCursor(1);
     if(msg)
     {
-        #ifdef WIN32
+        #ifdef _WIN32
         MessageBox(NULL, msg, "cube fatal error", MB_OK|MB_SYSTEMMODAL);
         #else
         printf(msg);
