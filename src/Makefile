@@ -1,37 +1,37 @@
 PROG = client
 
-SRCS = client.cxx		\
-       clientextras.cxx		\
-       clientgame.cxx		\
-       clients2c.cxx		\
-       command.cxx		\
-       console.cxx		\
-       editing.cxx		\
-       entities.cxx		\
-       main.cxx			\
-       menus.cxx		\
-       monster.cxx		\
-       physics.cxx		\
-       rendercubes.cxx		\
-       renderextras.cxx		\
-       rendergl.cxx		\
-       rendermd2.cxx		\
-       renderparticles.cxx	\
-       rendertext.cxx		\
-       rndmap.cxx		\
-       savegamedemo.cxx		\
-       server.cxx		\
-       serverbrowser.cxx	\
-       serverms.cxx		\
-       serverutil.cxx		\
-       sound.cxx		\
-       tools.cxx		\
-       weapon.cxx		\
-       world.cxx		\
-       worldio.cxx		\
-       worldlight.cxx		\
-       worldocull.cxx		\
-       worldrender.cxx
+SRCS = client.mm		\
+       clientextras.mm		\
+       clientgame.mm		\
+       clients2c.mm		\
+       command.mm		\
+       console.mm		\
+       editing.mm		\
+       entities.mm		\
+       main.mm			\
+       menus.mm			\
+       monster.mm		\
+       physics.mm		\
+       rendercubes.mm		\
+       renderextras.mm		\
+       rendergl.mm		\
+       rendermd2.mm		\
+       renderparticles.mm	\
+       rendertext.mm		\
+       rndmap.mm		\
+       savegamedemo.mm		\
+       server.mm		\
+       serverbrowser.mm		\
+       serverms.mm		\
+       serverutil.mm		\
+       sound.mm			\
+       tools.mm			\
+       weapon.mm		\
+       world.mm			\
+       worldio.mm		\
+       worldlight.mm		\
+       worldocull.mm		\
+       worldrender.mm
 
 include ../buildsys.mk
 include ../extra.mk
@@ -47,5 +47,6 @@ LIBS += -L../enet -lenet	\
 	${GL_LIBS}		\
 	${GLU_LIBS}		\
 	${X11_LIBS}		\
-	${ZLIB_LIBS}
-LD = ${CXX}
+	${ZLIB_LIBS}		\
+	-lm
+LD = ${OBJCXX}

@@ -13,9 +13,16 @@ BUILDSYS_INIT
 
 AC_PROG_CC
 AC_PROG_CPP
+AC_PROG_OBJCXX(clang++ g++)
+AC_PROG_OBJCXXCPP
 
-AC_PROG_CXX
-AC_PROG_CXXCPP
+AC_CHECK_TOOL(OBJFW_CONFIG, objfw-config)
+AS_IF([test x"$OBJFW_CONFIG" = x""], [
+	AC_MSG_ERROR(You need ObjFW and objfw-config installed!)
+])
+OBJCXXFLAGS="$OBJCXXFLAGS $($OBJFW_CONFIG --cppflags --objcflags)"
+LDFLAGS="$($OBJFW_CONFIG --ldflags --rpath)"
+LIBS="$($OBJFW_CONFIG --libs) $LIBS"
 
 AC_PATH_TOOL(AR, ar)
 AC_PATH_TOOL(RANLIB, ranlib)
