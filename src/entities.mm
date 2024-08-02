@@ -36,13 +36,14 @@ renderentities()
 	{
 		entity &e = ents[i];
 		if (e.type == MAPMODEL) {
-			mapmodelinfo &mmi = getmminfo(e.attr2);
-			if (!&mmi)
+			mapmodelinfo *mmi = getmminfo(e.attr2);
+			if (!mmi)
 				continue;
-			rendermodel(mmi.name, 0, 1, e.attr4, (float)mmi.rad,
-			    e.x, (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
+			rendermodel(mmi->name, 0, 1, e.attr4, (float)mmi->rad,
+			    e.x,
+			    (float)S(e.x, e.y)->floor + mmi->zoff + e.attr3,
 			    e.y, (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
-			    false, 1.0f, 10.0f, mmi.snap);
+			    false, 1.0f, 10.0f, mmi->snap);
 		} else {
 			if (OUTBORD(e.x, e.y))
 				continue;

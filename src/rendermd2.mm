@@ -254,10 +254,10 @@ mapmodelreset()
 	mapmodels.setsize(0);
 };
 
-mapmodelinfo &
+mapmodelinfo *
 getmminfo(int i)
 {
-	return i < mapmodels.length() ? mapmodels[i]->mmi : *(mapmodelinfo *)0;
+	return i < mapmodels.length() ? &mapmodels[i]->mmi : NULL;
 };
 
 COMMAND(mapmodel, ARG_5STR);
