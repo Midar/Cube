@@ -1,4 +1,5 @@
-project('Cube', ['c', 'objcpp'])
+project('Cube', ['c', 'objcpp'],
+  meson_version: '1.5.0')
 
 add_global_arguments(
   ['-fobjc-arc', '-fobjc-arc-exceptions'],
@@ -72,6 +73,21 @@ executable('client',
     glu_dep,
     zlib_dep,
     x11_dep,
+  ],
+  include_directories: [enet_includes],
+  link_with: [enet])
+
+executable('server',
+  [
+    'src/server.mm',
+    'src/serverms.mm',
+    'src/serverutil.mm',
+    'src/tools.mm',
+  ],
+  objcpp_args: ['-DSTANDALONE'],
+  dependencies: [
+    objfw_dep,
+    sdl12_dep
   ],
   include_directories: [enet_includes],
   link_with: [enet])
