@@ -2,7 +2,10 @@ project('Cube', ['c', 'objcpp'],
   meson_version: '1.5.0')
 
 add_global_arguments(
-  ['-fobjc-arc', '-fobjc-arc-exceptions'],
+  [
+    '-fobjc-arc',
+    '-fobjc-arc-exceptions'
+  ],
   language: 'objcpp')
 
 objfw_dep = dependency('objfw')
@@ -39,6 +42,7 @@ executable('client',
     'src/console.mm',
     'src/editing.mm',
     'src/entities.mm',
+    'src/init.mm',
     'src/main.mm',
     'src/menus.mm',
     'src/monster.mm',

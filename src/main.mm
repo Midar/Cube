@@ -104,6 +104,8 @@ main(int argc, char **argv)
 	char *sdesc = "", *ip = "", *master = NULL, *passwd = "";
 	islittleendian = *((char *)&islittleendian);
 
+	processInitQueue();
+
 #define log(s) conoutf("init: %s", s)
 	log("sdl");
 
