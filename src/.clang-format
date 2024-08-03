@@ -4,3 +4,14 @@ UseTab: ForIndentation
 BreakBeforeBraces: Linux
 AlwaysBreakAfterReturnType: AllDefinitions
 AlignAfterOpenBracket: DontAlign
+ObjCBlockIndentWidth: 8
+ObjCSpaceAfterProperty: true
+ObjCSpaceBeforeProtocolList: true
+ObjCPropertyAttributeOrder: [
+    class, direct,
+    readonly, readwrite,
+    nullable, nonnull, null_resettable, null_unspecified,
+    assign, retain, strong, copy, weak, unsafe_unretained,
+    atomic, nonatomic,
+    getter, setter
+]

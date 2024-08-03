@@ -6,14 +6,14 @@
 enum { ID_VAR, ID_COMMAND, ID_ALIAS };
 
 @interface Ident : OFObject
-@property(nonatomic) int type; // one of ID_* above
-@property(nonatomic) char *name;
-@property(nonatomic) int min, max;  // ID_VAR
-@property(nonatomic) int *storage;  // ID_VAR
-@property(nonatomic) void (*fun)(); // ID_VAR, ID_COMMAND
-@property(nonatomic) int narg;      // ID_VAR, ID_COMMAND
-@property(nonatomic) char *action;  // ID_ALIAS
-@property(nonatomic) bool persist;
+@property (nonatomic) int type; // one of ID_* above
+@property (nonatomic) char *name;
+@property (nonatomic) int min, max;  // ID_VAR
+@property (nonatomic) int *storage;  // ID_VAR
+@property (nonatomic) void (*fun)(); // ID_VAR, ID_COMMAND
+@property (nonatomic) int narg;      // ID_VAR, ID_COMMAND
+@property (nonatomic) char *action;  // ID_ALIAS
+@property (nonatomic) bool persist;
 @end
 
 @implementation Ident
@@ -519,11 +519,11 @@ complete(char *s)
 	__block int idx = 0;
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
-	  if (strncmp(ident.name, s + 1, completesize) == 0 &&
-	      idx++ == completeidx) {
-		  strcpy_s(s, "/");
-		  strcat_s(s, ident.name);
-	  }
+		if (strncmp(ident.name, s + 1, completesize) == 0 &&
+		    idx++ == completeidx) {
+			strcpy_s(s, "/");
+			strcat_s(s, ident.name);
+		}
 	}];
 	completeidx++;
 	if (completeidx >= idx)
@@ -564,18 +564,19 @@ writecfg()
 	fprintf(f, "\n");
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
-	  if (ident.type == ID_VAR && ident.persist) {
-		  fprintf(f, "%s %d\n", ident.name, *ident.storage);
-	  }
+		if (ident.type == ID_VAR && ident.persist) {
+			fprintf(f, "%s %d\n", ident.name, *ident.storage);
+		}
 	}];
 	fprintf(f, "\n");
 	writebinds(f);
 	fprintf(f, "\n");
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
-	  if (ident.type == ID_ALIAS && !strstr(ident.name, "nextmap_")) {
-		  fprintf(f, "alias \"%s\" [%s]\n", ident.name, ident.action);
-	  }
+		if (ident.type == ID_ALIAS && !strstr(ident.name, "nextmap_")) {
+			fprintf(
+			    f, "alias \"%s\" [%s]\n", ident.name, ident.action);
+		}
 	}];
 	fclose(f);
 }
