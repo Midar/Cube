@@ -87,7 +87,7 @@ noteditmode()
 {
 	correctsel();
 	if (!editmode)
-		conoutf("this function is only allowed in edit mode");
+		conoutf(@"this function is only allowed in edit mode");
 	return !editmode;
 };
 
@@ -95,7 +95,7 @@ bool
 noselection()
 {
 	if (!selset)
-		conoutf("no selection");
+		conoutf(@"no selection");
 	return !selset;
 };
 
@@ -258,7 +258,7 @@ editundo()
 {
 	EDITMP;
 	if (undos.empty()) {
-		conoutf("nothing more to undo");
+		conoutf(@"nothing more to undo");
 		return;
 	};
 	block *p = undos.pop();
@@ -282,14 +282,14 @@ paste()
 {
 	EDITMP;
 	if (!copybuf) {
-		conoutf("nothing to paste");
+		conoutf(@"nothing to paste");
 		return;
 	};
 	sel.xs = copybuf->xs;
 	sel.ys = copybuf->ys;
 	correctsel();
 	if (!selset || sel.xs != copybuf->xs || sel.ys != copybuf->ys) {
-		conoutf("incorrect selection");
+		conoutf(@"incorrect selection");
 		return;
 	};
 	makeundo();
@@ -440,7 +440,7 @@ edittype(int type)
 	if (type == CORNER &&
 	    (sel.xs != sel.ys || sel.xs == 3 || sel.xs > 4 && sel.xs != 8 ||
 	        sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
-		conoutf("corner selection must be power of 2 aligned");
+		conoutf(@"corner selection must be power of 2 aligned");
 		return;
 	};
 	edittypexy(type, sel);

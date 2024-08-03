@@ -84,7 +84,7 @@ savestate(char *fn)
 	stop();
 	f = gzopen(fn, "wb9");
 	if (!f) {
-		conoutf("could not write %s", fn);
+		conoutf(@"could not write %s", fn);
 		return;
 	};
 	gzwrite(f, (void *)"CUBESAVE", 8);
@@ -104,21 +104,21 @@ savestate(char *fn)
 	{
 		gzput(players[i] == NULL);
 		gzwrite(f, players[i], sizeof(dynent));
-	};
-};
+	}
+}
 
 void
 savegame(char *name)
 {
 	if (!m_classicsp) {
-		conoutf("can only save classic sp games");
+		conoutf(@"can only save classic sp games");
 		return;
-	};
+	}
 	sprintf_sd(fn)("savegames/%s.csgz", name);
 	savestate(fn);
 	stop();
-	conoutf("wrote %s", fn);
-};
+	conoutf(@"wrote %s", fn);
+}
 
 void
 loadstate(char *fn)
@@ -128,9 +128,9 @@ loadstate(char *fn)
 		return;
 	f = gzopen(fn, "rb9");
 	if (!f) {
-		conoutf("could not open %s", fn);
+		conoutf(@"could not open %s", fn);
 		return;
-	};
+	}
 
 	string buf;
 	gzread(f, buf, 8);
@@ -148,24 +148,24 @@ loadstate(char *fn)
 	                    // client & server have updated
 	return;
 out:
-	conoutf("aborting: savegame/demo from a different version of cube or "
-	        "cpu architecture");
+	conoutf(@"aborting: savegame/demo from a different version of cube or "
+	        @"cpu architecture");
 	stop();
-};
+}
 
 void
 loadgame(char *name)
 {
 	sprintf_sd(fn)("savegames/%s.csgz", name);
 	loadstate(fn);
-};
+}
 
 void
 loadgameout()
 {
 	stop();
-	conoutf("loadgame incomplete: savegame from a different version of "
-	        "this map");
+	conoutf(@"loadgame incomplete: savegame from a different version of "
+	        @"this map");
 };
 
 void
@@ -212,7 +212,7 @@ loadgamerest()
 		gzread(f, d, sizeof(dynent));
 	};
 
-	conoutf("savegame restored");
+	conoutf(@"savegame restored");
 	if (demoloading)
 		startdemo();
 	else
@@ -230,7 +230,7 @@ void
 record(char *name)
 {
 	if (m_sp) {
-		conoutf("cannot record singleplayer games");
+		conoutf(@"cannot record singleplayer games");
 		return;
 	};
 	int cn = getclientnum();
@@ -239,7 +239,7 @@ record(char *name)
 	sprintf_sd(fn)("demos/%s.cdgz", name);
 	savestate(fn);
 	gzputi(cn);
-	conoutf("started recording demo to %s", fn);
+	conoutf(@"started recording demo to %s", fn);
 	demorecording = true;
 	starttime = lastmillis;
 	ddamage = bdamage = 0;
@@ -282,11 +282,11 @@ incomingdemodata(uchar *buf, int len, bool extras)
 		if (ddamage) {
 			gzputv(dorig);
 			ddamage = 0;
-		};
+		}
 		// FIXME: add all other client state which is not send through
 		// the network
-	};
-};
+	}
+}
 
 void
 demo(char *name)
@@ -294,23 +294,23 @@ demo(char *name)
 	sprintf_sd(fn)("demos/%s.cdgz", name);
 	loadstate(fn);
 	demoloading = true;
-};
+}
 
 void
 stopreset()
 {
-	conoutf("demo stopped (%d msec elapsed)", lastmillis - starttime);
+	conoutf(@"demo stopped (%d msec elapsed)", lastmillis - starttime);
 	stop();
 	loopv(players) zapdynent(players[i]);
 	disconnect(0, 0);
-};
+}
 
 VAR(demoplaybackspeed, 10, 100, 1000);
 int
 scaletime(int t)
 {
 	return (int)(t * (100.0f / demoplaybackspeed)) + starttime;
-};
+}
 
 void
 readdemotime()
@@ -318,9 +318,9 @@ readdemotime()
 	if (gzeof(f) || (playbacktime = gzgeti()) == -1) {
 		stopreset();
 		return;
-	};
+	}
 	playbacktime = scaletime(playbacktime);
-};
+}
 
 void
 startdemo()
@@ -328,12 +328,12 @@ startdemo()
 	democlientnum = gzgeti();
 	demoplayback = true;
 	starttime = lastmillis;
-	conoutf("now playing demo");
+	conoutf(@"now playing demo");
 	dynent *d = getclient(democlientnum);
 	assert(d);
 	*d = *player1;
 	readdemotime();
-};
+}
 
 VAR(demodelaymsec, 0, 120, 500);
 
@@ -378,7 +378,7 @@ demoplaybackstep()
 		int len = gzgeti();
 		if (len < 1 || len > MAXTRANS) {
 			conoutf(
-			    "error: huge packet during demo play (%d)", len);
+			    @"error: huge packet during demo play (%d)", len);
 			stopreset();
 			return;
 		};
@@ -483,7 +483,7 @@ stopn()
 		stopreset();
 	else
 		stop();
-	conoutf("demo stopped");
+	conoutf(@"demo stopped");
 };
 
 COMMAND(record, ARG_1STR);

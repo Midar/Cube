@@ -63,7 +63,7 @@ initsound()
 #ifdef USE_MIXER
 	if (Mix_OpenAudio(SOUNDFREQ, MIX_DEFAULT_FORMAT, 2, soundbufferlen) <
 	    0) {
-		conoutf("sound init failed (SDL_mixer): %s",
+		conoutf(@"sound init failed (SDL_mixer): %s",
 		    (size_t)Mix_GetError());
 		nosound = true;
 	};
@@ -72,7 +72,7 @@ initsound()
 	if (FSOUND_GetVersion() < FMOD_VERSION)
 		fatal("old FMOD dll");
 	if (!FSOUND_Init(SOUNDFREQ, MAXCHAN, FSOUND_INIT_GLOBALFOCUS)) {
-		conoutf("sound init failed (FMOD): %d", FSOUND_GetError());
+		conoutf(@"sound init failed (FMOD): %d", FSOUND_GetError());
 		nosound = true;
 	};
 #endif
@@ -106,7 +106,7 @@ music(char *name)
 				FSOUND_SetPaused(chan, false);
 			};
 		} else {
-			conoutf("could not play music: %s", sn);
+			conoutf(@"could not play music: %s", sn);
 		};
 #endif
 	};
@@ -228,7 +228,7 @@ playsound(int n, vec *loc)
 		return; // avoid bursts of sounds with heavy packetloss and in
 		        // sp
 	if (n < 0 || n >= samples.length()) {
-		conoutf("unregistered sound: %d", n);
+		conoutf(@"unregistered sound: %d", n);
 		return;
 	};
 
@@ -243,7 +243,7 @@ playsound(int n, vec *loc)
 #endif
 
 		if (!samples[n]) {
-			conoutf("failed to load sample: %s", buf);
+			conoutf(@"failed to load sample: %s", buf);
 			return;
 		};
 	};

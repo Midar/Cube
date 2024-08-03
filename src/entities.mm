@@ -184,10 +184,10 @@ realpickup(int n, dynent *d)
 
 	case I_QUAD:
 		radditem(n, d->quadmillis);
-		conoutf("you got the quad!");
+		conoutf(@"you got the quad!");
 		break;
-	};
-};
+	}
+}
 
 // these functions are called when the client touches the item
 
@@ -201,8 +201,8 @@ additem(int i, int &v, int spawnsec)
 		    m_classicsp ? 100000
 		                : spawnsec); // first ask the server for an ack
 		ents[i].spawned = false; // even if someone else gets it first
-	};
-};
+	}
+}
 
 void
 teleport(int n, dynent *d) // also used by monsters
@@ -211,7 +211,7 @@ teleport(int n, dynent *d) // also used by monsters
 	for (;;) {
 		e = findentity(TELEDEST, e + 1);
 		if (e == beenhere || e < 0) {
-			conoutf("no teleport destination for tag %d", tag);
+			conoutf(@"no teleport destination for tag %d", tag);
 			return;
 		};
 		if (beenhere < 0)
@@ -332,9 +332,9 @@ checkquad(int time)
 	if (player1->quadmillis && (player1->quadmillis -= time) < 0) {
 		player1->quadmillis = 0;
 		playsoundc(S_PUPOUT);
-		conoutf("quad damage is over");
-	};
-};
+		conoutf(@"quad damage is over");
+	}
+}
 
 void
 putitems(uchar *&p) // puts items in network stream and also spawns them locally
@@ -344,8 +344,8 @@ putitems(uchar *&p) // puts items in network stream and also spawns them locally
 	{
 		putint(p, i);
 		ents[i].spawned = true;
-	};
-};
+	}
+}
 
 void
 resetspawns()

@@ -10,7 +10,7 @@ extern string clientpassword;
 void
 neterr(char *s)
 {
-	conoutf("illegal network message (%s)", s);
+	conoutf(@"illegal network message (%s)", s);
 	disconnect();
 };
 
@@ -76,8 +76,8 @@ localservertoclient(
 			cn = getint(p);
 			int prot = getint(p);
 			if (prot != PROTOCOL_VERSION) {
-				conoutf("you are using a different game "
-				        "protocol (you: %d, server: %d)",
+				conoutf(@"you are using a different game "
+				        @"protocol (you: %d, server: %d)",
 				    PROTOCOL_VERSION, prot);
 				disconnect();
 				return;
@@ -90,13 +90,13 @@ localservertoclient(
 				                     // on this server, set map
 			sgetstr();
 			if (text[0] && strcmp(text, clientpassword)) {
-				conoutf("you need to set the correct password "
-				        "to join this server!");
+				conoutf(@"you need to set the correct password "
+				        @"to join this server!");
 				disconnect();
 				return;
 			};
 			if (getint(p) == 1) {
-				conoutf("server is FULL, disconnecting..");
+				conoutf(@"server is FULL, disconnecting..");
 			};
 			break;
 		};
@@ -136,7 +136,7 @@ localservertoclient(
 
 		case SV_TEXT:
 			sgetstr();
-			conoutf("%s:\f %s", d->name, text);
+			conoutf(@"%s:\f %s", d->name, text);
 			break;
 
 		case SV_MAPCHANGE:
@@ -155,7 +155,7 @@ localservertoclient(
 				if (mapchanged)
 					setspawn(n, true);
 			break;
-		};
+		}
 
 		case SV_MAPRELOAD: // server requests next map
 		{
@@ -165,7 +165,7 @@ localservertoclient(
 			    getalias(nextmapalias); // look up map in the cycle
 			changemap(map ? map : getclientmap());
 			break;
-		};
+		}
 
 		case SV_INITC2S: // another client either connected or changed
 		                 // name/team
@@ -174,26 +174,26 @@ localservertoclient(
 			if (d->name[0]) // already connected
 			{
 				if (strcmp(d->name, text))
-					conoutf("%s is now known as %s",
+					conoutf(@"%s is now known as %s",
 					    d->name, text);
 			} else // new client
 			{
 				c2sinit =
 				    false; // send new players my info again
-				conoutf("connected: %s", text);
+				conoutf(@"connected: %s", text);
 			};
 			strcpy_s(d->name, text);
 			sgetstr();
 			strcpy_s(d->team, text);
 			d->lifesequence = getint(p);
 			break;
-		};
+		}
 
 		case SV_CDIS:
 			cn = getint(p);
 			if (!(d = getclient(cn)))
 				break;
-			conoutf("player %s disconnected",
+			conoutf(@"player %s disconnected",
 			    d->name[0] ? d->name : "[incompatible client]");
 			zapdynent(players[cn]);
 			break;
@@ -211,7 +211,7 @@ localservertoclient(
 				createrays(s, e);
 			shootv(gun, s, e, d);
 			break;
-		};
+		}
 
 		case SV_DAMAGE: {
 			int target = getint(p);
@@ -224,40 +224,40 @@ localservertoclient(
 				playsound(
 				    S_PAIN1 + rnd(5), &getclient(target)->o);
 			break;
-		};
+		}
 
 		case SV_DIED: {
 			int actor = getint(p);
 			if (actor == cn) {
-				conoutf("%s suicided", d->name);
+				conoutf(@"%s suicided", d->name);
 			} else if (actor == clientnum) {
 				int frags;
 				if (isteam(player1->team, d->team)) {
 					frags = -1;
-					conoutf("you fragged a teammate (%s)",
+					conoutf(@"you fragged a teammate (%s)",
 					    d->name);
 				} else {
 					frags = 1;
-					conoutf("you fragged %s", d->name);
-				};
+					conoutf(@"you fragged %s", d->name);
+				}
 				addmsg(1, 2, SV_FRAGS, player1->frags += frags);
 			} else {
 				dynent *a = getclient(actor);
 				if (a) {
 					if (isteam(a->team, d->name)) {
-						conoutf("%s fragged his "
-						        "teammate (%s)",
+						conoutf(@"%s fragged his "
+						        @"teammate (%s)",
 						    a->name, d->name);
 					} else {
-						conoutf("%s fragged %s",
+						conoutf(@"%s fragged %s",
 						    a->name, d->name);
-					};
-				};
-			};
+					}
+				}
+			}
 			playsound(S_DIE1 + rnd(2), &d->o);
 			d->lifesequence++;
 			break;
-		};
+		}
 
 		case SV_FRAGS:
 			players[cn]->frags = getint(p);
@@ -277,7 +277,7 @@ localservertoclient(
 			    (float)ents[i].z};
 			playsound(S_ITEMSPAWN, &v);
 			break;
-		};
+		}
 
 		case SV_ITEMACC: // server acknowledges that I picked up this
 		                 // item
@@ -312,9 +312,9 @@ localservertoclient(
 			case SV_EDITE:
 				editequalisexy(v != 0, b);
 				break;
-			};
+			}
 			break;
-		};
+		}
 
 		case SV_EDITENT: // coop edit of ent
 		{
@@ -334,7 +334,7 @@ localservertoclient(
 			if (ents[i].type == LIGHT || to == LIGHT)
 				calclight();
 			break;
-		};
+		}
 
 		case SV_PING:
 			getint(p);
@@ -361,18 +361,18 @@ localservertoclient(
 
 		case SV_RECVMAP: {
 			sgetstr();
-			conoutf("received map \"%s\" from server, reloading..",
+			conoutf(@"received map \"%s\" from server, reloading..",
 			    text);
 			int mapsize = getint(p);
 			writemap(text, mapsize, p);
 			p += mapsize;
 			changemapserv(text, gamemode);
 			break;
-		};
+		}
 
 		case SV_SERVMSG:
 			sgetstr();
-			conoutf("%s", text);
+			conoutf(@"%s", text);
 			break;
 
 		case SV_EXT: // so we can messages without breaking previous
@@ -381,10 +381,10 @@ localservertoclient(
 			for (int n = getint(p); n; n--)
 				getint(p);
 			break;
-		};
+		}
 
 		default:
 			neterr("type");
 			return;
-		};
-};
+		}
+}

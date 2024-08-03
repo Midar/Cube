@@ -158,7 +158,7 @@ arenarespawn()
 	if (arenarespawnwait) {
 		if (arenarespawnwait < lastmillis) {
 			arenarespawnwait = 0;
-			conoutf("new round starting... fight!");
+			conoutf(@"new round starting... fight!");
 			respawnself();
 		};
 	} else if (arenadetectwait == 0 || arenadetectwait < lastmillis) {
@@ -171,12 +171,12 @@ arenarespawn()
 		arenacount(player1, alive, dead, lastteam, oneteam);
 		if (dead > 0 && (alive <= 1 || (m_teammode && oneteam))) {
 			conoutf(
-			    "arena round is over! next round in 5 seconds...");
+			    @"arena round is over! next round in 5 seconds...");
 			if (alive)
 				conoutf(
-				    "team %s is last man standing", lastteam);
+				    @"team %s is last man standing", lastteam);
 			else
-				conoutf("everyone died!");
+				conoutf(@"everyone died!");
 			arenarespawnwait = lastmillis + 5000;
 			arenadetectwait = lastmillis + 10000;
 			player1->roll = 0;
@@ -218,7 +218,7 @@ respawn()
 	if (player1->state == CS_DEAD) {
 		player1->attacking = false;
 		if (m_arena) {
-			conoutf("waiting for new round to start...");
+			conoutf(@"waiting for new round to start...");
 			return;
 		};
 		if (m_sp) {
@@ -299,8 +299,8 @@ entinmap(dynent *
 		d->o.x -= dx;
 		d->o.y -= dy;
 	};
-	conoutf(
-	    "can't find entity spawn spot! (%d, %d)", (int)d->o.x, (int)d->o.y);
+	conoutf(@"can't find entity spawn spot! (%d, %d)", (int)d->o.x,
+	    (int)d->o.y);
 	// leave ent at original pos, possibly stuck
 };
 
@@ -422,24 +422,24 @@ selfdamage(int damage, int actor, dynent *act)
 	                                        // on amount of damage
 	if ((player1->health -= damage) <= 0) {
 		if (actor == -2) {
-			conoutf("you got killed by %s!", act->name);
+			conoutf(@"you got killed by %s!", act->name);
 		} else if (actor == -1) {
 			actor = getclientnum();
-			conoutf("you suicided!");
+			conoutf(@"you suicided!");
 			addmsg(1, 2, SV_FRAGS, --player1->frags);
 		} else {
 			dynent *a = getclient(actor);
 			if (a) {
 				if (isteam(a->team, player1->team)) {
-					conoutf("you got fragged by a teammate "
-					        "(%s)",
+					conoutf(@"you got fragged by a "
+					        @"teammate (%s)",
 					    a->name);
 				} else {
 					conoutf(
-					    "you got fragged by %s", a->name);
-				};
-			};
-		};
+					    @"you got fragged by %s", a->name);
+				}
+			}
+		}
 		showscores(true);
 		addmsg(1, 2, SV_DIED, actor);
 		player1->lifesequence++;
@@ -452,8 +452,8 @@ selfdamage(int damage, int actor, dynent *act)
 		player1->lastaction = lastmillis;
 	} else {
 		playsound(S_PAIN6);
-	};
-};
+	}
+}
 
 void
 timeupdate(int timeremain)
@@ -461,13 +461,13 @@ timeupdate(int timeremain)
 	if (!timeremain) {
 		intermission = true;
 		player1->attacking = false;
-		conoutf("intermission:");
-		conoutf("game has ended!");
+		conoutf(@"intermission:");
+		conoutf(@"game has ended!");
 		showscores(true);
 	} else {
-		conoutf("time remaining: %d minutes", timeremain);
-	};
-};
+		conoutf(@"time remaining: %d minutes", timeremain);
+	}
+}
 
 dynent *
 getclient(int cn) // ensure valid entity
@@ -479,7 +479,7 @@ getclient(int cn) // ensure valid entity
 	while (cn >= players.length())
 		players.add(NULL);
 	return players[cn] ? players[cn] : (players[cn] = newdynent());
-};
+}
 
 void
 initclient()
@@ -493,8 +493,8 @@ startmap(char *name) // called just after a map load
 {
 	if (netmapstart() && m_sp) {
 		gamemode = 0;
-		conoutf("coop sp not supported yet");
-	};
+		conoutf(@"coop sp not supported yet");
+	}
 	sleepwait = 0;
 	monsterclear();
 	projreset();
@@ -512,7 +512,7 @@ startmap(char *name) // called just after a map load
 	showscores(false);
 	intermission = false;
 	framesinmap = 0;
-	conoutf("game mode is %s", modestr(gamemode));
+	conoutf(@"game mode is %s", modestr(gamemode));
 };
 
 COMMANDN(map, changemap, ARG_1STR);

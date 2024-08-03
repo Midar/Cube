@@ -54,7 +54,7 @@ alias(char *name, char *action)
 				b.action = exchangestr(b.action, action);
 			else
 				conoutf(
-				    "cannot redefine builtin %s with an alias",
+				    @"cannot redefine builtin %s with an alias",
 				    name);
 		}
 	}
@@ -152,7 +152,7 @@ parseexp(char *&p, int right) // parse any nested set of () or []
 			brak--;
 		else if (!c) {
 			p--;
-			conoutf("missing \"%c\"", right);
+			conoutf(@"missing \"%c\"", right);
 			return NULL;
 		}
 	}
@@ -211,7 +211,7 @@ lookup(char *n) // find value of ident referenced with $ in exp
 		}
 	}
 
-	conoutf("unknown alias lookup: %s", n + 1);
+	conoutf(@"unknown alias lookup: %s", n + 1);
 	return n;
 }
 
@@ -254,7 +254,7 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 			if (ID == nil) {
 				val = ATOI(c);
 				if (!val && *c != '0')
-					conoutf("unknown command: %s", c);
+					conoutf(@"unknown command: %s", c);
 			} else {
 				switch (ID.type) {
 				// game defined commands
@@ -395,14 +395,15 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 							// var with no value
 							// just prints its
 							// current value
-							conoutf("%s = %d", c,
+							conoutf(@"%s = %d", c,
 							    *ID.storage);
 						else {
 							if (ID.min > ID.max) {
-								conoutf("variab"
-								        "le is "
-								        "read-"
-								        "only");
+								conoutf(
+								    @"variable "
+								    @"is "
+								    @"read-"
+								    @"only");
 							} else {
 								int i1 =
 								    ATOI(w[1]);
@@ -419,21 +420,34 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 									        ? ID.min
 									        : ID.max;
 									conoutf(
-									    "va"
-									    "li"
-									    "d "
-									    "ra"
-									    "ng"
-									    "e "
-									    "fo"
-									    "r "
-									    "%s"
-									    " i"
-									    "s "
-									    "%d"
-									    ".."
-									    "%"
-									    "d",
+									    @"v"
+									    @"a"
+									    @"l"
+									    @"i"
+									    @"d"
+									    @" "
+									    @"r"
+									    @"a"
+									    @"n"
+									    @"g"
+									    @"e"
+									    @" "
+									    @"f"
+									    @"o"
+									    @"r"
+									    @" "
+									    @"%"
+									    @"s"
+									    @" "
+									    @"i"
+									    @"s"
+									    @" "
+									    @"%"
+									    @"d"
+									    @"."
+									    @"."
+									    @"%"
+									    @"d",
 									    c,
 									    ID.min,
 									    ID.max);
@@ -533,7 +547,7 @@ void
 exec(char *cfgfile)
 {
 	if (!execfile(cfgfile))
-		conoutf("could not read \"%s\"", cfgfile);
+		conoutf(@"could not read \"%s\"", cfgfile);
 }
 
 void

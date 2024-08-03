@@ -50,7 +50,7 @@ selectgun(int a, int b, int c)
 	if (s != player1->gunselect)
 		playsoundc(S_WEAPLOAD);
 	player1->gunselect = s;
-	// conoutf("%s selected", (int)guns[s].name);
+	// conoutf(@"%s selected", (int)guns[s].name);
 };
 
 int

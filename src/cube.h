@@ -394,7 +394,7 @@ enum // function signatures for script functions, see command.cpp
 #define COMMANDN(name, fun, nargs)                                             \
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
-		enqueueInit(#name, ^{                                                 \
+		enqueueInit(#name, ^{                                          \
 		  addcommand(#name, (void (*)())fun, nargs);                   \
 		});                                                            \
 	}
@@ -403,7 +403,7 @@ enum // function signatures for script functions, see command.cpp
 	int name;                                                              \
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
-		enqueueInit(#name, ^{                                                 \
+		enqueueInit(#name, ^{                                          \
 		  name = variable(#name, min, cur, max, &name, NULL, true);    \
 		});                                                            \
 	}
@@ -411,7 +411,7 @@ enum // function signatures for script functions, see command.cpp
 	int name;                                                              \
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
-		enqueueInit(#name, ^{                                                 \
+		enqueueInit(#name, ^{                                          \
 		  name = variable(#name, min, cur, max, &name, NULL, false);   \
 		});                                                            \
 	}
@@ -420,7 +420,7 @@ enum // function signatures for script functions, see command.cpp
 	static int name;                                                       \
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
-		enqueueInit(#name, ^{                                                 \
+		enqueueInit(#name, ^{                                          \
 		  name = variable(                                             \
 		      #name, min, cur, max, &name, var_##name, false);         \
 		});                                                            \
@@ -431,7 +431,7 @@ enum // function signatures for script functions, see command.cpp
 	static int name;                                                       \
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
-		enqueueInit(#name, ^{                                                 \
+		enqueueInit(#name, ^{                                          \
 		  name =                                                       \
 		      variable(#name, min, cur, max, &name, var_##name, true); \
 		});                                                            \

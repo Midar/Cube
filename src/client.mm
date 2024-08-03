@@ -13,25 +13,28 @@ int
 getclientnum()
 {
 	return clientnum;
-};
+}
 
 bool
 multiplayer()
 {
 	// check not correct on listen server?
 	if (clienthost)
-		conoutf("operation not available in multiplayer");
+		conoutf(@"operation not available in multiplayer");
+
 	return clienthost != NULL;
-};
+}
 
 bool
 allowedittoggle()
 {
 	bool allow = !clienthost || gamemode == 1;
+
 	if (!allow)
-		conoutf("editing in multiplayer requires coopedit mode (1)");
+		conoutf(@"editing in multiplayer requires coopedit mode (1)");
+
 	return allow;
-};
+}
 
 VARF(rate, 0, 0, 25000,
     if (clienthost && (!rate || rate > 1000))
@@ -51,20 +54,21 @@ throttle()
 	assert(ENET_PEER_PACKET_THROTTLE_SCALE == 32);
 	enet_peer_throttle_configure(clienthost->peers,
 	    throttle_interval * 1000, throttle_accel, throttle_decel);
-};
+}
 
 void
 newname(char *name)
 {
 	c2sinit = false;
 	strn0cpy(player1->name, name, 16);
-};
+}
+
 void
 newteam(char *name)
 {
 	c2sinit = false;
 	strn0cpy(player1->team, name, 5);
-};
+}
 
 COMMANDN(team, newteam, ARG_1STR);
 COMMANDN(name, newname, ARG_1STR);
@@ -73,7 +77,7 @@ void
 writeclientinfo(FILE *f)
 {
 	fprintf(f, "name \"%s\"\nteam \"%s\"\n", player1->name, player1->team);
-};
+}
 
 void
 connects(char *servername)
@@ -81,10 +85,10 @@ connects(char *servername)
 	disconnect(1); // reset state
 	addserver(servername);
 
-	conoutf("attempting to connect to %s", servername);
+	conoutf(@"attempting to connect to %s", servername);
 	ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
 	if (enet_address_set_host(&address, servername) < 0) {
-		conoutf("could not resolve server %s", servername);
+		conoutf(@"could not resolve server %s", servername);
 		return;
 	};
 
@@ -96,10 +100,10 @@ connects(char *servername)
 		connecting = lastmillis;
 		connattempts = 0;
 	} else {
-		conoutf("could not connect to server");
+		conoutf(@"could not connect to server");
 		disconnect();
-	};
-};
+	}
+}
 
 void
 disconnect(int onlyclean, int async)
@@ -119,7 +123,7 @@ disconnect(int onlyclean, int async)
 	};
 
 	if (clienthost && !connecting)
-		conoutf("disconnected");
+		conoutf(@"disconnected");
 	clienthost = NULL;
 	connecting = 0;
 	connattempts = 0;
@@ -134,37 +138,38 @@ disconnect(int onlyclean, int async)
 	if (!onlyclean) {
 		stop();
 		localconnect();
-	};
-};
+	}
+}
 
 void
 trydisconnect()
 {
 	if (!clienthost) {
-		conoutf("not connected");
+		conoutf(@"not connected");
 		return;
-	};
+	}
 	if (connecting) {
-		conoutf("aborting connection attempt");
+		conoutf(@"aborting connection attempt");
 		disconnect();
 		return;
-	};
-	conoutf("attempting to disconnect...");
+	}
+	conoutf(@"attempting to disconnect...");
 	disconnect(0, !disconnecting);
-};
+}
 
 string ctext;
 void
 toserver(char *text)
 {
-	conoutf("%s:\f %s", player1->name, text);
+	conoutf(@"%s:\f %s", player1->name, text);
 	strn0cpy(ctext, text, 80);
-};
+}
+
 void
 echo(char *text)
 {
-	conoutf("%s", text);
-};
+	conoutf(@"%s", text);
+}
 
 COMMAND(echo, ARG_VARI);
 COMMANDN(say, toserver, ARG_VARI);
@@ -186,7 +191,7 @@ addmsg(int rel, int num, int type, ...)
 		fatal(s);
 	};
 	if (messages.length() == 100) {
-		conoutf("command flood protection (type %d)", type);
+		conoutf(@"command flood protection (type %d)", type);
 		return;
 	};
 	ivector &msg = messages.add();
@@ -197,14 +202,14 @@ addmsg(int rel, int num, int type, ...)
 	va_start(marker, type);
 	loopi(num - 1) msg.add(va_arg(marker, int));
 	va_end(marker);
-};
+}
 
 void
 server_err()
 {
-	conoutf("server network error, disconnecting...");
+	conoutf(@"server network error, disconnecting...");
 	disconnect();
-};
+}
 
 int lastupdate = 0, lastping = 0;
 string toservermap;
@@ -345,11 +350,11 @@ gets2c() // get updates from the server
 	if (!clienthost)
 		return;
 	if (connecting && lastmillis / 3000 > connecting / 3000) {
-		conoutf("attempting to connect...");
+		conoutf(@"attempting to connect...");
 		connecting = lastmillis;
 		++connattempts;
 		if (connattempts > 3) {
-			conoutf("could not connect to server");
+			conoutf(@"could not connect to server");
 			disconnect();
 			return;
 		};
@@ -358,14 +363,14 @@ gets2c() // get updates from the server
 	    clienthost != NULL && enet_host_service(clienthost, &event, 0) > 0)
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
-			conoutf("connected to server");
+			conoutf(@"connected to server");
 			connecting = 0;
 			throttle();
 			break;
 
 		case ENET_EVENT_TYPE_RECEIVE:
 			if (disconnecting)
-				conoutf("attempting to disconnect...");
+				conoutf(@"attempting to disconnect...");
 			else
 				localservertoclient(event.packet->data,
 				    event.packet->dataLength);

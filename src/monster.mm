@@ -5,7 +5,7 @@
 dvector monsters;
 int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
 
-VARF(skill, 1, 3, 10, conoutf("skill is now %d", skill));
+VARF(skill, 1, 3, 10, conoutf(@"skill is now %d", skill));
 
 dvector &
 getmonsters()
@@ -52,7 +52,7 @@ dynent *
 basicmonster(int type, int yaw, int state, int trigger, int move)
 {
 	if (type >= NUMMONSTERTYPES) {
-		conoutf("warning: unknown monster in spawn: %d", type);
+		conoutf(@"warning: unknown monster in spawn: %d", type);
 		type = 0;
 	};
 	dynent *m = newdynent();
@@ -340,7 +340,7 @@ monsterpain(dynent *m, int damage, dynent *d)
 		playsound(monstertypes[m->mtype].diesound, &m->o);
 		int remain = monstertotal - numkilled;
 		if (remain > 0 && remain <= 5)
-			conoutf("only %d monster(s) remaining", remain);
+			conoutf(@"only %d monster(s) remaining", remain);
 	} else {
 		playsound(monstertypes[m->mtype].painsound, &m->o);
 	};
@@ -349,9 +349,9 @@ monsterpain(dynent *m, int damage, dynent *d)
 void
 endsp(bool allkilled)
 {
-	conoutf(
-	    allkilled ? "you have cleared the map!" : "you reached the exit!");
-	conoutf("score: %d kills in %d seconds", numkilled,
+	conoutf(allkilled ? @"you have cleared the map!"
+	                  : @"you reached the exit!");
+	conoutf(@"score: %d kills in %d seconds", numkilled,
 	    (lastmillis - mtimestart) / 1000);
 	monstertotal = 0;
 	startintermission();
@@ -362,7 +362,7 @@ monsterthink()
 {
 	if (m_dmsp && spawnremain && lastmillis > nextmonster) {
 		if (spawnremain-- == monstertotal)
-			conoutf("The invasion has begun!");
+			conoutf(@"The invasion has begun!");
 		nextmonster = lastmillis + 1000;
 		spawnmonster();
 	};

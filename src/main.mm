@@ -106,7 +106,7 @@ main(int argc, char **argv)
 
 	processInitQueue();
 
-#define log(s) conoutf("init: %s", s)
+#define log(s) conoutf(@"init: %s", s)
 	log("sdl");
 
 	for (int i = 1; i < argc; i++) {
@@ -144,10 +144,10 @@ main(int argc, char **argv)
 				maxcl = atoi(a);
 				break;
 			default:
-				conoutf("unknown commandline option");
+				conoutf(@"unknown commandline option");
 			}
 		else
-			conoutf("unknown commandline argument");
+			conoutf(@"unknown commandline argument");
 	};
 
 #ifdef _DEBUG

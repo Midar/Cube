@@ -179,7 +179,7 @@ sendmap(char *mapname)
 	sendstring(mapname, p);
 	putint(p, mapsize);
 	if (65535 - (p - start) < mapsize) {
-		conoutf("map %s is too large to send", mapname);
+		conoutf(@"map %s is too large to send", mapname);
 		free(mapdata);
 		enet_packet_destroy(packet);
 		return;
@@ -190,7 +190,7 @@ sendmap(char *mapname)
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	sendpackettoserv(packet);
-	conoutf("sending map %s to server...", mapname);
+	conoutf(@"sending map %s to server...", mapname);
 	sprintf_sd(msg)(
 	    "[map %s uploaded to server, \"getmap\" to receive it]", mapname);
 	toserver(msg);
@@ -207,7 +207,7 @@ getmap()
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	sendpackettoserv(packet);
-	conoutf("requesting map from server...");
+	conoutf(@"requesting map from server...");
 }
 
 COMMAND(sendmap, ARG_1STR);

@@ -306,7 +306,7 @@ updatefrommaster()
 	uchar *reply = retrieveservers(buf, MAXUPD);
 	if (!*reply || strstr((char *)reply, "<html>") ||
 	    strstr((char *)reply, "<HTML>"))
-		conoutf("master server not replying");
+		conoutf(@"master server not replying");
 	else {
 		servers.setsize(0);
 		execute((char *)reply);

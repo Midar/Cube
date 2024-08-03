@@ -50,10 +50,10 @@ conline(const char *sf, bool highlight) // add a line to the console buffer
 };
 
 void
-conoutf(const char *s, ...)
+conoutf(OFString *str, ...)
 {
-	sprintf_sdv(sf, s);
-	s = sf;
+	sprintf_sdv(sf, str.UTF8String);
+	const char *s = sf;
 	int n = 0;
 	while (strlen(s) > WORDWRAP) // cut strings to fit on screen
 	{
@@ -61,7 +61,7 @@ conoutf(const char *s, ...)
 		strn0cpy(t, s, WORDWRAP + 1);
 		conline(t, n++ != 0);
 		s += WORDWRAP;
-	};
+	}
 	conline(s, n != 0);
 };
 
@@ -114,7 +114,7 @@ bindkey(char *key, char *action)
 		strcpy_s(keyms[i].action, action);
 		return;
 	};
-	conoutf("unknown key \"%s\"", key);
+	conoutf(@"unknown key \"%s\"", key);
 };
 
 COMMANDN(bind, bindkey, ARG_2STR);

@@ -48,8 +48,8 @@ gl_init(int w, int h)
 	if (strstr(exts, "GL_EXT_texture_env_combine"))
 		hasoverbright = true;
 	else
-		conoutf("WARNING: cannot use overbright lighting, using old "
-		        "lighting model!");
+		conoutf(@"WARNING: cannot use overbright lighting, using old "
+		        @"lighting model!");
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glmaxtexsize);
 
@@ -77,11 +77,11 @@ installtex(int tnum, char *texname, int &xs, int &ys, bool clamp)
 {
 	SDL_Surface *s = IMG_Load(texname);
 	if (!s) {
-		conoutf("couldn't load texture %s", texname);
+		conoutf(@"couldn't load texture %s", texname);
 		return false;
 	};
 	if (s->format->BitsPerPixel != 24) {
-		conoutf("texture must be 24bpp: %s", texname);
+		conoutf(@"texture must be 24bpp: %s", texname);
 		return false;
 	};
 	// loopi(s->w*s->h*3) { uchar *p = (uchar *)s->pixels+i; *p = 255-*p; };
@@ -103,7 +103,7 @@ installtex(int tnum, char *texname, int &xs, int &ys, bool clamp)
 	};
 	void *scaledimg = s->pixels;
 	if (xs != s->w) {
-		conoutf("warning: quality loss: scaling %s",
+		conoutf(@"warning: quality loss: scaling %s",
 		    texname); // for voodoo cards under linux
 		scaledimg = alloc(xs * ys * 3);
 		gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE, s->pixels,
@@ -274,8 +274,8 @@ VARFP(gamma, 30, 100, 300, {
 	float f = gamma / 100.0f;
 	if (SDL_SetGamma(f, f, f) == -1) {
 		conoutf(
-		    "Could not set gamma (card/driver doesn't support it?)");
-		conoutf("sdl: %s", SDL_GetError());
+		    @"Could not set gamma (card/driver doesn't support it?)");
+		conoutf(@"sdl: %s", SDL_GetError());
 	};
 });
 

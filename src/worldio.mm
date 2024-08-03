@@ -128,12 +128,12 @@ writemap(char *mname, int msize, uchar *mdata)
 	backup(cgzname, bakname);
 	FILE *f = fopen(cgzname, "wb");
 	if (!f) {
-		conoutf("could not write map to %s", cgzname);
+		conoutf(@"could not write map to %s", cgzname);
 		return;
 	};
 	fwrite(mdata, 1, msize, f);
 	fclose(f);
-	conoutf("wrote map %s as file %s", mname, cgzname);
+	conoutf(@"wrote map %s as file %s", mname, cgzname);
 }
 
 uchar *
@@ -142,7 +142,7 @@ readmap(char *mname, int *msize)
 	setnames(mname);
 	uchar *mdata = (uchar *)loadfile(cgzname, msize);
 	if (!mdata) {
-		conoutf("could not read map %s", cgzname);
+		conoutf(@"could not read map %s", cgzname);
 		return NULL;
 	};
 	return mdata;
@@ -165,7 +165,7 @@ save_world(char *mname)
 	backup(cgzname, bakname);
 	gzFile f = gzopen(cgzname, "wb9");
 	if (!f) {
-		conoutf("could not write map to %s", cgzname);
+		conoutf(@"could not write map to %s", cgzname);
 		return;
 	};
 	hdr.version = MAPVERSION;
@@ -237,7 +237,7 @@ save_world(char *mname)
 	};
 	spurge;
 	gzclose(f);
-	conoutf("wrote map file %s", cgzname);
+	conoutf(@"wrote map file %s", cgzname);
 	settagareas();
 };
 
@@ -251,7 +251,7 @@ load_world(char *mname) // still supports all map formats that have existed
 	setnames(mname);
 	gzFile f = gzopen(cgzname, "rb9");
 	if (!f) {
-		conoutf("could not read map %s", cgzname);
+		conoutf(@"could not read map %s", cgzname);
 		return;
 	};
 	gzread(f, &hdr, sizeof(header) - sizeof(int) * 16);
@@ -357,9 +357,9 @@ load_world(char *mname) // still supports all map formats that have existed
 	settagareas();
 	int xs, ys;
 	loopi(256) if (texuse) lookuptexture(i, xs, ys);
-	conoutf("read map %s (%d milliseconds)", cgzname,
+	conoutf(@"read map %s (%d milliseconds)", cgzname,
 	    SDL_GetTicks() - lastmillis);
-	conoutf("%s", hdr.maptitle);
+	conoutf(@"%s", hdr.maptitle);
 	startmap(mname);
 	loopl(256)
 	{
