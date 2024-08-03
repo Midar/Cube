@@ -20,7 +20,7 @@ AC_CHECK_TOOL(OBJFW_CONFIG, objfw-config)
 AS_IF([test x"$OBJFW_CONFIG" = x""], [
 	AC_MSG_ERROR(You need ObjFW and objfw-config installed!)
 ])
-OBJCXXFLAGS="$OBJCXXFLAGS $($OBJFW_CONFIG --cppflags --objcflags)"
+OBJCXXFLAGS="$OBJCXXFLAGS $($OBJFW_CONFIG --cppflags --objcflags --arc)"
 LDFLAGS="$($OBJFW_CONFIG --ldflags --rpath)"
 LIBS="$($OBJFW_CONFIG --libs) $LIBS"
 
