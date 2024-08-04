@@ -1,5 +1,5 @@
 project('Cube', ['c', 'objcpp'],
-  meson_version: '1.5.0')
+  meson_version: '>=1.5.0')
 
 add_global_arguments(
   [
@@ -12,10 +12,18 @@ objfw_dep = dependency('objfw')
 sdl12_dep = dependency('sdl12_compat')
 sdlimage_dep = dependency('SDL_image')
 sdlmixer_dep = dependency('SDL_mixer')
-gl_dep = dependency('gl')
-glu_dep = dependency('glu')
 zlib_dep = dependency('zlib')
-x11_dep = dependency('x11', required: false)
+
+link_args = []
+extra_deps = []
+
+if host_machine.system() == 'windows'
+  link_args += ['-lopengl32', '-lglu32']
+else
+  extra_deps += dependency('gl')
+  extra_deps += dependency('glu')
+  extra_deps += dependency('x11')
+endif
 
 enet_includes = include_directories('enet/include')
 enet = static_library('enet',
@@ -73,13 +81,13 @@ executable('client',
     sdl12_dep,
     sdlimage_dep,
     sdlmixer_dep,
-    gl_dep,
-    glu_dep,
     zlib_dep,
-    x11_dep,
+    extra_deps
   ],
   include_directories: [enet_includes],
-  link_with: [enet])
+  link_args: link_args,
+  link_with: [enet],
+  win_subsystem: 'windows')
 
 executable('server',
   [
@@ -94,4 +102,5 @@ executable('server',
     sdl12_dep
   ],
   include_directories: [enet_includes],
-  link_with: [enet])
+  link_with: [enet],
+  win_subsystem: 'console')
