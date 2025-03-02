@@ -82,13 +82,13 @@ pool::allocnext(size_t allocsize)
 };
 
 char *
-pool::string(char *s, size_t l)
+pool::string(const char *s, size_t l)
 {
 	char *b = (char *)alloc(l + 1);
 	strncpy(b, s, l);
 	b[l] = 0;
 	return b;
-};
+}
 
 pool *
 gp() // useful for global buffers that need to be initialisation order

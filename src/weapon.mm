@@ -64,9 +64,8 @@ weapon(char *a1, char *a2, char *a3)
 {
 	selectgun(a1[0] ? atoi(a1) : -1, a2[0] ? atoi(a2) : -1,
 	    a3[0] ? atoi(a3) : -1);
-};
-
-COMMAND(weapon, ARG_3STR);
+}
+COMMAND(weapon, ARG_3STR)
 
 void
 createrays(vec &from, vec &to) // create random spread of rays for the shotgun

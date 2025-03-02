@@ -379,7 +379,7 @@ enum // function signatures for script functions, see command.cpp
 	ARG_3INT,
 	ARG_4INT,
 	ARG_NONE,
-	ARG_1STR,
+	ARG_1CSTR,
 	ARG_2STR,
 	ARG_3STR,
 	ARG_5STR,
@@ -389,7 +389,8 @@ enum // function signatures for script functions, see command.cpp
 	ARG_2EXP,
 	ARG_1EST,
 	ARG_2EST,
-	ARG_VARI
+	ARG_VARI,
+	ARG_1STR
 };
 
 // nasty macros for registering script functions, abuses globals to avoid
@@ -398,7 +399,7 @@ enum // function signatures for script functions, see command.cpp
 	OF_CONSTRUCTOR()                                                       \
 	{                                                                      \
 		enqueueInit(^{                                                 \
-			addcommand(#name, (void (*)())fun, nargs);             \
+			addcommand(@ #name, (void (*)())fun, nargs);           \
 		});                                                            \
 	}
 #define COMMAND(name, nargs) COMMANDN(name, name, nargs)

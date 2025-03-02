@@ -11,18 +11,18 @@ backup(char *name, char *backupname)
 
 string cgzname, bakname, pcfname, mcfname;
 
-void
-setnames(char *name)
+static void
+setnames(const char *name)
 {
 	string pakname, mapname;
-	char *slash = strpbrk(name, "/\\");
+	const char *slash = strpbrk(name, "/\\");
 	if (slash) {
 		strn0cpy(pakname, name, slash - name + 1);
 		strcpy_s(mapname, slash + 1);
 	} else {
 		strcpy_s(pakname, "base");
 		strcpy_s(mapname, name);
-	};
+	}
 	sprintf_s(cgzname)("packages/%s/%s.cgz", pakname, mapname);
 	sprintf_s(bakname)(
 	    "packages/%s/%s_%d.BAK", pakname, mapname, lastmillis);
@@ -31,7 +31,7 @@ setnames(char *name)
 
 	path(cgzname);
 	path(bakname);
-};
+}
 
 // the optimize routines below are here to reduce the detrimental effects of
 // messy mapping by setting certain properties (vdeltas and textures) to
@@ -137,7 +137,7 @@ writemap(char *mname, int msize, uchar *mdata)
 }
 
 uchar *
-readmap(char *mname, int *msize)
+readmap(const char *mname, int *msize)
 {
 	setnames(mname);
 	uchar *mdata = (uchar *)loadfile(cgzname, msize);
@@ -154,37 +154,39 @@ readmap(char *mname, int *msize)
 // miniscule map sizes.
 
 void
-save_world(char *mname)
+save_world(const char *mname)
 {
-	resettagareas(); // wouldn't be able to reproduce tagged areas otherwise
-	voptimize();
-	toptimize();
-	if (!*mname)
-		mname = getclientmap();
-	setnames(mname);
-	backup(cgzname, bakname);
-	gzFile f = gzopen(cgzname, "wb9");
-	if (!f) {
-		conoutf(@"could not write map to %s", cgzname);
-		return;
-	};
-	hdr.version = MAPVERSION;
-	hdr.numents = 0;
-	loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
-	header tmp = hdr;
-	endianswap(&tmp.version, sizeof(int), 4);
-	endianswap(&tmp.waterlevel, sizeof(int), 16);
-	gzwrite(f, &tmp, sizeof(header));
-	loopv(ents)
-	{
-		if (ents[i].type != NOTUSED) {
-			entity tmp = ents[i];
-			endianswap(&tmp, sizeof(short), 4);
-			gzwrite(f, &tmp, sizeof(persistent_entity));
+	@autoreleasepool {
+		resettagareas(); // wouldn't be able to reproduce tagged areas
+		                 // otherwise
+		voptimize();
+		toptimize();
+		if (!*mname)
+			mname = getclientmap().UTF8String;
+		setnames(mname);
+		backup(cgzname, bakname);
+		gzFile f = gzopen(cgzname, "wb9");
+		if (!f) {
+			conoutf(@"could not write map to %s", cgzname);
+			return;
 		};
-	};
-	sqr *t = NULL;
-	int sc = 0;
+		hdr.version = MAPVERSION;
+		hdr.numents = 0;
+		loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
+		header tmp = hdr;
+		endianswap(&tmp.version, sizeof(int), 4);
+		endianswap(&tmp.waterlevel, sizeof(int), 16);
+		gzwrite(f, &tmp, sizeof(header));
+		loopv(ents)
+		{
+			if (ents[i].type != NOTUSED) {
+				entity tmp = ents[i];
+				endianswap(&tmp, sizeof(short), 4);
+				gzwrite(f, &tmp, sizeof(persistent_entity));
+			};
+		};
+		sqr *t = NULL;
+		int sc = 0;
 #define spurge                                                                 \
 	while (sc) {                                                           \
 		gzputc(f, 255);                                                \
@@ -196,50 +198,51 @@ save_world(char *mname)
 			sc = 0;                                                \
 		}                                                              \
 	};
-	loopk(cubicsize)
-	{
-		sqr *s = &world[k];
+		loopk(cubicsize)
+		{
+			sqr *s = &world[k];
 #define c(f) (s->f == t->f)
-		// 4 types of blocks, to compress a bit:
-		// 255 (2): same as previous block + count
-		// 254 (3): same as previous, except light // deprecated
-		// SOLID (5)
-		// anything else (9)
+			// 4 types of blocks, to compress a bit:
+			// 255 (2): same as previous block + count
+			// 254 (3): same as previous, except light // deprecated
+			// SOLID (5)
+			// anything else (9)
 
-		if (SOLID(s)) {
-			if (t && c(type) && c(wtex) && c(vdelta)) {
-				sc++;
+			if (SOLID(s)) {
+				if (t && c(type) && c(wtex) && c(vdelta)) {
+					sc++;
+				} else {
+					spurge;
+					gzputc(f, s->type);
+					gzputc(f, s->wtex);
+					gzputc(f, s->vdelta);
+				};
 			} else {
-				spurge;
-				gzputc(f, s->type);
-				gzputc(f, s->wtex);
-				gzputc(f, s->vdelta);
+				if (t && c(type) && c(floor) && c(ceil) &&
+				    c(ctex) && c(ftex) && c(utex) && c(wtex) &&
+				    c(vdelta) && c(tag)) {
+					sc++;
+				} else {
+					spurge;
+					gzputc(f, s->type);
+					gzputc(f, s->floor);
+					gzputc(f, s->ceil);
+					gzputc(f, s->wtex);
+					gzputc(f, s->ftex);
+					gzputc(f, s->ctex);
+					gzputc(f, s->vdelta);
+					gzputc(f, s->utex);
+					gzputc(f, s->tag);
+				};
 			};
-		} else {
-			if (t && c(type) && c(floor) && c(ceil) && c(ctex) &&
-			    c(ftex) && c(utex) && c(wtex) && c(vdelta) &&
-			    c(tag)) {
-				sc++;
-			} else {
-				spurge;
-				gzputc(f, s->type);
-				gzputc(f, s->floor);
-				gzputc(f, s->ceil);
-				gzputc(f, s->wtex);
-				gzputc(f, s->ftex);
-				gzputc(f, s->ctex);
-				gzputc(f, s->vdelta);
-				gzputc(f, s->utex);
-				gzputc(f, s->tag);
-			};
+			t = s;
 		};
-		t = s;
-	};
-	spurge;
-	gzclose(f);
-	conoutf(@"wrote map file %s", cgzname);
-	settagareas();
-};
+		spurge;
+		gzclose(f);
+		conoutf(@"wrote map file %s", cgzname);
+		settagareas();
+	}
+}
 
 void
 load_world(char *mname) // still supports all map formats that have existed
@@ -371,6 +374,6 @@ load_world(char *mname) // still supports all map formats that have existed
 	execfile("data/default_map_settings.cfg");
 	execfile(pcfname);
 	execfile(mcfname);
-};
+}
 
-COMMANDN(savemap, save_world, ARG_1STR);
+COMMANDN(savemap, save_world, ARG_1CSTR)

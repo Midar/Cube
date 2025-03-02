@@ -70,8 +70,8 @@ newteam(char *name)
 	strn0cpy(player1->team, name, 5);
 }
 
-COMMANDN(team, newteam, ARG_1STR);
-COMMANDN(name, newname, ARG_1STR);
+COMMANDN(team, newteam, ARG_1CSTR)
+COMMANDN(name, newname, ARG_1CSTR)
 
 void
 writeclientinfo(FILE *f)
@@ -171,10 +171,10 @@ echo(char *text)
 	conoutf(@"%s", text);
 }
 
-COMMAND(echo, ARG_VARI);
-COMMANDN(say, toserver, ARG_VARI);
-COMMANDN(connect, connects, ARG_1STR);
-COMMANDN(disconnect, trydisconnect, ARG_NONE);
+COMMAND(echo, ARG_VARI)
+COMMANDN(say, toserver, ARG_VARI)
+COMMANDN(connect, connects, ARG_1CSTR)
+COMMANDN(disconnect, trydisconnect, ARG_NONE)
 
 // collect c2s messages conveniently
 
@@ -212,7 +212,7 @@ server_err()
 }
 
 int lastupdate = 0, lastping = 0;
-string toservermap;
+OFString *toservermap;
 bool senditemstoserver =
     false; // after a map change, since server doesn't have map data
 
@@ -221,8 +221,8 @@ void
 password(char *p)
 {
 	strcpy_s(clientpassword, p);
-};
-COMMAND(password, ARG_1STR);
+}
+COMMAND(password, ARG_1CSTR)
 
 bool
 netmapstart()
@@ -235,11 +235,11 @@ void
 initclientnet()
 {
 	ctext[0] = 0;
-	toservermap[0] = 0;
+	toservermap = @"";
 	clientpassword[0] = 0;
 	newname("unnamed");
 	newteam("red");
-};
+}
 
 void
 sendpackettoserv(void *packet)
@@ -254,94 +254,103 @@ sendpackettoserv(void *packet)
 void
 c2sinfo(dynent *d) // send update to the server
 {
-	if (clientnum < 0)
-		return; // we haven't had a welcome message from the server yet
-	if (lastmillis - lastupdate < 40)
-		return; // don't update faster than 25fps
-	ENetPacket *packet = enet_packet_create(NULL, MAXTRANS, 0);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
-	bool serveriteminitdone = false;
-	if (toservermap[0]) // suggest server to change map
-	{ // do this exclusively as map change may invalidate rest of update
-		packet->flags = ENET_PACKET_FLAG_RELIABLE;
-		putint(p, SV_MAPCHANGE);
-		sendstring(toservermap, p);
-		toservermap[0] = 0;
-		putint(p, nextmode);
-	} else {
-		putint(p, SV_POS);
-		putint(p, clientnum);
-		putint(
-		    p, (int)(d->o.x * DMF)); // quantize coordinates to 1/16th
-		                             // of a cube, between 1 and 3 bytes
-		putint(p, (int)(d->o.y * DMF));
-		putint(p, (int)(d->o.z * DMF));
-		putint(p, (int)(d->yaw * DAF));
-		putint(p, (int)(d->pitch * DAF));
-		putint(p, (int)(d->roll * DAF));
-		putint(
-		    p, (int)(d->vel.x *
-		             DVF)); // quantize to 1/100, almost always 1 byte
-		putint(p, (int)(d->vel.y * DVF));
-		putint(p, (int)(d->vel.z * DVF));
-		// pack rest in 1 byte: strafe:2, move:2, onfloor:1, state:3
-		putint(p, (d->strafe & 3) | ((d->move & 3) << 2) |
-		              (((int)d->onfloor) << 4) |
-		              ((editmode ? CS_EDITING : d->state) << 5));
+	@autoreleasepool {
+		if (clientnum < 0)
+			return; // we haven't had a welcome message from the
+			        // server yet
+		if (lastmillis - lastupdate < 40)
+			return; // don't update faster than 25fps
+		ENetPacket *packet = enet_packet_create(NULL, MAXTRANS, 0);
+		uchar *start = packet->data;
+		uchar *p = start + 2;
+		bool serveriteminitdone = false;
+		if (toservermap.length > 0) // suggest server to change map
+		{ // do this exclusively as map change may invalidate rest of
+		  // update
+			packet->flags = ENET_PACKET_FLAG_RELIABLE;
+			putint(p, SV_MAPCHANGE);
+			sendstring(toservermap.UTF8String, p);
+			toservermap = @"";
+			putint(p, nextmode);
+		} else {
+			putint(p, SV_POS);
+			putint(p, clientnum);
+			putint(
+			    p, (int)(d->o.x *
+			             DMF)); // quantize coordinates to 1/16th
+			                    // of a cube, between 1 and 3 bytes
+			putint(p, (int)(d->o.y * DMF));
+			putint(p, (int)(d->o.z * DMF));
+			putint(p, (int)(d->yaw * DAF));
+			putint(p, (int)(d->pitch * DAF));
+			putint(p, (int)(d->roll * DAF));
+			putint(
+			    p, (int)(d->vel.x * DVF)); // quantize to 1/100,
+			                               // almost always 1 byte
+			putint(p, (int)(d->vel.y * DVF));
+			putint(p, (int)(d->vel.z * DVF));
+			// pack rest in 1 byte: strafe:2, move:2, onfloor:1,
+			// state:3
+			putint(
+			    p, (d->strafe & 3) | ((d->move & 3) << 2) |
+			           (((int)d->onfloor) << 4) |
+			           ((editmode ? CS_EDITING : d->state) << 5));
 
-		if (senditemstoserver) {
-			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			putint(p, SV_ITEMLIST);
-			if (!m_noitems)
-				putitems(p);
-			putint(p, -1);
-			senditemstoserver = false;
-			serveriteminitdone = true;
-		};
-		if (ctext[0]) // player chat, not flood protected for now
-		{
-			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			putint(p, SV_TEXT);
-			sendstring(ctext, p);
-			ctext[0] = 0;
-		};
-		if (!c2sinit) // tell other clients who I am
-		{
-			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			c2sinit = true;
-			putint(p, SV_INITC2S);
-			sendstring(player1->name, p);
-			sendstring(player1->team, p);
-			putint(p, player1->lifesequence);
-		};
-		loopv(messages) // send messages collected during the previous
-		                // frames
-		{
-			ivector &msg = messages[i];
-			if (msg[1])
+			if (senditemstoserver) {
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			loopi(msg[0]) putint(p, msg[i + 2]);
+				putint(p, SV_ITEMLIST);
+				if (!m_noitems)
+					putitems(p);
+				putint(p, -1);
+				senditemstoserver = false;
+				serveriteminitdone = true;
+			};
+			if (ctext[0]) // player chat, not flood protected for
+			              // now
+			{
+				packet->flags = ENET_PACKET_FLAG_RELIABLE;
+				putint(p, SV_TEXT);
+				sendstring(ctext, p);
+				ctext[0] = 0;
+			};
+			if (!c2sinit) // tell other clients who I am
+			{
+				packet->flags = ENET_PACKET_FLAG_RELIABLE;
+				c2sinit = true;
+				putint(p, SV_INITC2S);
+				sendstring(player1->name, p);
+				sendstring(player1->team, p);
+				putint(p, player1->lifesequence);
+			};
+			loopv(messages) // send messages collected during the
+			                // previous frames
+			{
+				ivector &msg = messages[i];
+				if (msg[1])
+					packet->flags =
+					    ENET_PACKET_FLAG_RELIABLE;
+				loopi(msg[0]) putint(p, msg[i + 2]);
+			};
+			messages.setsize(0);
+			if (lastmillis - lastping > 250) {
+				putint(p, SV_PING);
+				putint(p, lastmillis);
+				lastping = lastmillis;
+			};
 		};
-		messages.setsize(0);
-		if (lastmillis - lastping > 250) {
-			putint(p, SV_PING);
-			putint(p, lastmillis);
-			lastping = lastmillis;
-		};
-	};
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
-	enet_packet_resize(packet, p - start);
-	incomingdemodata(start, p - start, true);
-	if (clienthost) {
-		enet_host_broadcast(clienthost, 0, packet);
-		enet_host_flush(clienthost);
-	} else
-		localclienttoserver(packet);
-	lastupdate = lastmillis;
-	if (serveriteminitdone)
-		loadgamerest(); // hack
-};
+		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+		enet_packet_resize(packet, p - start);
+		incomingdemodata(start, p - start, true);
+		if (clienthost) {
+			enet_host_broadcast(clienthost, 0, packet);
+			enet_host_flush(clienthost);
+		} else
+			localclienttoserver(packet);
+		lastupdate = lastmillis;
+		if (serveriteminitdone)
+			loadgamerest(); // hack
+	}
+}
 
 void
 gets2c() // get updates from the server

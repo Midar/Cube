@@ -3,22 +3,22 @@
 #import "cube.h"
 #import "protos.h"
 
-static OFMutableArray<void (^)(void)> *queue;
+static std::vector<void (^)(void)> *queue;
 
 void
 enqueueInit(void (^init)(void))
 {
-	if (queue == nil)
-		queue = [[OFMutableArray alloc] init];
+	if (queue == NULL)
+		queue = new std::vector<void (^)(void)>();
 
-	[queue addObject:init];
+	queue->push_back(init);
 }
 
 void
 processInitQueue(void)
 {
-	for (void (^init)(void) in queue)
+	for (auto &init : *queue)
 		init();
 
-	[queue removeAllObjects];
+	queue->clear();
 }

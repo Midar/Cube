@@ -166,22 +166,25 @@ struct pool {
 	void dealloc(void *p, size_t size);
 	void *realloc(void *p, size_t oldsize, size_t newsize);
 
-	char *string(char *s, size_t l);
+	char *string(const char *s, size_t l);
+
 	char *
-	string(char *s)
+	string(const char *s)
 	{
 		return string(s, strlen(s));
-	};
+	}
+
 	void
 	deallocstr(char *s)
 	{
 		dealloc(s, strlen(s) + 1);
-	};
+	}
+
 	char *
-	stringbuf(char *s)
+	stringbuf(const char *s)
 	{
 		return string(s, _MAXDEFSTR - 1);
-	};
+	}
 
 	void dealloc_block(void *b);
 	void allocnext(size_t allocsize);
@@ -379,19 +382,21 @@ template <class T> struct hashtable {
 	}
 
 inline char *
-newstring(char *s)
+newstring(const char *s)
 {
 	return gp()->string(s);
-};
+}
+
 inline char *
-newstring(char *s, size_t l)
+newstring(const char *s, size_t l)
 {
 	return gp()->string(s, l);
-};
+}
+
 inline char *
-newstringbuf(char *s)
+newstringbuf(const char *s)
 {
 	return gp()->stringbuf(s);
-};
+}
 
 #endif

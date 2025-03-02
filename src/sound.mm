@@ -110,9 +110,9 @@ music(char *name)
 		};
 #endif
 	};
-};
+}
 
-COMMAND(music, ARG_1STR);
+COMMAND(music, ARG_1CSTR)
 
 #ifdef USE_MIXER
 vector<Mix_Chunk *> samples;
@@ -131,7 +131,7 @@ registersound(char *name)
 	return samples.length() - 1;
 };
 
-COMMAND(registersound, ARG_1EST);
+COMMAND(registersound, ARG_1EST)
 
 void
 cleansound()
@@ -267,5 +267,5 @@ void
 sound(int n)
 {
 	playsound(n, NULL);
-};
-COMMAND(sound, ARG_1INT);
+}
+COMMAND(sound, ARG_1INT)

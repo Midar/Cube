@@ -10,7 +10,7 @@ mode(int n)
 {
 	addmsg(1, 2, SV_GAMEMODE, nextmode = n);
 };
-COMMAND(mode, ARG_1INT);
+COMMAND(mode, ARG_1INT)
 
 bool intermission = false;
 
@@ -23,15 +23,15 @@ VARP(invmouse, 0, 0, 1);
 
 int lastmillis = 0;
 int curtime = 10;
-string clientmap;
+OFString *clientmap;
 
 extern int framesinmap;
 
-char *
+OFString *
 getclientmap()
 {
 	return clientmap;
-};
+}
 
 void
 resetmovement(dynent *d)
@@ -220,15 +220,15 @@ respawn()
 		if (m_arena) {
 			conoutf(@"waiting for new round to start...");
 			return;
-		};
+		}
 		if (m_sp) {
 			nextmode = gamemode;
 			changemap(clientmap);
 			return;
-		}; // if we die in SP we try the same map again
+		} // if we die in SP we try the same map again
 		respawnself();
-	};
-};
+	}
+}
 
 int sleepwait = 0;
 string sleepcmd;
@@ -238,7 +238,7 @@ sleepf(char *msec, char *cmd)
 	sleepwait = atoi(msec) + lastmillis;
 	strcpy_s(sleepcmd, cmd);
 };
-COMMANDN(sleep, sleepf, ARG_2STR);
+COMMANDN(sleep, sleepf, ARG_2STR)
 
 void
 updateworld(int millis) // main game update loop
@@ -361,13 +361,13 @@ jumpn(bool on)
 		respawn();
 };
 
-COMMAND(backward, ARG_DOWN);
-COMMAND(forward, ARG_DOWN);
-COMMAND(left, ARG_DOWN);
-COMMAND(right, ARG_DOWN);
-COMMANDN(jump, jumpn, ARG_DOWN);
-COMMAND(attack, ARG_DOWN);
-COMMAND(showscores, ARG_DOWN);
+COMMAND(backward, ARG_DOWN)
+COMMAND(forward, ARG_DOWN)
+COMMAND(left, ARG_DOWN)
+COMMAND(right, ARG_DOWN)
+COMMANDN(jump, jumpn, ARG_DOWN)
+COMMAND(attack, ARG_DOWN)
+COMMAND(showscores, ARG_DOWN)
 
 void
 fixplayer1range()
@@ -484,9 +484,9 @@ getclient(int cn) // ensure valid entity
 void
 initclient()
 {
-	clientmap[0] = 0;
+	clientmap = @"";
 	initclientnet();
-};
+}
 
 void
 startmap(char *name) // called just after a map load
@@ -503,7 +503,9 @@ startmap(char *name) // called just after a map load
 	player1->frags = 0;
 	loopv(players) if (players[i]) players[i]->frags = 0;
 	resetspawns();
-	strcpy_s(clientmap, name);
+	@autoreleasepool {
+		clientmap = @(name);
+	}
 	if (editmode)
 		toggleedit();
 	setvar("gamespeed", 100);
@@ -513,6 +515,6 @@ startmap(char *name) // called just after a map load
 	intermission = false;
 	framesinmap = 0;
 	conoutf(@"game mode is %s", modestr(gamemode));
-};
+}
 
-COMMANDN(map, changemap, ARG_1STR);
+COMMANDN(map, changemap, ARG_1STR)

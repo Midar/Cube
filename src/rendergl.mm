@@ -146,7 +146,8 @@ void
 texturereset()
 {
 	curtexnum = 0;
-};
+}
+COMMAND(texturereset, ARG_NONE)
 
 void
 texture(char *aframe, char *name)
@@ -158,10 +159,8 @@ texture(char *aframe, char *name)
 	char *n = mapname[num][frame];
 	strcpy_s(n, name);
 	path(n);
-};
-
-COMMAND(texturereset, ARG_NONE);
-COMMAND(texture, ARG_2STR);
+}
+COMMAND(texture, ARG_2STR)
 
 int
 lookuptexture(int tex, int &xs, int &ys)

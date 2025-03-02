@@ -4,7 +4,7 @@
 
 extern int clientnum;
 extern bool c2sinit, senditemstoserver;
-extern string toservermap;
+extern OFString *toservermap;
 extern string clientpassword;
 
 void
@@ -12,20 +12,20 @@ neterr(char *s)
 {
 	conoutf(@"illegal network message (%s)", s);
 	disconnect();
-};
+}
 
 void
 changemapserv(char *name, int mode) // forced map change from the server
 {
 	gamemode = mode;
 	load_world(name);
-};
+}
 
 void
-changemap(char *name) // request map change, server may ignore
+changemap(OFString *name) // request map change, server may ignore
 {
-	strcpy_s(toservermap, name);
-};
+	toservermap = name;
+}
 
 // update the position of other clients in the game in our world
 // don't care if he's in the scenery or other players,
@@ -82,12 +82,12 @@ localservertoclient(
 				disconnect();
 				return;
 			};
-			toservermap[0] = 0;
+			toservermap = @"";
 			clientnum = cn; // we are now fully connected
 			if (!getint(p))
-				strcpy_s(toservermap,
-				    getclientmap()); // we are the first client
-				                     // on this server, set map
+				// we are the first client on this server, set
+				// map
+				toservermap = getclientmap();
 			sgetstr();
 			if (text[0] && strcmp(text, clientpassword)) {
 				conoutf(@"you need to set the correct password "
@@ -160,10 +160,11 @@ localservertoclient(
 		case SV_MAPRELOAD: // server requests next map
 		{
 			getint(p);
-			sprintf_sd(nextmapalias)("nextmap_%s", getclientmap());
-			char *map =
+			OFString *nextmapalias = [OFString
+			    stringWithFormat:@"nextmap_%@", getclientmap()];
+			OFString *map =
 			    getalias(nextmapalias); // look up map in the cycle
-			changemap(map ? map : getclientmap());
+			changemap(map != nil ? map : getclientmap());
 			break;
 		}
 

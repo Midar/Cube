@@ -7,12 +7,12 @@ enum { ID_VAR, ID_COMMAND, ID_ALIAS };
 
 @interface Ident : OFObject
 @property (nonatomic) int type; // one of ID_* above
-@property (nonatomic) char *name;
-@property (nonatomic) int min, max;  // ID_VAR
-@property (nonatomic) int *storage;  // ID_VAR
-@property (nonatomic) void (*fun)(); // ID_VAR, ID_COMMAND
-@property (nonatomic) int narg;      // ID_VAR, ID_COMMAND
-@property (nonatomic) char *action;  // ID_ALIAS
+@property (copy, nonatomic) OFString *name;
+@property (nonatomic) int min, max;           // ID_VAR
+@property (nonatomic) int *storage;           // ID_VAR
+@property (nonatomic) void (*fun)();          // ID_VAR, ID_COMMAND
+@property (nonatomic) int narg;               // ID_VAR, ID_COMMAND
+@property (copy, nonatomic) OFString *action; // ID_ALIAS
 @property (nonatomic) bool persist;
 @end
 
@@ -26,7 +26,7 @@ itoa(char *s, int i)
 }
 
 char *
-exchangestr(char *o, char *n)
+exchangestr(char *o, const char *n)
 {
 	gp()->deallocstr(o);
 	return newstring(n);
@@ -44,14 +44,14 @@ alias(char *name, char *action)
 		if (!b) {
 			Ident *b = [[Ident alloc] init];
 			b.type = ID_ALIAS;
-			b.name = newstring(name);
-			b.action = newstring(action);
+			b.name = @(name);
+			b.action = @(action);
 			b.persist = true;
 
-			idents[@(name)] = b;
+			idents[b.name] = b;
 		} else {
 			if (b.type == ID_ALIAS)
-				b.action = exchangestr(b.action, action);
+				b.action = @(action);
 			else
 				conoutf(
 				    @"cannot redefine builtin %s with an alias",
@@ -72,14 +72,14 @@ variable(char *name, int min, int cur, int max, int *storage, void (*fun)(),
 	@autoreleasepool {
 		Ident *v = [[Ident alloc] init];
 		v.type = ID_VAR;
-		v.name = name;
+		v.name = @(name);
 		v.min = min;
 		v.max = max;
 		v.storage = storage;
 		v.fun = fun;
 		v.persist = persist;
 
-		idents[@(name)] = v;
+		idents[v.name] = v;
 	}
 
 	return cur;
@@ -109,17 +109,15 @@ identexists(char *name)
 	}
 }
 
-char *
-getalias(char *name)
+OFString *
+getalias(OFString *name)
 {
-	@autoreleasepool {
-		Ident *i = idents[@(name)];
-		return i != nil && i.type == ID_ALIAS ? i.action : NULL;
-	}
+	Ident *i = idents[name];
+	return i != nil && i.type == ID_ALIAS ? i.action : nil;
 }
 
 bool
-addcommand(char *name, void (*fun)(), int narg)
+addcommand(OFString *name, void (*fun)(), int narg)
 {
 	if (idents == nil)
 		idents = [[OFMutableDictionary alloc] init];
@@ -131,7 +129,7 @@ addcommand(char *name, void (*fun)(), int narg)
 		c.fun = fun;
 		c.narg = narg;
 
-		idents[@(name)] = c;
+		idents[name] = c;
 	}
 
 	return false;
@@ -206,7 +204,7 @@ lookup(char *n) // find value of ident referenced with $ in exp
 				itoa(t, *(ID.storage));
 				return exchangestr(n, t);
 			case ID_ALIAS:
-				return exchangestr(n, ID.action);
+				return exchangestr(n, ID.action.UTF8String);
 			}
 		}
 	}
@@ -298,7 +296,7 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 							((void(__cdecl *)())
 							        ID.fun)();
 						break;
-					case ARG_1STR:
+					case ARG_1CSTR:
 						if (isdown)
 							((void(__cdecl *)(
 							    char *))ID.fun)(
@@ -385,6 +383,17 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 							    char *))ID.fun)(r);
 							break;
 						}
+					case ARG_1STR:
+						if (isdown) {
+							@autoreleasepool {
+								((void(
+								    __cdecl *)(
+								    OFString *))
+								        ID.fun)(
+								    @(w[1]));
+							}
+						}
+						break;
 					}
 					break;
 
@@ -478,7 +487,8 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 					}
 					// create new string here because alias
 					// could rebind itself
-					char *action = newstring(ID.action);
+					char *action =
+					    newstring(ID.action.UTF8String);
 					val = execute(action, isdown);
 					gp()->deallocstr(action);
 					break;
@@ -519,10 +529,10 @@ complete(char *s)
 	__block int idx = 0;
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
-		if (strncmp(ident.name, s + 1, completesize) == 0 &&
+		if (strncmp(ident.name.UTF8String, s + 1, completesize) == 0 &&
 		    idx++ == completeidx) {
 			strcpy_s(s, "/");
-			strcat_s(s, ident.name);
+			strcat_s(s, ident.name.UTF8String);
 		}
 	}];
 	completeidx++;
@@ -565,7 +575,8 @@ writecfg()
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
 		if (ident.type == ID_VAR && ident.persist) {
-			fprintf(f, "%s %d\n", ident.name, *ident.storage);
+			fprintf(f, "%s %d\n", ident.name.UTF8String,
+			    *ident.storage);
 		}
 	}];
 	fprintf(f, "\n");
@@ -573,15 +584,16 @@ writecfg()
 	fprintf(f, "\n");
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
-		if (ident.type == ID_ALIAS && !strstr(ident.name, "nextmap_")) {
-			fprintf(
-			    f, "alias \"%s\" [%s]\n", ident.name, ident.action);
+		if (ident.type == ID_ALIAS &&
+		    !strstr(ident.name.UTF8String, "nextmap_")) {
+			fprintf(f, "alias \"%s\" [%s]\n", ident.name.UTF8String,
+			    ident.action.UTF8String);
 		}
 	}];
 	fclose(f);
 }
 
-COMMAND(writecfg, ARG_NONE);
+COMMAND(writecfg, ARG_NONE)
 
 // below the commands that implement a small imperative language. thanks to the
 // semantics of
@@ -662,82 +674,89 @@ at(char *s, char *pos)
 	concat(s);
 }
 
-COMMANDN(loop, loopa, ARG_2STR);
-COMMANDN(while, whilea, ARG_2STR);
-COMMANDN(if, ifthen, ARG_3STR);
-COMMAND(onrelease, ARG_DWN1);
-COMMAND(exec, ARG_1STR);
-COMMAND(concat, ARG_VARI);
-COMMAND(concatword, ARG_VARI);
-COMMAND(at, ARG_2STR);
-COMMAND(listlen, ARG_1EST);
+COMMANDN(loop, loopa, ARG_2STR)
+COMMANDN(while, whilea, ARG_2STR)
+COMMANDN(if, ifthen, ARG_3STR)
+COMMAND(onrelease, ARG_DWN1)
+COMMAND(exec, ARG_1CSTR)
+COMMAND(concat, ARG_VARI)
+COMMAND(concatword, ARG_VARI)
+COMMAND(at, ARG_2STR)
+COMMAND(listlen, ARG_1EST)
 
 int
 add(int a, int b)
 {
 	return a + b;
 }
-COMMANDN(+, add, ARG_2EXP);
+COMMANDN(+, add, ARG_2EXP)
+
 int
 mul(int a, int b)
 {
 	return a * b;
 }
-COMMANDN(*, mul, ARG_2EXP);
+COMMANDN(*, mul, ARG_2EXP)
+
 int
 sub(int a, int b)
 {
 	return a - b;
 }
-COMMANDN(-, sub, ARG_2EXP);
+COMMANDN(-, sub, ARG_2EXP)
+
 int
 divi(int a, int b)
 {
 	return b ? a / b : 0;
 }
-COMMANDN(div, divi, ARG_2EXP);
+COMMANDN(div, divi, ARG_2EXP)
+
 int
 mod(int a, int b)
 {
 	return b ? a % b : 0;
 }
-COMMAND(mod, ARG_2EXP);
+COMMAND(mod, ARG_2EXP)
+
 int
 equal(int a, int b)
 {
 	return (int)(a == b);
 }
-COMMANDN(=, equal, ARG_2EXP);
+COMMANDN(=, equal, ARG_2EXP)
+
 int
 lt(int a, int b)
 {
 	return (int)(a < b);
 }
-COMMANDN(<, lt, ARG_2EXP);
+COMMANDN(<, lt, ARG_2EXP)
+
 int
 gt(int a, int b)
 {
 	return (int)(a > b);
 }
-COMMANDN(>, gt, ARG_2EXP);
+COMMANDN(>, gt, ARG_2EXP)
 
 int
 strcmpa(char *a, char *b)
 {
 	return strcmp(a, b) == 0;
 }
-COMMANDN(strcmp, strcmpa, ARG_2EST);
+COMMANDN(strcmp, strcmpa, ARG_2EST)
 
 int
 rndn(int a)
 {
 	return a > 0 ? rnd(a) : 0;
 }
-COMMANDN(rnd, rndn, ARG_1EXP);
+COMMANDN(rnd, rndn, ARG_1EXP)
 
 int
 explastmillis()
 {
 	return lastmillis;
 }
-COMMANDN(millis, explastmillis, ARG_1EXP);
+COMMANDN(millis, explastmillis, ARG_1EXP)

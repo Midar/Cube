@@ -65,9 +65,8 @@ toggleedit()
 	keyrepeat(editmode);
 	selset = false;
 	editing = editmode;
-};
-
-COMMANDN(edittoggle, toggleedit, ARG_NONE);
+}
+COMMANDN(edittoggle, toggleedit, ARG_NONE)
 
 void
 correctsel() // ensures above invariant
@@ -355,9 +354,8 @@ editheight(int flr, int amount)
 	bool isfloor = flr == 0;
 	editheightxy(isfloor, amount, sel);
 	addmsg(1, 7, SV_EDITH, sel.x, sel.y, sel.xs, sel.ys, isfloor, amount);
-};
-
-COMMAND(editheight, ARG_2INT);
+}
+COMMAND(editheight, ARG_2INT)
 
 void
 edittexxy(int type, int t, block &sel)
@@ -451,21 +449,22 @@ void
 heightfield(int t)
 {
 	edittype(t == 0 ? FHF : CHF);
-};
+}
+COMMAND(heightfield, ARG_1INT)
+
 void
 solid(int t)
 {
 	edittype(t == 0 ? SPACE : SOLID);
-};
+}
+COMMAND(solid, ARG_1INT)
+
 void
 corner()
 {
 	edittype(CORNER);
-};
-
-COMMAND(heightfield, ARG_1INT);
-COMMAND(solid, ARG_1INT);
-COMMAND(corner, ARG_NONE);
+}
+COMMAND(corner, ARG_NONE)
 
 void
 editequalisexy(bool isfloor, block &sel)
@@ -494,9 +493,8 @@ equalize(int flr)
 	EDITSEL;
 	editequalisexy(isfloor, sel);
 	addmsg(1, 6, SV_EDITE, sel.x, sel.y, sel.xs, sel.ys, isfloor);
-};
-
-COMMAND(equalize, ARG_1INT);
+}
+COMMAND(equalize, ARG_1INT)
 
 void
 setvdeltaxy(int delta, block &sel)
@@ -602,16 +600,16 @@ newent(char *what, char *a1, char *a2, char *a3, char *a4)
 	    ATOI(a3), ATOI(a4));
 };
 
-COMMANDN(select, selectpos, ARG_4INT);
-COMMAND(edittag, ARG_1INT);
-COMMAND(replace, ARG_NONE);
-COMMAND(archvertex, ARG_3INT);
-COMMAND(arch, ARG_2INT);
-COMMAND(slope, ARG_2INT);
-COMMANDN(vdelta, setvdelta, ARG_1INT);
-COMMANDN(undo, editundo, ARG_NONE);
-COMMAND(copy, ARG_NONE);
-COMMAND(paste, ARG_NONE);
-COMMAND(edittex, ARG_2INT);
-COMMAND(newent, ARG_5STR);
-COMMAND(perlin, ARG_3INT);
+COMMANDN(select, selectpos, ARG_4INT)
+COMMAND(edittag, ARG_1INT)
+COMMAND(replace, ARG_NONE)
+COMMAND(archvertex, ARG_3INT)
+COMMAND(arch, ARG_2INT)
+COMMAND(slope, ARG_2INT)
+COMMANDN(vdelta, setvdelta, ARG_1INT)
+COMMANDN(undo, editundo, ARG_NONE)
+COMMAND(copy, ARG_NONE)
+COMMAND(paste, ARG_NONE)
+COMMAND(edittex, ARG_2INT)
+COMMAND(newent, ARG_5STR)
+COMMAND(perlin, ARG_3INT)

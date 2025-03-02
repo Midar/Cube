@@ -161,39 +161,42 @@ renderscores()
 // sendmap/getmap commands, should be replaced by more intuitive map downloading
 
 void
-sendmap(char *mapname)
+sendmap(const char *mapname)
 {
-	if (*mapname)
-		save_world(mapname);
-	changemap(mapname);
-	mapname = getclientmap();
-	int mapsize;
-	uchar *mapdata = readmap(mapname, &mapsize);
-	if (!mapdata)
-		return;
-	ENetPacket *packet = enet_packet_create(
-	    NULL, MAXTRANS + mapsize, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
-	putint(p, SV_SENDMAP);
-	sendstring(mapname, p);
-	putint(p, mapsize);
-	if (65535 - (p - start) < mapsize) {
-		conoutf(@"map %s is too large to send", mapname);
+	@autoreleasepool {
+		if (*mapname)
+			save_world(mapname);
+		changemap(@(mapname));
+		mapname = getclientmap().UTF8String;
+		int mapsize;
+		uchar *mapdata = readmap(mapname, &mapsize);
+		if (!mapdata)
+			return;
+		ENetPacket *packet = enet_packet_create(
+		    NULL, MAXTRANS + mapsize, ENET_PACKET_FLAG_RELIABLE);
+		uchar *start = packet->data;
+		uchar *p = start + 2;
+		putint(p, SV_SENDMAP);
+		sendstring(mapname, p);
+		putint(p, mapsize);
+		if (65535 - (p - start) < mapsize) {
+			conoutf(@"map %s is too large to send", mapname);
+			free(mapdata);
+			enet_packet_destroy(packet);
+			return;
+		};
+		memcpy(p, mapdata, mapsize);
+		p += mapsize;
 		free(mapdata);
-		enet_packet_destroy(packet);
-		return;
-	};
-	memcpy(p, mapdata, mapsize);
-	p += mapsize;
-	free(mapdata);
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
-	enet_packet_resize(packet, p - start);
-	sendpackettoserv(packet);
-	conoutf(@"sending map %s to server...", mapname);
-	sprintf_sd(msg)(
-	    "[map %s uploaded to server, \"getmap\" to receive it]", mapname);
-	toserver(msg);
+		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+		enet_packet_resize(packet, p - start);
+		sendpackettoserv(packet);
+		conoutf(@"sending map %s to server...", mapname);
+		sprintf_sd(msg)(
+		    "[map %s uploaded to server, \"getmap\" to receive it]",
+		    mapname);
+		toserver(msg);
+	}
 }
 
 void
@@ -210,5 +213,5 @@ getmap()
 	conoutf(@"requesting map from server...");
 }
 
-COMMAND(sendmap, ARG_1STR);
-COMMAND(getmap, ARG_NONE);
+COMMAND(sendmap, ARG_1CSTR)
+COMMAND(getmap, ARG_NONE)

@@ -312,11 +312,11 @@ updatefrommaster()
 		execute((char *)reply);
 	};
 	servermenu();
-};
+}
 
-COMMAND(addserver, ARG_1STR);
-COMMAND(servermenu, ARG_NONE);
-COMMAND(updatefrommaster, ARG_NONE);
+COMMAND(addserver, ARG_1CSTR)
+COMMAND(servermenu, ARG_NONE)
+COMMAND(updatefrommaster, ARG_NONE)
 
 void
 writeservercfg()

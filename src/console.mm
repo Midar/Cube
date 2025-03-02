@@ -22,9 +22,8 @@ setconskip(int n)
 	conskip += n;
 	if (conskip < 0)
 		conskip = 0;
-};
-
-COMMANDN(conskip, setconskip, ARG_1INT);
+}
+COMMANDN(conskip, setconskip, ARG_1INT)
 
 void
 conline(const char *sf, bool highlight) // add a line to the console buffer
@@ -100,9 +99,8 @@ keymap(char *code, char *key, char *action)
 	keyms[numkm].code = atoi(code);
 	keyms[numkm].name = newstring(key);
 	keyms[numkm++].action = newstringbuf(action);
-};
-
-COMMAND(keymap, ARG_3STR);
+}
+COMMAND(keymap, ARG_3STR)
 
 void
 bindkey(char *key, char *action)
@@ -115,9 +113,8 @@ bindkey(char *key, char *action)
 		return;
 	};
 	conoutf(@"unknown key \"%s\"", key);
-};
-
-COMMANDN(bind, bindkey, ARG_2STR);
+}
+COMMANDN(bind, bindkey, ARG_2STR)
 
 void
 saycommand(char *init) // turns input to the command line on or off
@@ -134,10 +131,10 @@ void
 mapmsg(char *s)
 {
 	strn0cpy(hdr.maptitle, s, 128);
-};
+}
 
-COMMAND(saycommand, ARG_VARI);
-COMMAND(mapmsg, ARG_1STR);
+COMMAND(saycommand, ARG_VARI)
+COMMAND(mapmsg, ARG_1CSTR)
 
 #ifndef _WIN32
 # include <SDL_syswm.h>
@@ -198,9 +195,8 @@ history(int n)
 		execute(vhistory[vhistory.length() - n - 1]);
 		rec = false;
 	};
-};
-
-COMMAND(history, ARG_1INT);
+}
+COMMAND(history, ARG_1INT)
 
 void
 keypress(int code, bool isdown, int cooked)

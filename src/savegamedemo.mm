@@ -22,42 +22,47 @@ void
 gzput(int i)
 {
 	gzputc(f, i);
-};
+}
+
 void
 gzputi(int i)
 {
 	gzwrite(f, &i, sizeof(int));
-};
+}
+
 void
 gzputv(vec &v)
 {
 	gzwrite(f, &v, sizeof(vec));
-};
+}
 
 void
 gzcheck(int a, int b)
 {
 	if (a != b)
 		fatal("savegame file corrupt (short)");
-};
+}
+
 int
 gzget()
 {
 	char c = gzgetc(f);
 	return c;
-};
+}
+
 int
 gzgeti()
 {
 	int i;
 	gzcheck(gzread(f, &i, sizeof(int)), sizeof(int));
 	return i;
-};
+}
+
 void
 gzgetv(vec &v)
 {
 	gzcheck(gzread(f, &v, sizeof(vec)), sizeof(vec));
-};
+}
 
 void
 stop()
@@ -73,14 +78,14 @@ stop()
 	demoloading = false;
 	loopv(playerhistory) zapdynent(playerhistory[i]);
 	playerhistory.setsize(0);
-};
+}
 
 void
 stopifrecording()
 {
 	if (demorecording)
 		stop();
-};
+}
 
 void
 savestate(char *fn)
@@ -95,7 +100,9 @@ savestate(char *fn)
 	gzputc(f, islittleendian);
 	gzputi(SAVEGAMEVERSION);
 	gzputi(sizeof(dynent));
-	gzwrite(f, getclientmap(), _MAXDEFSTR);
+	@autoreleasepool {
+		gzwrite(f, getclientmap().UTF8String, _MAXDEFSTR);
+	}
 	gzputi(gamemode);
 	gzputi(ents.length());
 	loopv(ents) gzputc(f, ents[i].spawned);
@@ -123,6 +130,7 @@ savegame(char *name)
 	stop();
 	conoutf(@"wrote %s", fn);
 }
+COMMAND(savegame, ARG_1CSTR)
 
 void
 loadstate(char *fn)
@@ -148,8 +156,11 @@ loadstate(char *fn)
 	string mapname;
 	gzread(f, mapname, _MAXDEFSTR);
 	nextmode = gzgeti();
-	changemap(mapname); // continue below once map has been loaded and
-	                    // client & server have updated
+	@autoreleasepool {
+		changemap(
+		    @(mapname)); // continue below once map has been loaded and
+		                 // client & server have updated
+	}
 	return;
 out:
 	conoutf(@"aborting: savegame/demo from a different version of cube or "
@@ -163,6 +174,7 @@ loadgame(char *name)
 	sprintf_sd(fn)("savegames/%s.csgz", name);
 	loadstate(fn);
 }
+COMMAND(loadgame, ARG_1CSTR)
 
 void
 loadgameout()
@@ -247,7 +259,8 @@ record(char *name)
 	demorecording = true;
 	starttime = lastmillis;
 	ddamage = bdamage = 0;
-};
+}
+COMMAND(record, ARG_1CSTR)
 
 void
 demodamage(int damage, vec &o)
@@ -299,6 +312,7 @@ demo(char *name)
 	loadstate(fn);
 	demoloading = true;
 }
+COMMAND(demo, ARG_1CSTR)
 
 void
 stopreset()
@@ -488,11 +502,5 @@ stopn()
 	else
 		stop();
 	conoutf(@"demo stopped");
-};
-
-COMMAND(record, ARG_1STR);
-COMMAND(demo, ARG_1STR);
-COMMANDN(stop, stopn, ARG_NONE);
-
-COMMAND(savegame, ARG_1STR);
-COMMAND(loadgame, ARG_1STR);
+}
+COMMANDN(stop, stopn, ARG_NONE)

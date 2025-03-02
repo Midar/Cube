@@ -246,22 +246,21 @@ mapmodel(char *rad, char *h, char *zoff, char *snap, char *name)
 	    atoi(rad), atoi(h), atoi(zoff), atoi(snap), m->loadname};
 	m->mmi = mmi;
 	mapmodels.add(m);
-};
+}
+COMMAND(mapmodel, ARG_5STR)
 
 void
 mapmodelreset()
 {
 	mapmodels.setsize(0);
-};
+}
+COMMAND(mapmodelreset, ARG_NONE)
 
 mapmodelinfo *
 getmminfo(int i)
 {
 	return i < mapmodels.length() ? &mapmodels[i]->mmi : NULL;
-};
-
-COMMAND(mapmodel, ARG_5STR);
-COMMAND(mapmodelreset, ARG_NONE);
+}
 
 void
 rendermodel(char *mdl, int frame, int range, int tex, float rad, float x,

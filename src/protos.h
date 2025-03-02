@@ -6,14 +6,14 @@ extern int variable(char *name, int min, int cur, int max, int *storage,
 extern void setvar(char *name, int i);
 extern int getvar(char *name);
 extern bool identexists(char *name);
-extern bool addcommand(char *name, void (*fun)(), int narg);
+extern bool addcommand(OFString *name, void (*fun)(), int narg);
 extern int execute(char *p, bool down = true);
 extern void exec(char *cfgfile);
 extern bool execfile(char *cfgfile);
 extern void resetcomplete();
 extern void complete(char *s);
 extern void alias(char *name, char *action);
-extern char *getalias(char *name);
+extern OFString *getalias(OFString *name);
 extern void writecfg();
 
 // console
@@ -90,12 +90,12 @@ extern void writeclientinfo(FILE *f);
 extern void mousemove(int dx, int dy);
 extern void updateworld(int millis);
 extern void startmap(char *name);
-extern void changemap(char *name);
+extern void changemap(OFString *name);
 extern void initclient();
 extern void spawnplayer(dynent *d);
 extern void selfdamage(int damage, int actor, dynent *act);
 extern dynent *newdynent();
-extern char *getclientmap();
+extern OFString *getclientmap();
 extern const char *modestr(int n);
 extern void zapdynent(dynent *&d);
 extern dynent *getclient(int cn);
@@ -182,10 +182,10 @@ extern void particle_trail(int type, int fade, vec &from, vec &to);
 extern void render_particles(int time);
 
 // worldio
-extern void save_world(char *fname);
+extern void save_world(const char *fname);
 extern void load_world(char *mname);
 extern void writemap(char *mname, int msize, uchar *mdata);
-extern uchar *readmap(char *mname, int *msize);
+extern uchar *readmap(const char *mname, int *msize);
 extern void loadgamerest();
 extern void incomingdemodata(uchar *buf, int len, bool extras = false);
 extern void demoplaybackstep();

@@ -85,8 +85,8 @@ screenshot()
 	};
 }
 
-COMMAND(screenshot, ARG_NONE);
-COMMAND(quit, ARG_NONE);
+COMMAND(screenshot, ARG_NONE)
+COMMAND(quit, ARG_NONE)
 
 void
 keyrepeat(bool on)
@@ -215,8 +215,8 @@ int framesinmap = 0;
 
 	log("localconnect");
 	localconnect();
-	changemap(
-	    "metl3"); // if this map is changed, also change depthcorrect()
+	// if this map is changed, also change depthcorrect()
+	changemap(@"metl3");
 
 	log("mainloop");
 	int ignore = 5;

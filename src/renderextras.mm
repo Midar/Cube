@@ -213,9 +213,8 @@ loadsky(char *basename)
 			conoutf(@"could not load sky textures");
 	};
 	strcpy_s(lastsky, basename);
-};
-
-COMMAND(loadsky, ARG_1STR);
+}
+COMMAND(loadsky, ARG_1CSTR)
 
 float cursordepth = 0.9f;
 GLint viewport[4];
