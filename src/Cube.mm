@@ -2,8 +2,20 @@
 
 #include "cube.h"
 
-void
-cleanup(char *msg) // single program exit point;
+OF_APPLICATION_DELEGATE(Cube)
+
+@implementation Cube
+- (void)showMessage: (OFString *)msg
+{
+#ifdef _WIN32
+	MessageBoxW(NULL, msg.UTF16String, L"cube fatal error",
+	    MB_OK | MB_SYSTEMMODAL);
+#else
+	[OFStdOut writeString: msg];
+#endif
+}
+
+- (void)applicationWillTerminate: (OFNotification *)notification
 {
 	stop();
 	disconnect(true);
@@ -12,31 +24,24 @@ cleanup(char *msg) // single program exit point;
 	cleansound();
 	cleanupserver();
 	SDL_ShowCursor(1);
-	if (msg) {
-#ifdef _WIN32
-		MessageBox(
-		    NULL, msg, "cube fatal error", MB_OK | MB_SYSTEMMODAL);
-#else
-		printf(msg);
-#endif
-	};
 	SDL_Quit();
-	exit(1);
-};
+}
 
 void
 quit() // normal exit
 {
 	writeservercfg();
-	cleanup(NULL);
-};
+	[OFApplication.sharedApplication terminateWithStatus: 0];
+}
 
 void
 fatal(char *s, char *o) // failure exit
 {
 	sprintf_sd(msg)("%s%s (%s)\n", s, o, SDL_GetError());
-	cleanup(msg);
-};
+	OFApplication *app = OFApplication.sharedApplication;
+	[(Cube *)app.delegate showMessage: @(msg)];
+	[app terminateWithStatus: 1];
+}
 
 void *
 alloc(int s) // for some big chunks... most other allocs use the memory pool
@@ -45,7 +50,7 @@ alloc(int s) // for some big chunks... most other allocs use the memory pool
 	if (!b)
 		fatal("out of memory!");
 	return b;
-};
+}
 
 int scr_w = 640;
 int scr_h = 480;
@@ -78,7 +83,7 @@ screenshot()
 		};
 		SDL_FreeSurface(image);
 	};
-};
+}
 
 COMMAND(screenshot, ARG_NONE);
 COMMAND(quit, ARG_NONE);
@@ -88,7 +93,7 @@ keyrepeat(bool on)
 {
 	SDL_EnableKeyRepeat(
 	    on ? SDL_DEFAULT_REPEAT_DELAY : 0, SDL_DEFAULT_REPEAT_INTERVAL);
-};
+}
 
 VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
 VARP(minmillis, 0, 5, 1000);
@@ -96,13 +101,19 @@ VARP(minmillis, 0, 5, 1000);
 int islittleendian = 1;
 int framesinmap = 0;
 
-int
-main(int argc, char **argv)
+- (void)applicationDidFinishLaunching: (OFNotification *)notification
 {
 	bool dedicated = false;
 	int fs = SDL_FULLSCREEN, par = 0, uprate = 0, maxcl = 4;
 	char *sdesc = "", *ip = "", *master = NULL, *passwd = "";
 	islittleendian = *((char *)&islittleendian);
+	int argc, *argcPtr;
+	char **argv, ***argvPtr;
+
+	[OFApplication.sharedApplication getArgumentCount: &argcPtr
+					andArgumentValues: &argvPtr];
+	argc = *argcPtr;
+	argv = *argvPtr;
 
 	processInitQueue();
 
@@ -249,7 +260,7 @@ main(int argc, char **argv)
 			player1->yaw += 5;
 			gl_drawframe(scr_w, scr_h, fps);
 			player1->yaw -= 5;
-		};
+		}
 		gl_drawframe(scr_w, scr_h, fps);
 		SDL_Event event;
 		int lasttype = 0, lastbut = 0;
@@ -285,9 +296,9 @@ main(int argc, char **argv)
 				lasttype = event.type;
 				lastbut = event.button.button;
 				break;
-			};
-		};
-	};
+			}
+		}
+	}
 	quit();
-	return 1;
-};
+}
+@end

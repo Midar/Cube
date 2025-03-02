@@ -4,6 +4,9 @@
 
 #include "tools.h"
 
+@interface Cube: OFObject <OFApplicationDelegate>
+@end
+
 enum // block types, order matters!
 {
 	SOLID = 0, // entirely solid cube [only specifies wtex]
