@@ -24,7 +24,7 @@ extern char *getcurcommand();
 extern void writebinds(FILE *f);
 
 // init
-extern void enqueueInit(const char *name, void (^init)(void));
+extern void enqueueInit(void (^init)(void));
 extern void processInitQueue(void);
 
 // menus
