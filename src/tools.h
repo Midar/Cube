@@ -4,13 +4,13 @@
 #define _TOOLS_H
 
 #ifdef __GNUC__
-#define gamma __gamma
+# define gamma __gamma
 #endif
 
 #include <math.h>
 
 #ifdef __GNUC__
-#undef gamma
+# undef gamma
 #endif
 
 #include <assert.h>
@@ -20,13 +20,13 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef __GNUC__
-#include <new>
+# include <new>
 #else
-#include <new.h>
+# include <new.h>
 #endif
 
 #ifdef NULL
-#undef NULL
+# undef NULL
 #endif
 #define NULL 0
 
@@ -49,13 +49,13 @@ typedef unsigned int uint;
 #define loopl(m) loop(l, m)
 
 #ifdef WIN32
-#pragma warning(3 : 4189)
+# pragma warning(3 : 4189)
 // #pragma comment(linker,"/OPT:NOWIN98")
-#define PATHDIV '\\'
+# define PATHDIV '\\'
 #else
-#define __cdecl
-#define _vsnprintf vsnprintf
-#define PATHDIV '/'
+# define __cdecl
+# define _vsnprintf vsnprintf
+# define PATHDIV '/'
 #endif
 
 // easy safe strings
@@ -130,7 +130,7 @@ fast_f2nat(float a)
 	    return retval;
 };
 #else
-#define fast_f2nat(val) ((int)(val))
+# define fast_f2nat(val) ((int)(val))
 #endif
 
 extern char *path(char *s);

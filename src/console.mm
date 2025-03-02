@@ -140,8 +140,8 @@ COMMAND(saycommand, ARG_VARI);
 COMMAND(mapmsg, ARG_1STR);
 
 #ifndef _WIN32
-#include <SDL_syswm.h>
-#include <X11/Xlib.h>
+# include <SDL_syswm.h>
+# include <X11/Xlib.h>
 #endif
 
 void

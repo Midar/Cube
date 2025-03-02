@@ -15,3 +15,5 @@ ObjCPropertyAttributeOrder: [
     atomic, nonatomic,
     getter, setter
 ]
+IndentPPDirectives: AfterHash
+PPIndentWidth: 1

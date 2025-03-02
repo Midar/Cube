@@ -4,7 +4,7 @@
 
 #include "tools.h"
 
-@interface Cube: OFObject <OFApplicationDelegate>
+@interface Cube : OFObject <OFApplicationDelegate>
 @end
 
 enum // block types, order matters!
@@ -446,12 +446,12 @@ enum // function signatures for script functions, see command.cpp
 #define ATOI(s) strtol(s, NULL, 0) // supports hexadecimal numbers
 
 #ifdef WIN32
-#define WIN32_LEAN_AND_MEAN
-#include "windows.h"
-#define _WINDOWS
-#define ZLIB_DLL
+# define WIN32_LEAN_AND_MEAN
+# include "windows.h"
+# define _WINDOWS
+# define ZLIB_DLL
 #else
-#include <dlfcn.h>
+# include <dlfcn.h>
 #endif
 
 #include <time.h>

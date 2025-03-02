@@ -43,7 +43,7 @@ getint(uchar *&p)
 };
 
 void
-sendstring(char *t, uchar *&p)
+sendstring(const char *t, uchar *&p)
 {
 	while (*t)
 		putint(p, *t++);
@@ -184,7 +184,7 @@ main(int argc, char *argv[])
 
 	if (enet_initialize() < 0)
 		fatal("Unable to initialise network module");
-	initserver(true, uprate, sdesc, ip, master, passwd, maxcl);
+	initserver(true, uprate, sdesc, ip, master, @(passwd), maxcl);
 	return 0;
-};
+}
 #endif

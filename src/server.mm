@@ -46,7 +46,7 @@ restoreserverstate(
 int interm = 0, minremain = 0, mapend = 0;
 bool mapreload = false;
 
-char *serverpassword = "";
+static OFString *serverpassword = @"";
 
 bool isdedicated;
 ENetHost *serverhost = NULL;
@@ -308,7 +308,7 @@ send_welcome(int n)
 	putint(p, n);
 	putint(p, PROTOCOL_VERSION);
 	putint(p, smapname[0]);
-	sendstring(serverpassword, p);
+	sendstring(serverpassword.UTF8String, p);
 	putint(p, clients.length() > maxclients);
 	if (smapname[0]) {
 		putint(p, SV_MAPCHANGE);
@@ -509,8 +509,8 @@ localconnect()
 };
 
 void
-initserver(bool dedicated, int uprate, char *sdesc, char *ip, char *master,
-    char *passwd, int maxcl)
+initserver(bool dedicated, int uprate, const char *sdesc, const char *ip,
+    const char *master, OFString *passwd, int maxcl)
 {
 	serverpassword = passwd;
 	maxclients = maxcl;

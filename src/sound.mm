@@ -21,13 +21,13 @@ struct soundloc {
 } soundlocs[MAXCHAN];
 
 #ifdef USE_MIXER
-#include "SDL_mixer.h"
-#define MAXVOL MIX_MAX_VOLUME
+# include "SDL_mixer.h"
+# define MAXVOL MIX_MAX_VOLUME
 Mix_Music *mod = NULL;
 void *stream = NULL;
 #else
-#include "fmod.h"
-#define MAXVOL 255
+# include "fmod.h"
+# define MAXVOL 255
 FMUSIC_MODULE *mod = NULL;
 FSOUND_STREAM *stream = NULL;
 #endif

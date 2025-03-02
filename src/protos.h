@@ -214,8 +214,8 @@ extern void rendermodel(char *mdl, int frame, int range, int tex, float rad,
 extern mapmodelinfo *getmminfo(int i);
 
 // server
-extern void initserver(bool dedicated, int uprate, char *sdesc, char *ip,
-    char *master, char *passwd, int maxcl);
+extern void initserver(bool dedicated, int uprate, const char *sdesc,
+    const char *ip, const char *master, OFString *passwd, int maxcl);
 extern void cleanupserver();
 extern void localconnect();
 extern void localdisconnect();
@@ -223,14 +223,14 @@ extern void localclienttoserver(struct _ENetPacket *);
 extern void serverslice(int seconds, unsigned int timeout);
 extern void putint(uchar *&p, int n);
 extern int getint(uchar *&p);
-extern void sendstring(char *t, uchar *&p);
+extern void sendstring(const char *t, uchar *&p);
 extern void startintermission();
 extern void restoreserverstate(vector<entity> &ents);
 extern uchar *retrieveservers(uchar *buf, int buflen);
 extern char msgsizelookup(int msg);
 extern void serverms(int mode, int numplayers, int minremain, char *smapname,
     int seconds, bool isfull);
-extern void servermsinit(const char *master, char *sdesc, bool listen);
+extern void servermsinit(const char *master, const char *sdesc, bool listen);
 extern void sendmaps(int n, string mapname, int mapsize, uchar *mapdata);
 extern ENetPacket *recvmap(int n);
 
