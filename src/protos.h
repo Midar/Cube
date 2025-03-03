@@ -1,18 +1,18 @@
 // protos for ALL external functions in cube...
 
 // command
-extern int variable(char *name, int min, int cur, int max, int *storage,
+extern int variable(OFString *name, int min, int cur, int max, int *storage,
     void (*fun)(), bool persist);
-extern void setvar(char *name, int i);
-extern int getvar(char *name);
-extern bool identexists(char *name);
+extern void setvar(OFString *name, int i);
+extern int getvar(OFString *name);
+extern bool identexists(OFString *name);
 extern bool addcommand(OFString *name, void (*fun)(), int narg);
 extern int execute(char *p, bool down = true);
-extern void exec(char *cfgfile);
-extern bool execfile(char *cfgfile);
+extern void exec(OFString *cfgfile);
+extern bool execfile(OFString *cfgfile);
 extern void resetcomplete();
 extern void complete(char *s);
-extern void alias(char *name, char *action);
+extern void alias(OFString *name, OFString *action);
 extern OFString *getalias(OFString *name);
 extern void writecfg();
 
@@ -33,10 +33,10 @@ extern void menuset(int menu);
 extern void menumanual(int m, int n, char *text);
 extern void sortmenu(int start, int num);
 extern bool menukey(int code, bool isdown);
-extern void newmenu(char *name);
+extern void newmenu(OFString *name);
 
 // serverbrowser
-extern void addserver(char *servername);
+extern void addserver(OFString *servername);
 extern char *getservername(int n);
 extern void writeservercfg();
 
@@ -70,7 +70,7 @@ extern void setarraypointers();
 
 // client
 extern void localservertoclient(uchar *buf, int len);
-extern void connects(char *servername);
+extern void connects(OFString *servername);
 extern void disconnect(int onlyclean = 0, int async = 0);
 extern void toserver(char *text);
 extern void addmsg(int rel, int num, int type, ...);
@@ -106,7 +106,7 @@ extern void fixplayer1range();
 // clientextras
 extern void renderclients();
 extern void renderclient(
-    dynent *d, bool team, char *mdlname, bool hellpig, float scale);
+    dynent *d, bool team, OFString *mdlname, bool hellpig, float scale);
 void showscores(bool on);
 extern void renderscores();
 
@@ -121,7 +121,7 @@ extern void trigger(int tag, int type, bool savegame);
 extern void resettagareas();
 extern void settagareas();
 extern entity *newentity(
-    int x, int y, int z, char *what, int v1, int v2, int v3, int v4);
+    int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4);
 
 // worldlight
 extern void calclight();
@@ -182,7 +182,7 @@ extern void particle_trail(int type, int fade, vec &from, vec &to);
 extern void render_particles(int time);
 
 // worldio
-extern void save_world(const char *fname);
+extern void save_world(OFString *fname);
 extern void load_world(char *mname);
 extern void writemap(char *mname, int msize, uchar *mdata);
 extern uchar *readmap(const char *mname, int *msize);
@@ -208,7 +208,7 @@ extern void initsound();
 extern void cleansound();
 
 // rendermd2
-extern void rendermodel(char *mdl, int frame, int range, int tex, float rad,
+extern void rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
     float x, float y, float z, float yaw, float pitch, bool teammate,
     float scale, float speed, int snap = 0, int basetime = 0);
 extern mapmodelinfo *getmminfo(int i);

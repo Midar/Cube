@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#include <memory>
+
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
@@ -231,13 +233,13 @@ respawn()
 }
 
 int sleepwait = 0;
-string sleepcmd;
+static OFString *sleepcmd = nil;
 void
-sleepf(char *msec, char *cmd)
+sleepf(OFString *msec, OFString *cmd)
 {
-	sleepwait = atoi(msec) + lastmillis;
-	strcpy_s(sleepcmd, cmd);
-};
+	sleepwait = (int)msec.longLongValue + lastmillis;
+	sleepcmd = cmd;
+}
 COMMANDN(sleep, sleepf, ARG_2STR)
 
 void
@@ -247,8 +249,12 @@ updateworld(int millis) // main game update loop
 		curtime = millis - lastmillis;
 		if (sleepwait && lastmillis > sleepwait) {
 			sleepwait = 0;
-			execute(sleepcmd);
-		};
+			@autoreleasepool {
+				std::unique_ptr<char> cmd(
+				    strdup(sleepcmd.UTF8String));
+				execute(cmd.get());
+			}
+		}
 		physicsframe();
 		checkquad(curtime);
 		if (m_arena)
@@ -508,9 +514,9 @@ startmap(char *name) // called just after a map load
 	}
 	if (editmode)
 		toggleedit();
-	setvar("gamespeed", 100);
-	setvar("fog", 180);
-	setvar("fogcolour", 0x8099B3);
+	setvar(@"gamespeed", 100);
+	setvar(@"fog", 180);
+	setvar(@"fogcolour", 0x8099B3);
 	showscores(false);
 	intermission = false;
 	framesinmap = 0;

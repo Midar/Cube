@@ -9,12 +9,19 @@ bool editmode = false;
 // invariant: all code assumes that these are kept inside MINBORD distance of
 // the edge of the map
 
-block sel = {
-    variable("selx", 0, 0, 4096, &sel.x, NULL, false),
-    variable("sely", 0, 0, 4096, &sel.y, NULL, false),
-    variable("selxs", 0, 0, 4096, &sel.xs, NULL, false),
-    variable("selys", 0, 0, 4096, &sel.ys, NULL, false),
-};
+block sel;
+
+OF_CONSTRUCTOR()
+{
+	enqueueInit(^{
+		sel = {
+		    variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
+		    variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
+		    variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),
+		    variable(@"selys", 0, 0, 4096, &sel.ys, NULL, false),
+		};
+	});
+}
 
 int selh = 0;
 bool selset = false;
@@ -593,12 +600,15 @@ edittag(int tag)
 };
 
 void
-newent(char *what, char *a1, char *a2, char *a3, char *a4)
+newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 {
 	EDITSEL;
-	newentity(sel.x, sel.y, (int)player1->o.z, what, ATOI(a1), ATOI(a2),
-	    ATOI(a3), ATOI(a4));
-};
+	@autoreleasepool {
+		newentity(sel.x, sel.y, (int)player1->o.z, what,
+		    (int)a1.longLongValue, (int)a2.longLongValue,
+		    (int)a3.longLongValue, (int)a4.longLongValue);
+	}
+}
 
 COMMANDN(select, selectpos, ARG_4INT)
 COMMAND(edittag, ARG_1INT)

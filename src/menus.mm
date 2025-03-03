@@ -26,17 +26,21 @@ menuset(int menu)
 		resetmovement(player1);
 	if (vmenu == 1)
 		menus[1].menusel = 0;
-};
+}
 
 void
-showmenu(char *name)
+showmenu(OFString *name_)
 {
-	loopv(menus) if (i > 1 && strcmp(menus[i].name, name) == 0)
-	{
-		menuset(i);
-		return;
-	};
-};
+	@autoreleasepool {
+		const char *name = name_.UTF8String;
+		loopv(menus) if (i > 1 && strcmp(menus[i].name, name) == 0)
+		{
+			menuset(i);
+			return;
+		}
+	}
+}
+COMMAND(showmenu, ARG_1STR)
 
 int
 menucompare(mitem *a, mitem *b)
@@ -103,12 +107,15 @@ rendermenu()
 };
 
 void
-newmenu(char *name)
+newmenu(OFString *name)
 {
-	gmenu &menu = menus.add();
-	menu.name = newstring(name);
-	menu.menusel = 0;
-};
+	@autoreleasepool {
+		gmenu &menu = menus.add();
+		menu.name = newstring(name.UTF8String);
+		menu.menusel = 0;
+	}
+}
+COMMAND(newmenu, ARG_1STR)
 
 void
 menumanual(int m, int n, char *text)
@@ -121,17 +128,17 @@ menumanual(int m, int n, char *text)
 }
 
 void
-menuitem(char *text, char *action)
+menuitem(OFString *text, OFString *action)
 {
-	gmenu &menu = menus.last();
-	mitem &mi = menu.items.add();
-	mi.text = newstring(text);
-	mi.action = action[0] ? newstring(action) : mi.text;
+	@autoreleasepool {
+		gmenu &menu = menus.last();
+		mitem &mi = menu.items.add();
+		mi.text = newstring(text.UTF8String);
+		mi.action =
+		    action.length > 0 ? newstring(action.UTF8String) : mi.text;
+	}
 }
 COMMAND(menuitem, ARG_2STR)
-
-COMMAND(showmenu, ARG_1CSTR)
-COMMAND(newmenu, ARG_1CSTR)
 
 bool
 menukey(int code, bool isdown)
@@ -158,12 +165,15 @@ menukey(int code, bool isdown)
 	} else {
 		if (code == SDLK_RETURN || code == -2) {
 			char *action = menus[vmenu].items[menusel].action;
-			if (vmenu == 1)
-				connects(getservername(menusel));
+			if (vmenu == 1) {
+				@autoreleasepool {
+					connects(@(getservername(menusel)));
+				}
+			}
 			menustack.add(vmenu);
 			menuset(-1);
 			execute(action, true);
-		};
-	};
+		}
+	}
 	return true;
 };

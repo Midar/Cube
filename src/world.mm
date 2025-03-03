@@ -2,7 +2,9 @@
 
 #include "cube.h"
 
-extern char *entnames[]; // lookup from map entities above to strings
+#include <memory>
+
+extern OFString *entnames[]; // lookup from map entities above to strings
 
 sqr *world = NULL;
 int sfactor, ssize, cubicsize, mipsize;
@@ -58,12 +60,22 @@ trigger(int tag, int type, bool savegame)
 {
 	if (!tag)
 		return;
+
 	settag(tag, type);
+
 	if (!savegame && type != 3)
 		playsound(S_RUMBLE);
-	sprintf_sd(aliasname)("level_trigger_%d", tag);
-	if (identexists(aliasname))
-		execute(aliasname);
+
+	@autoreleasepool {
+		OFString *aliasname =
+		    [OFString stringWithFormat:@"level_trigger_%d", tag];
+
+		if (identexists(aliasname)) {
+			std::unique_ptr<char> cmd(strdup(aliasname.UTF8String));
+			execute(cmd.get());
+		}
+	}
+
 	if (type == 2)
 		endsp(false);
 }
@@ -80,7 +92,7 @@ remip(block &b, int level)
 {
 	if (level >= SMALLEST_FACTOR)
 		return;
-	int lighterr = getvar("lighterror") * 3;
+	int lighterr = getvar(@"lighterror") * 3;
 	sqr *w = wmip[level];
 	sqr *v = wmip[level + 1];
 	int ws = ssize >> level;
@@ -296,23 +308,27 @@ delent()
 		return;
 	};
 	int t = ents[e].type;
-	conoutf(@"%s entity deleted", entnames[t]);
+	@autoreleasepool {
+		conoutf(@"%s entity deleted", entnames[t].UTF8String);
+	}
 	ents[e].type = NOTUSED;
 	addmsg(1, 10, SV_EDITENT, e, NOTUSED, 0, 0, 0, 0, 0, 0, 0);
 	if (t == LIGHT)
 		calclight();
-};
+}
 
 int
-findtype(char *what)
+findtype(OFString *what)
 {
-	loopi(MAXENTTYPES) if (strcmp(what, entnames[i]) == 0) return i;
-	conoutf(@"unknown entity type \"%s\"", what);
-	return NOTUSED;
+	@autoreleasepool {
+		loopi(MAXENTTYPES) if ([what isEqual:entnames[i]]) return i;
+		conoutf(@"unknown entity type \"%s\"", what.UTF8String);
+		return NOTUSED;
+	}
 }
 
 entity *
-newentity(int x, int y, int z, char *what, int v1, int v2, int v3, int v4)
+newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 {
 	int type = findtype(what);
 	persistent_entity e = {(short)x, (short)y, (short)z, (short)v1,
@@ -346,7 +362,7 @@ newentity(int x, int y, int z, char *what, int v1, int v2, int v3, int v4)
 };
 
 void
-clearents(char *name)
+clearents(OFString *name)
 {
 	int type = findtype(name);
 	if (noteditmode() || multiplayer())
@@ -360,7 +376,7 @@ clearents(char *name)
 	if (type == LIGHT)
 		calclight();
 }
-COMMAND(clearents, ARG_1CSTR)
+COMMAND(clearents, ARG_1STR)
 
 void
 scalecomp(uchar &c, int intens)

@@ -26,26 +26,26 @@ struct monstertype // see docs for how these values modify behaviour
 	short gun, speed, health, freq, lag, rate, pain, loyalty, mscale,
 	    bscale;
 	short painsound, diesound;
-	char *name, *mdlname;
+	OFConstantString *name, *mdlname;
 }
 
 monstertypes[NUMMONSTERTYPES] = {
     {GUN_FIREBALL, 15, 100, 3, 0, 100, 800, 1, 10, 10, S_PAINO, S_DIE1,
-        "an ogre", "monster/ogro"},
-    {GUN_CG, 18, 70, 2, 70, 10, 400, 2, 8, 9, S_PAINR, S_DEATHR, "a rhino",
-        "monster/rhino"},
+        @"an ogre", @"monster/ogro"},
+    {GUN_CG, 18, 70, 2, 70, 10, 400, 2, 8, 9, S_PAINR, S_DEATHR, @"a rhino",
+        @"monster/rhino"},
     {GUN_SG, 14, 120, 1, 100, 300, 400, 4, 14, 14, S_PAINE, S_DEATHE,
-        "ratamahatta", "monster/rat"},
+        @"ratamahatta", @"monster/rat"},
     {GUN_RIFLE, 15, 200, 1, 80, 300, 300, 4, 18, 18, S_PAINS, S_DEATHS,
-        "a slith", "monster/slith"},
-    {GUN_RL, 13, 500, 1, 0, 100, 200, 6, 24, 24, S_PAINB, S_DEATHB, "bauul",
-        "monster/bauul"},
+        @"a slith", @"monster/slith"},
+    {GUN_RL, 13, 500, 1, 0, 100, 200, 6, 24, 24, S_PAINB, S_DEATHB, @"bauul",
+        @"monster/bauul"},
     {GUN_BITE, 22, 50, 3, 0, 100, 400, 1, 12, 15, S_PAINP, S_PIGGR2,
-        "a hellpig", "monster/hellpig"},
+        @"a hellpig", @"monster/hellpig"},
     {GUN_ICEBALL, 12, 250, 1, 0, 10, 400, 6, 18, 18, S_PAINH, S_DEATHH,
-        "a knight", "monster/knight"},
+        @"a knight", @"monster/knight"},
     {GUN_SLIMEBALL, 15, 100, 1, 0, 200, 400, 2, 13, 10, S_PAIND, S_DEATHD,
-        "a goblin", "monster/goblin"},
+        @"a goblin", @"monster/goblin"},
 };
 
 dynent *
@@ -54,7 +54,7 @@ basicmonster(int type, int yaw, int state, int trigger, int move)
 	if (type >= NUMMONSTERTYPES) {
 		conoutf(@"warning: unknown monster in spawn: %d", type);
 		type = 0;
-	};
+	}
 	dynent *m = newdynent();
 	monstertype *t = &monstertypes[m->mtype = type];
 	m->eyeheight = 2.0f;
@@ -78,7 +78,9 @@ basicmonster(int type, int yaw, int state, int trigger, int move)
 	m->roll = 0;
 	m->state = CS_ALIVE;
 	m->anger = 0;
-	strcpy_s(m->name, t->name);
+	@autoreleasepool {
+		strcpy_s(m->name, t->name.UTF8String);
+	}
 	monsters.add(m);
 	return m;
 };
@@ -406,4 +408,4 @@ monsterrender()
 	loopv(monsters) renderclient(monsters[i], false,
 	    monstertypes[monsters[i]->mtype].mdlname, monsters[i]->mtype == 5,
 	    monstertypes[monsters[i]->mtype].mscale / 10.0f);
-};
+}

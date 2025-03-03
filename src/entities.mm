@@ -4,23 +4,23 @@
 
 vector<entity> ents;
 
-char *entmdlnames[] = {
-    "shells",
-    "bullets",
-    "rockets",
-    "rrounds",
-    "health",
-    "boost",
-    "g_armour",
-    "y_armour",
-    "quad",
-    "teleporter",
+static OFString *entmdlnames[] = {
+    @"shells",
+    @"bullets",
+    @"rockets",
+    @"rrounds",
+    @"health",
+    @"boost",
+    @"g_armour",
+    @"y_armour",
+    @"quad",
+    @"teleporter",
 };
 
 int triggertime = 0;
 
 void
-renderent(entity &e, char *mdlname, float z, float yaw, int frame = 0,
+renderent(entity &e, OFString *mdlname, float z, float yaw, int frame = 0,
     int numf = 1, int basetime = 0, float speed = 10.0f)
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f, e.x, z + S(e.x, e.y)->floor,
@@ -39,11 +39,15 @@ renderentities()
 			mapmodelinfo *mmi = getmminfo(e.attr2);
 			if (!mmi)
 				continue;
-			rendermodel(mmi->name, 0, 1, e.attr4, (float)mmi->rad,
-			    e.x,
-			    (float)S(e.x, e.y)->floor + mmi->zoff + e.attr3,
-			    e.y, (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
-			    false, 1.0f, 10.0f, mmi->snap);
+			@autoreleasepool {
+				rendermodel(@(mmi->name), 0, 1, e.attr4,
+				    (float)mmi->rad, e.x,
+				    (float)S(e.x, e.y)->floor + mmi->zoff +
+				        e.attr3,
+				    e.y,
+				    (float)((e.attr1 + 7) - (e.attr1 + 7) % 15),
+				    0, false, 1.0f, 10.0f, mmi->snap);
+			}
 		} else {
 			if (OUTBORD(e.x, e.y))
 				continue;
@@ -67,7 +71,7 @@ renderentities()
 				case 0:
 					if (!e.spawned)
 						continue;
-					renderent(e, "carrot",
+					renderent(e, @"carrot",
 					    (float)(1 + sin(lastmillis / 100.0 +
 					                    e.x + e.y) /
 					                    20),
@@ -76,7 +80,7 @@ renderentities()
 					break;
 
 				case 4:
-					renderent(e, "switch2", 3,
+					renderent(e, @"switch2", 3,
 					    (float)e.attr3 * 90,
 					    (!e.spawned && !triggertime) ? 1
 					                                 : 0,
@@ -84,7 +88,7 @@ renderentities()
 					    triggertime, 1050.0f);
 					break;
 				case 5:
-					renderent(e, "switch1", -0.15f,
+					renderent(e, @"switch1", -0.15f,
 					    (float)e.attr3 * 90,
 					    (!e.spawned && !triggertime) ? 30
 					                                 : 0,

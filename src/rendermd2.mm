@@ -216,34 +216,37 @@ delayedload(md2 *m)
 		int xs, ys;
 		installtex(FIRSTMDL + m->mdlnum, path(name2), xs, ys);
 		m->loaded = true;
-	};
-};
+	}
+}
 
 int modelnum = 0;
 
 md2 *
-loadmodel(char *name)
+loadmodel(OFString *name)
 {
-	if (!mdllookup)
-		mdllookup = new hashtable<md2 *>;
-	md2 **mm = mdllookup->access(name);
-	if (mm)
-		return *mm;
-	md2 *m = new md2();
-	m->mdlnum = modelnum++;
-	mapmodelinfo mmi = {2, 2, 0, 0, ""};
-	m->mmi = mmi;
-	m->loadname = newstring(name);
-	mdllookup->access(m->loadname, &m);
-	return m;
-};
+	@autoreleasepool {
+		if (!mdllookup)
+			mdllookup = new hashtable<md2 *>;
+		md2 **mm = mdllookup->access(name.UTF8String);
+		if (mm)
+			return *mm;
+		md2 *m = new md2();
+		m->mdlnum = modelnum++;
+		mapmodelinfo mmi = {2, 2, 0, 0, ""};
+		m->mmi = mmi;
+		m->loadname = newstring(name.UTF8String);
+		mdllookup->access(m->loadname, &m);
+		return m;
+	}
+}
 
 void
-mapmodel(char *rad, char *h, char *zoff, char *snap, char *name)
+mapmodel(
+    OFString *rad, OFString *h, OFString *zoff, OFString *snap, OFString *name)
 {
 	md2 *m = loadmodel(name);
-	mapmodelinfo mmi = {
-	    atoi(rad), atoi(h), atoi(zoff), atoi(snap), m->loadname};
+	mapmodelinfo mmi = {(int)rad.longLongValue, (int)h.longLongValue,
+	    (int)zoff.longLongValue, (int)snap.longLongValue, m->loadname};
 	m->mmi = mmi;
 	mapmodels.add(m);
 }
@@ -263,7 +266,7 @@ getmminfo(int i)
 }
 
 void
-rendermodel(char *mdl, int frame, int range, int tex, float rad, float x,
+rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
     float y, float z, float yaw, float pitch, bool teammate, float scale,
     float speed, int snap, int basetime)
 {

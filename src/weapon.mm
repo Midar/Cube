@@ -60,10 +60,13 @@ reloadtime(int gun)
 };
 
 void
-weapon(char *a1, char *a2, char *a3)
+weapon(OFString *a1, OFString *a2, OFString *a3)
 {
-	selectgun(a1[0] ? atoi(a1) : -1, a2[0] ? atoi(a2) : -1,
-	    a3[0] ? atoi(a3) : -1);
+	@autoreleasepool {
+		selectgun(a1.UTF8String[0] ? atoi(a1.UTF8String) : -1,
+		    a2.UTF8String[0] ? atoi(a2.UTF8String) : -1,
+		    a3.UTF8String[0] ? atoi(a3.UTF8String) : -1);
+	}
 }
 COMMAND(weapon, ARG_3STR)
 

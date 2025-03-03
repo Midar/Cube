@@ -119,18 +119,20 @@ savestate(char *fn)
 }
 
 void
-savegame(char *name)
+savegame(OFString *name)
 {
-	if (!m_classicsp) {
-		conoutf(@"can only save classic sp games");
-		return;
+	@autoreleasepool {
+		if (!m_classicsp) {
+			conoutf(@"can only save classic sp games");
+			return;
+		}
+		sprintf_sd(fn)("savegames/%s.csgz", name.UTF8String);
+		savestate(fn);
+		stop();
+		conoutf(@"wrote %s", fn);
 	}
-	sprintf_sd(fn)("savegames/%s.csgz", name);
-	savestate(fn);
-	stop();
-	conoutf(@"wrote %s", fn);
 }
-COMMAND(savegame, ARG_1CSTR)
+COMMAND(savegame, ARG_1STR)
 
 void
 loadstate(char *fn)
@@ -157,9 +159,9 @@ loadstate(char *fn)
 	gzread(f, mapname, _MAXDEFSTR);
 	nextmode = gzgeti();
 	@autoreleasepool {
-		changemap(
-		    @(mapname)); // continue below once map has been loaded and
-		                 // client & server have updated
+		// continue below once map has been loaded and client & server
+		// have updated
+		changemap(@(mapname));
 	}
 	return;
 out:
@@ -169,12 +171,14 @@ out:
 }
 
 void
-loadgame(char *name)
+loadgame(OFString *name)
 {
-	sprintf_sd(fn)("savegames/%s.csgz", name);
-	loadstate(fn);
+	@autoreleasepool {
+		sprintf_sd(fn)("savegames/%s.csgz", name.UTF8String);
+		loadstate(fn);
+	}
 }
-COMMAND(loadgame, ARG_1CSTR)
+COMMAND(loadgame, ARG_1STR)
 
 void
 loadgameout()
@@ -243,24 +247,26 @@ int ddamage, bdamage;
 vec dorig;
 
 void
-record(char *name)
+record(OFString *name)
 {
-	if (m_sp) {
-		conoutf(@"cannot record singleplayer games");
-		return;
-	};
-	int cn = getclientnum();
-	if (cn < 0)
-		return;
-	sprintf_sd(fn)("demos/%s.cdgz", name);
-	savestate(fn);
-	gzputi(cn);
-	conoutf(@"started recording demo to %s", fn);
-	demorecording = true;
-	starttime = lastmillis;
-	ddamage = bdamage = 0;
+	@autoreleasepool {
+		if (m_sp) {
+			conoutf(@"cannot record singleplayer games");
+			return;
+		}
+		int cn = getclientnum();
+		if (cn < 0)
+			return;
+		sprintf_sd(fn)("demos/%s.cdgz", name.UTF8String);
+		savestate(fn);
+		gzputi(cn);
+		conoutf(@"started recording demo to %s", fn);
+		demorecording = true;
+		starttime = lastmillis;
+		ddamage = bdamage = 0;
+	}
 }
-COMMAND(record, ARG_1CSTR)
+COMMAND(record, ARG_1STR)
 
 void
 demodamage(int damage, vec &o)
@@ -306,13 +312,15 @@ incomingdemodata(uchar *buf, int len, bool extras)
 }
 
 void
-demo(char *name)
+demo(OFString *name)
 {
-	sprintf_sd(fn)("demos/%s.cdgz", name);
-	loadstate(fn);
-	demoloading = true;
+	@autoreleasepool {
+		sprintf_sd(fn)("demos/%s.cdgz", name.UTF8String);
+		loadstate(fn);
+		demoloading = true;
+	}
 }
-COMMAND(demo, ARG_1CSTR)
+COMMAND(demo, ARG_1STR)
 
 void
 stopreset()

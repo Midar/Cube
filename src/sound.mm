@@ -74,45 +74,47 @@ initsound()
 	if (!FSOUND_Init(SOUNDFREQ, MAXCHAN, FSOUND_INIT_GLOBALFOCUS)) {
 		conoutf(@"sound init failed (FMOD): %d", FSOUND_GetError());
 		nosound = true;
-	};
+	}
 #endif
-};
+}
 
 void
-music(char *name)
+music(OFString *name)
 {
 	if (nosound)
 		return;
 	stopsound();
 	if (soundvol && musicvol) {
-		string sn;
-		strcpy_s(sn, "packages/");
-		strcat_s(sn, name);
+		@autoreleasepool {
+			string sn;
+			strcpy_s(sn, "packages/");
+			strcat_s(sn, name.UTF8String);
 #ifdef USE_MIXER
-		if (mod = Mix_LoadMUS(path(sn))) {
-			Mix_PlayMusic(mod, -1);
-			Mix_VolumeMusic((musicvol * MAXVOL) / 255);
-		};
+			if (mod = Mix_LoadMUS(path(sn))) {
+				Mix_PlayMusic(mod, -1);
+				Mix_VolumeMusic((musicvol * MAXVOL) / 255);
+			}
 #else
-		if (mod = FMUSIC_LoadSong(path(sn))) {
-			FMUSIC_PlaySong(mod);
-			FMUSIC_SetMasterVolume(mod, musicvol);
-		} else if (stream = FSOUND_Stream_Open(
-		               path(sn), FSOUND_LOOP_NORMAL, 0, 0)) {
-			int chan = FSOUND_Stream_Play(FSOUND_FREE, stream);
-			if (chan >= 0) {
-				FSOUND_SetVolume(
-				    chan, (musicvol * MAXVOL) / 255);
-				FSOUND_SetPaused(chan, false);
-			};
-		} else {
-			conoutf(@"could not play music: %s", sn);
-		};
+			if (mod = FMUSIC_LoadSong(path(sn))) {
+				FMUSIC_PlaySong(mod);
+				FMUSIC_SetMasterVolume(mod, musicvol);
+			} else if (stream = FSOUND_Stream_Open(
+			               path(sn), FSOUND_LOOP_NORMAL, 0, 0)) {
+				int chan =
+				    FSOUND_Stream_Play(FSOUND_FREE, stream);
+				if (chan >= 0) {
+					FSOUND_SetVolume(
+					    chan, (musicvol * MAXVOL) / 255);
+					FSOUND_SetPaused(chan, false);
+				}
+			} else {
+				conoutf(@"could not play music: %s", sn);
+			}
 #endif
-	};
+		}
+	}
 }
-
-COMMAND(music, ARG_1CSTR)
+COMMAND(music, ARG_1STR)
 
 #ifdef USE_MIXER
 vector<Mix_Chunk *> samples;
@@ -129,8 +131,7 @@ registersound(char *name)
 	snames.add(newstring(name));
 	samples.add(NULL);
 	return samples.length() - 1;
-};
-
+}
 COMMAND(registersound, ARG_1EST)
 
 void
@@ -161,10 +162,9 @@ updatechanvol(int chan, vec *loc)
 			            player1->yaw *
 			                (PI / 180.0f); // relative angle of
 			                               // sound along X-Y axis
-			pan = int(
-			    255.9f *
-			    (0.5 * sin(yaw) +
-			        0.5f)); // range is from 0 (left) to 255 (right)
+			pan = int(255.9f * (0.5 * sin(yaw) +
+			                       0.5f)); // range is from 0 (left)
+			                               // to 255 (right)
 		};
 	};
 	vol = (vol * MAXVOL) / 255;
@@ -225,8 +225,8 @@ playsound(int n, vec *loc)
 		soundsatonce = 1;
 	lastsoundmillis = lastmillis;
 	if (soundsatonce > 5)
-		return; // avoid bursts of sounds with heavy packetloss and in
-		        // sp
+		return; // avoid bursts of sounds with heavy packetloss
+		        // and in sp
 	if (n < 0 || n >= samples.length()) {
 		conoutf(@"unregistered sound: %d", n);
 		return;

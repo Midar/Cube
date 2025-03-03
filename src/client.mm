@@ -57,21 +57,24 @@ throttle()
 }
 
 void
-newname(char *name)
+newname(OFString *name)
 {
 	c2sinit = false;
-	strn0cpy(player1->name, name, 16);
+	@autoreleasepool {
+		strn0cpy(player1->name, name.UTF8String, 16);
+	}
 }
+COMMANDN(name, newname, ARG_1STR)
 
 void
-newteam(char *name)
+newteam(OFString *name)
 {
 	c2sinit = false;
-	strn0cpy(player1->team, name, 5);
+	@autoreleasepool {
+		strn0cpy(player1->team, name.UTF8String, 5);
+	}
 }
-
-COMMANDN(team, newteam, ARG_1CSTR)
-COMMANDN(name, newname, ARG_1CSTR)
+COMMANDN(team, newteam, ARG_1STR)
 
 void
 writeclientinfo(FILE *f)
@@ -80,28 +83,31 @@ writeclientinfo(FILE *f)
 }
 
 void
-connects(char *servername)
+connects(OFString *servername)
 {
-	disconnect(1); // reset state
-	addserver(servername);
+	@autoreleasepool {
+		disconnect(1); // reset state
+		addserver(servername);
 
-	conoutf(@"attempting to connect to %s", servername);
-	ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
-	if (enet_address_set_host(&address, servername) < 0) {
-		conoutf(@"could not resolve server %s", servername);
-		return;
-	};
+		conoutf(@"attempting to connect to %s", servername.UTF8String);
+		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
+		if (enet_address_set_host(&address, servername.UTF8String) <
+		    0) {
+			conoutf(@"could not resolve server %s", servername);
+			return;
+		}
 
-	clienthost = enet_host_create(NULL, 1, rate, rate);
+		clienthost = enet_host_create(NULL, 1, rate, rate);
 
-	if (clienthost) {
-		enet_host_connect(clienthost, &address, 1);
-		enet_host_flush(clienthost);
-		connecting = lastmillis;
-		connattempts = 0;
-	} else {
-		conoutf(@"could not connect to server");
-		disconnect();
+		if (clienthost) {
+			enet_host_connect(clienthost, &address, 1);
+			enet_host_flush(clienthost);
+			connecting = lastmillis;
+			connattempts = 0;
+		} else {
+			conoutf(@"could not connect to server");
+			disconnect();
+		}
 	}
 }
 
@@ -173,7 +179,7 @@ echo(char *text)
 
 COMMAND(echo, ARG_VARI)
 COMMANDN(say, toserver, ARG_VARI)
-COMMANDN(connect, connects, ARG_1CSTR)
+COMMANDN(connect, connects, ARG_1STR)
 COMMANDN(disconnect, trydisconnect, ARG_NONE)
 
 // collect c2s messages conveniently
@@ -218,11 +224,13 @@ bool senditemstoserver =
 
 string clientpassword;
 void
-password(char *p)
+password(OFString *p)
 {
-	strcpy_s(clientpassword, p);
+	@autoreleasepool {
+		strcpy_s(clientpassword, p.UTF8String);
+	}
 }
-COMMAND(password, ARG_1CSTR)
+COMMAND(password, ARG_1STR)
 
 bool
 netmapstart()
@@ -237,8 +245,8 @@ initclientnet()
 	ctext[0] = 0;
 	toservermap = @"";
 	clientpassword[0] = 0;
-	newname("unnamed");
-	newteam("red");
+	newname(@"unnamed");
+	newteam(@"red");
 }
 
 void

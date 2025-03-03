@@ -1,7 +1,9 @@
 // console.cpp: the console buffer, its display, and command line control
 
 #include "cube.h"
+
 #include <ctype.h>
+#include <memory>
 
 struct cline {
 	char *cref;
@@ -94,25 +96,30 @@ struct keym {
 int numkm = 0;
 
 void
-keymap(char *code, char *key, char *action)
+keymap(OFString *code, OFString *key, OFString *action)
 {
-	keyms[numkm].code = atoi(code);
-	keyms[numkm].name = newstring(key);
-	keyms[numkm++].action = newstringbuf(action);
+	@autoreleasepool {
+		keyms[numkm].code = (int)code.longLongValue;
+		keyms[numkm].name = newstring(key.UTF8String);
+		keyms[numkm++].action = newstringbuf(action.UTF8String);
+	}
 }
 COMMAND(keymap, ARG_3STR)
 
 void
-bindkey(char *key, char *action)
+bindkey(OFString *key_, OFString *action)
 {
-	for (char *x = key; *x; x++)
-		*x = toupper(*x);
-	loopi(numkm) if (strcmp(keyms[i].name, key) == 0)
-	{
-		strcpy_s(keyms[i].action, action);
-		return;
-	};
-	conoutf(@"unknown key \"%s\"", key);
+	@autoreleasepool {
+		std::unique_ptr<char> key(strdup(key_.UTF8String));
+		for (char *x = key.get(); *x; x++)
+			*x = toupper(*x);
+		loopi(numkm) if (strcmp(keyms[i].name, key.get()) == 0)
+		{
+			strcpy_s(keyms[i].action, action.UTF8String);
+			return;
+		}
+		conoutf(@"unknown key \"%s\"", key.get());
+	}
 }
 COMMANDN(bind, bindkey, ARG_2STR)
 
@@ -125,16 +132,17 @@ saycommand(char *init) // turns input to the command line on or off
 	if (!init)
 		init = "";
 	strcpy_s(commandbuf, init);
-};
+}
+COMMAND(saycommand, ARG_VARI)
 
 void
-mapmsg(char *s)
+mapmsg(OFString *s)
 {
-	strn0cpy(hdr.maptitle, s, 128);
+	@autoreleasepool {
+		strn0cpy(hdr.maptitle, s.UTF8String, 128);
+	}
 }
-
-COMMAND(saycommand, ARG_VARI)
-COMMAND(mapmsg, ARG_1CSTR)
+COMMAND(mapmsg, ARG_1STR)
 
 #ifndef _WIN32
 # include <SDL_syswm.h>

@@ -147,30 +147,30 @@ renderspheres(int time)
 };
 
 string closeent;
-char *entnames[] = {
-    "none?",
-    "light",
-    "playerstart",
-    "shells",
-    "bullets",
-    "rockets",
-    "riflerounds",
-    "health",
-    "healthboost",
-    "greenarmour",
-    "yellowarmour",
-    "quaddamage",
-    "teleport",
-    "teledest",
-    "mapmodel",
-    "monster",
-    "trigger",
-    "jumppad",
-    "?",
-    "?",
-    "?",
-    "?",
-    "?",
+OFString *entnames[] = {
+    @"none?",
+    @"light",
+    @"playerstart",
+    @"shells",
+    @"bullets",
+    @"rockets",
+    @"riflerounds",
+    @"health",
+    @"healthboost",
+    @"greenarmour",
+    @"yellowarmour",
+    @"quaddamage",
+    @"teleport",
+    @"teledest",
+    @"mapmodel",
+    @"monster",
+    @"trigger",
+    @"jumppad",
+    @"?",
+    @"?",
+    @"?",
+    @"?",
+    @"?",
 };
 
 void
@@ -190,31 +190,38 @@ renderents() // show sparkly thingies for map entities in edit mode
 	int e = closestent();
 	if (e >= 0) {
 		entity &c = ents[e];
-		sprintf_s(closeent)("closest entity = %s (%d, %d, %d, %d), "
-		                    "selection = (%d, %d)",
-		    entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
-		    getvar("selxs"), getvar("selys"));
-	};
-};
+		@autoreleasepool {
+			sprintf_s(closeent)(
+			    "closest entity = %s (%d, %d, %d, %d), "
+			    "selection = (%d, %d)",
+			    entnames[c.type].UTF8String, c.attr1, c.attr2,
+			    c.attr3, c.attr4, getvar(@"selxs"),
+			    getvar(@"selys"));
+		}
+	}
+}
 
 void
-loadsky(char *basename)
+loadsky(OFString *basename)
 {
-	static string lastsky = "";
-	if (strcmp(lastsky, basename) == 0)
-		return;
-	char *side[] = {"ft", "bk", "lf", "rt", "dn", "up"};
-	int texnum = 14;
-	loopi(6)
-	{
-		sprintf_sd(name)("packages/%s_%s.jpg", basename, side[i]);
-		int xs, ys;
-		if (!installtex(texnum + i, path(name), xs, ys, true))
-			conoutf(@"could not load sky textures");
-	};
-	strcpy_s(lastsky, basename);
+	@autoreleasepool {
+		static OFString *lastsky = @"";
+		if ([lastsky isEqual:basename])
+			return;
+		char *side[] = {"ft", "bk", "lf", "rt", "dn", "up"};
+		int texnum = 14;
+		loopi(6)
+		{
+			sprintf_sd(name)(
+			    "packages/%s_%s.jpg", basename.UTF8String, side[i]);
+			int xs, ys;
+			if (!installtex(texnum + i, path(name), xs, ys, true))
+				conoutf(@"could not load sky textures");
+		}
+		lastsky = basename;
+	}
 }
-COMMAND(loadsky, ARG_1CSTR)
+COMMAND(loadsky, ARG_1STR)
 
 float cursordepth = 0.9f;
 GLint viewport[4];

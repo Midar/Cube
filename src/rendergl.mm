@@ -150,15 +150,17 @@ texturereset()
 COMMAND(texturereset, ARG_NONE)
 
 void
-texture(char *aframe, char *name)
+texture(OFString *aframe, OFString *name)
 {
-	int num = curtexnum++, frame = atoi(aframe);
-	if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
-		return;
-	mapping[num][frame] = 1;
-	char *n = mapname[num][frame];
-	strcpy_s(n, name);
-	path(n);
+	@autoreleasepool {
+		int num = curtexnum++, frame = (int)aframe.longLongValue;
+		if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
+			return;
+		mapping[num][frame] = 1;
+		char *n = mapname[num][frame];
+		strcpy_s(n, name.UTF8String);
+		path(n);
+	}
 }
 COMMAND(texture, ARG_2STR)
 
@@ -302,8 +304,8 @@ VAR(fogcolour, 0, 0x8099B3, 0xFFFFFF);
 
 VARP(hudgun, 0, 1, 1);
 
-char *hudgunnames[] = {"hudguns/fist", "hudguns/shotg", "hudguns/chaing",
-    "hudguns/rocket", "hudguns/rifle"};
+OFString *hudgunnames[] = {@"hudguns/fist", @"hudguns/shotg", @"hudguns/chaing",
+    @"hudguns/rocket", @"hudguns/rifle"};
 
 void
 drawhudmodel(int start, int end, float speed, int base)
@@ -311,7 +313,7 @@ drawhudmodel(int start, int end, float speed, int base)
 	rendermodel(hudgunnames[player1->gunselect], start, end, 0, 1.0f,
 	    player1->o.x, player1->o.z, player1->o.y, player1->yaw + 90,
 	    player1->pitch, false, 1.0f, speed, 0, base);
-};
+}
 
 void
 drawhudgun(float fovy, float aspect, int farplane)

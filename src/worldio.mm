@@ -7,7 +7,7 @@ backup(char *name, char *backupname)
 {
 	remove(backupname);
 	rename(name, backupname);
-};
+}
 
 string cgzname, bakname, pcfname, mcfname;
 
@@ -43,7 +43,7 @@ inline bool
 nhf(sqr *s)
 {
 	return s->type != FHF && s->type != CHF;
-};
+}
 
 void
 voptimize() // reset vdeltas on non-hf cubes
@@ -57,8 +57,8 @@ voptimize() // reset vdeltas on non-hf cubes
 				s->vdelta = 0;
 		} else
 			s->vdelta = 0;
-	};
-};
+	}
+}
 
 void
 topt(sqr *s, bool &wf, bool &uf, int &wt, int &ut)
@@ -77,28 +77,28 @@ topt(sqr *s, bool &wf, bool &uf, int &wt, int &ut)
 			wt = s->wtex;
 			ut = s->utex;
 			return;
-		};
+		}
 	} else {
 		loopi(4) if (!SOLID(o[i]))
 		{
 			if (o[i]->floor < s->floor) {
 				wt = s->wtex;
 				wf = false;
-			};
+			}
 			if (o[i]->ceil > s->ceil) {
 				ut = s->utex;
 				uf = false;
-			};
-		};
-	};
-};
+			}
+		}
+	}
+}
 
 void
 toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 {
 	bool wf[4], uf[4];
 	sqr *s[4];
-	for (int x = 2; x < ssize - 4; x += 2)
+	for (int x = 2; x < ssize - 4; x += 2) {
 		for (int y = 2; y < ssize - 4; y += 2) {
 			s[0] = S(x, y);
 			int wt = s[0]->wtex, ut = s[0]->utex;
@@ -115,9 +115,10 @@ toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 					s[i]->wtex = wt;
 				if (uf[i])
 					s[i]->utex = ut;
-			};
-		};
-};
+			}
+		}
+	}
+}
 
 // these two are used by getmap/sendmap.. transfers compressed maps directly
 
@@ -130,7 +131,7 @@ writemap(char *mname, int msize, uchar *mdata)
 	if (!f) {
 		conoutf(@"could not write map to %s", cgzname);
 		return;
-	};
+	}
 	fwrite(mdata, 1, msize, f);
 	fclose(f);
 	conoutf(@"wrote map %s as file %s", mname, cgzname);
@@ -144,7 +145,7 @@ readmap(const char *mname, int *msize)
 	if (!mdata) {
 		conoutf(@"could not read map %s", cgzname);
 		return NULL;
-	};
+	}
 	return mdata;
 }
 
@@ -154,22 +155,22 @@ readmap(const char *mname, int *msize)
 // miniscule map sizes.
 
 void
-save_world(const char *mname)
+save_world(OFString *mname)
 {
 	@autoreleasepool {
 		resettagareas(); // wouldn't be able to reproduce tagged areas
 		                 // otherwise
 		voptimize();
 		toptimize();
-		if (!*mname)
-			mname = getclientmap().UTF8String;
-		setnames(mname);
+		if (mname.length == 0)
+			mname = getclientmap();
+		setnames(mname.UTF8String);
 		backup(cgzname, bakname);
 		gzFile f = gzopen(cgzname, "wb9");
 		if (!f) {
 			conoutf(@"could not write map to %s", cgzname);
 			return;
-		};
+		}
 		hdr.version = MAPVERSION;
 		hdr.numents = 0;
 		loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
@@ -183,8 +184,8 @@ save_world(const char *mname)
 				entity tmp = ents[i];
 				endianswap(&tmp, sizeof(short), 4);
 				gzwrite(f, &tmp, sizeof(persistent_entity));
-			};
-		};
+			}
+		}
 		sqr *t = NULL;
 		int sc = 0;
 #define spurge                                                                 \
@@ -197,7 +198,7 @@ save_world(const char *mname)
 			gzputc(f, sc);                                         \
 			sc = 0;                                                \
 		}                                                              \
-	};
+	}
 		loopk(cubicsize)
 		{
 			sqr *s = &world[k];
@@ -216,7 +217,7 @@ save_world(const char *mname)
 					gzputc(f, s->type);
 					gzputc(f, s->wtex);
 					gzputc(f, s->vdelta);
-				};
+				}
 			} else {
 				if (t && c(type) && c(floor) && c(ceil) &&
 				    c(ctex) && c(ftex) && c(utex) && c(wtex) &&
@@ -233,16 +234,17 @@ save_world(const char *mname)
 					gzputc(f, s->vdelta);
 					gzputc(f, s->utex);
 					gzputc(f, s->tag);
-				};
-			};
+				}
+			}
 			t = s;
-		};
+		}
 		spurge;
 		gzclose(f);
 		conoutf(@"wrote map file %s", cgzname);
 		settagareas();
 	}
 }
+COMMANDN(savemap, save_world, ARG_1STR)
 
 void
 load_world(char *mname) // still supports all map formats that have existed
@@ -256,7 +258,7 @@ load_world(char *mname) // still supports all map formats that have existed
 	if (!f) {
 		conoutf(@"could not read map %s", cgzname);
 		return;
-	};
+	}
 	gzread(f, &hdr, sizeof(header) - sizeof(int) * 16);
 	endianswap(&hdr.version, sizeof(int), 4);
 	if (strncmp(hdr.head, "CUBE", 4) != 0)
@@ -270,7 +272,7 @@ load_world(char *mname) // still supports all map formats that have existed
 		endianswap(&hdr.waterlevel, sizeof(int), 16);
 	} else {
 		hdr.waterlevel = -100000;
-	};
+	}
 	ents.setsize(0);
 	loopi(hdr.numents)
 	{
@@ -283,8 +285,8 @@ load_world(char *mname) // still supports all map formats that have existed
 				e.attr2 = 255; // needed for MAPVERSION<=2
 			if (e.attr1 > 32)
 				e.attr1 = 32; // 12_03 and below
-		};
-	};
+		}
+	}
 	free(world);
 	setupworld(hdr.sfactor);
 	char texuse[256];
@@ -301,14 +303,14 @@ load_world(char *mname) // still supports all map formats that have existed
 				memcpy(&world[k], t, sizeof(sqr));
 			k--;
 			break;
-		};
+		}
 		case 254: // only in MAPVERSION<=2
 		{
 			memcpy(s, t, sizeof(sqr));
 			s->r = s->g = s->b = gzgetc(f);
 			gzgetc(f);
 			break;
-		};
+		}
 		case SOLID: {
 			s->type = SOLID;
 			s->wtex = gzgetc(f);
@@ -316,7 +318,7 @@ load_world(char *mname) // still supports all map formats that have existed
 			if (hdr.version <= 2) {
 				gzgetc(f);
 				gzgetc(f);
-			};
+			}
 			s->ftex = DEFAULT_FLOOR;
 			s->ctex = DEFAULT_CEIL;
 			s->utex = s->wtex;
@@ -324,13 +326,13 @@ load_world(char *mname) // still supports all map formats that have existed
 			s->floor = 0;
 			s->ceil = 16;
 			break;
-		};
+		}
 		default: {
 			if (type < 0 || type >= MAXTYPE) {
 				sprintf_sd(t)("%d @ %d", type, k);
 				fatal("while reading map: type out of range: ",
 				    t);
-			};
+			}
 			s->type = type;
 			s->floor = gzgetc(f);
 			s->ceil = gzgetc(f);
@@ -342,19 +344,19 @@ load_world(char *mname) // still supports all map formats that have existed
 			if (hdr.version <= 2) {
 				gzgetc(f);
 				gzgetc(f);
-			};
+			}
 			s->vdelta = gzgetc(f);
 			s->utex = (hdr.version >= 2) ? gzgetc(f) : s->wtex;
 			s->tag = (hdr.version >= 5) ? gzgetc(f) : 0;
 			s->type = type;
-		};
-		};
+		}
+		}
 		s->defer = 0;
 		t = s;
 		texuse[s->wtex] = 1;
 		if (!SOLID(s))
 			texuse[s->utex] = texuse[s->ftex] = texuse[s->ctex] = 1;
-	};
+	}
 	gzclose(f);
 	calclight();
 	settagareas();
@@ -366,14 +368,17 @@ load_world(char *mname) // still supports all map formats that have existed
 	startmap(mname);
 	loopl(256)
 	{
-		sprintf_sd(aliasname)(
-		    "level_trigger_%d", l); // can this be done smarter?
-		if (identexists(aliasname))
-			alias(aliasname, "");
-	};
-	execfile("data/default_map_settings.cfg");
-	execfile(pcfname);
-	execfile(mcfname);
+		@autoreleasepool {
+			// can this be done smarter?
+			OFString *aliasname =
+			    [OFString stringWithFormat:@"level_trigger_%d", l];
+			if (identexists(aliasname))
+				alias(aliasname, @"");
+		}
+	}
+	execfile(@"data/default_map_settings.cfg");
+	@autoreleasepool {
+		execfile(@(pcfname));
+		execfile(@(mcfname));
+	}
 }
-
-COMMANDN(savemap, save_world, ARG_1CSTR)

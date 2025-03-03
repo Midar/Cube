@@ -147,25 +147,29 @@ char *
 getservername(int n)
 {
 	return servers[n].name;
-};
+}
 
 void
-addserver(char *servername)
+addserver(OFString *servername_)
 {
-	loopv(servers) if (strcmp(servers[i].name, servername) == 0) return;
-	serverinfo &si = servers.insert(0, serverinfo());
-	strcpy_s(si.name, servername);
-	si.full[0] = 0;
-	si.mode = 0;
-	si.numplayers = 0;
-	si.ping = 9999;
-	si.protocol = 0;
-	si.minremain = 0;
-	si.map[0] = 0;
-	si.sdesc[0] = 0;
-	si.address.host = ENET_HOST_ANY;
-	si.address.port = CUBE_SERVINFO_PORT;
-};
+	@autoreleasepool {
+		const char *servername = servername_.UTF8String;
+		loopv(servers) if (strcmp(servers[i].name, servername) ==
+		                   0) return;
+		serverinfo &si = servers.insert(0, serverinfo());
+		strcpy_s(si.name, servername);
+		si.full[0] = 0;
+		si.mode = 0;
+		si.numplayers = 0;
+		si.ping = 9999;
+		si.protocol = 0;
+		si.minremain = 0;
+		si.map[0] = 0;
+		si.sdesc[0] = 0;
+		si.address.host = ENET_HOST_ANY;
+		si.address.port = CUBE_SERVINFO_PORT;
+	}
+}
 
 void
 pingservers()
@@ -314,7 +318,7 @@ updatefrommaster()
 	servermenu();
 }
 
-COMMAND(addserver, ARG_1CSTR)
+COMMAND(addserver, ARG_1STR)
 COMMAND(servermenu, ARG_NONE)
 COMMAND(updatefrommaster, ARG_NONE)
 
@@ -327,4 +331,4 @@ writeservercfg()
 	fprintf(f, "// servers connected to are added here automatically\n\n");
 	loopvrev(servers) fprintf(f, "addserver %s\n", servers[i].name);
 	fclose(f);
-};
+}

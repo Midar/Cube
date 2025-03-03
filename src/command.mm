@@ -3,6 +3,8 @@
 
 #include "cube.h"
 
+#include <memory>
+
 enum { ID_VAR, ID_COMMAND, ID_ALIAS };
 
 @interface Ident : OFObject
@@ -36,77 +38,65 @@ exchangestr(char *o, const char *n)
 OFMutableDictionary<OFString *, Ident *> *idents;
 
 void
-alias(char *name, char *action)
+alias(OFString *name, OFString *action)
 {
-	@autoreleasepool {
-		Ident *b = idents[@(name)];
+	Ident *b = idents[name];
 
-		if (!b) {
-			Ident *b = [[Ident alloc] init];
-			b.type = ID_ALIAS;
-			b.name = @(name);
-			b.action = @(action);
-			b.persist = true;
+	if (b == nil) {
+		Ident *b = [[Ident alloc] init];
+		b.type = ID_ALIAS;
+		b.name = name;
+		b.action = action;
+		b.persist = true;
 
-			idents[b.name] = b;
-		} else {
-			if (b.type == ID_ALIAS)
-				b.action = @(action);
-			else
-				conoutf(
-				    @"cannot redefine builtin %s with an alias",
-				    name);
-		}
+		idents[b.name] = b;
+	} else {
+		if (b.type == ID_ALIAS)
+			b.action = action;
+		else
+			conoutf(
+			    @"cannot redefine builtin %s with an alias", name.UTF8String);
 	}
 }
-
 COMMAND(alias, ARG_2STR)
 
 int
-variable(char *name, int min, int cur, int max, int *storage, void (*fun)(),
+variable(OFString *name, int min, int cur, int max, int *storage, void (*fun)(),
     bool persist)
 {
 	if (idents == nil)
 		idents = [[OFMutableDictionary alloc] init];
 
-	@autoreleasepool {
-		Ident *v = [[Ident alloc] init];
-		v.type = ID_VAR;
-		v.name = @(name);
-		v.min = min;
-		v.max = max;
-		v.storage = storage;
-		v.fun = fun;
-		v.persist = persist;
+	Ident *v = [[Ident alloc] init];
+	v.type = ID_VAR;
+	v.name = name;
+	v.min = min;
+	v.max = max;
+	v.storage = storage;
+	v.fun = fun;
+	v.persist = persist;
 
-		idents[v.name] = v;
-	}
+	idents[name] = v;
 
 	return cur;
 }
 
 void
-setvar(char *name, int i)
+setvar(OFString *name, int i)
 {
-	@autoreleasepool {
-		*idents[@(name)].storage = i;
-	}
+	*idents[name].storage = i;
 }
 
 int
-getvar(char *name)
+getvar(OFString *name)
 {
-	@autoreleasepool {
-		return *idents[@(name)].storage;
-	}
+	return *idents[name].storage;
 }
 
 bool
-identexists(char *name)
+identexists(OFString *name)
 {
-	@autoreleasepool {
-		return (idents[@(name)] != nil);
-	}
+	return (idents[name] != nil);
 }
 
 OFString *
@@ -296,34 +286,63 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 							((void(__cdecl *)())
 							        ID.fun)();
 						break;
-					case ARG_1CSTR:
-						if (isdown)
-							((void(__cdecl *)(
-							    char *))ID.fun)(
-							    w[1]);
+					case ARG_1STR:
+						if (isdown) {
+							@autoreleasepool {
+								((void(
+								    __cdecl *)(
+								    OFString *))
+								        ID.fun)(
+								    @(w[1]));
+							}
+						}
 						break;
 					case ARG_2STR:
-						if (isdown)
-							((void(__cdecl *)(
-							    char *,
-							    char *))ID.fun)(
-							    w[1], w[2]);
+						if (isdown) {
+							@autoreleasepool {
+								((void(
+								    __cdecl *)(
+								    OFString *,
+								    OFString *))
+								        ID.fun)(
+								    @(w[1]),
+								    @(w[2]));
+							}
+						}
 						break;
 					case ARG_3STR:
-						if (isdown)
-							((void(__cdecl *)(
-							    char *, char *,
-							    char *))ID.fun)(
-							    w[1], w[2], w[3]);
+						if (isdown) {
+							@autoreleasepool {
+								((void(
+								    __cdecl *)(
+								    OFString *,
+								    OFString *,
+								    OFString *))
+								        ID.fun)(
+								    @(w[1]),
+								    @(w[2]),
+								    @(w[3]));
+							}
+						}
 						break;
 					case ARG_5STR:
-						if (isdown)
-							((void(__cdecl *)(
-							    char *, char *,
-							    char *, char *,
-							    char *))ID.fun)(
-							    w[1], w[2], w[3],
-							    w[4], w[5]);
+						if (isdown) {
+							@autoreleasepool {
+								((void(
+								    __cdecl *)(
+								    OFString *,
+								    OFString *,
+								    OFString *,
+								    OFString *,
+								    OFString *))
+								        ID.fun)(
+								    @(w[1]),
+								    @(w[2]),
+								    @(w[3]),
+								    @(w[4]),
+								    @(w[5]));
+							}
+						}
 						break;
 					case ARG_DOWN:
 						((void(__cdecl *)(bool))ID.fun)(
@@ -383,17 +402,6 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 							    char *))ID.fun)(r);
 							break;
 						}
-					case ARG_1STR:
-						if (isdown) {
-							@autoreleasepool {
-								((void(
-								    __cdecl *)(
-								    OFString *))
-								        ID.fun)(
-								    @(w[1]));
-							}
-						}
-						break;
 					}
 					break;
 
@@ -479,11 +487,16 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 				// variables
 				case ID_ALIAS:
 					for (int i = 1; i < numargs; i++) {
-						// set any arguments as
-						// (global) arg values so
-						// functions can access them
-						sprintf_sd(t)("arg%d", i);
-						alias(t, w[i]);
+						@autoreleasepool {
+							// set any arguments as
+							// (global) arg values
+							// so functions can
+							// access them
+							OFString *t = [OFString
+							    stringWithFormat:
+							        @"arg%d", i];
+							alias(t, @(w[i]));
+						}
 					}
 					// create new string here because alias
 					// could rebind itself
@@ -541,23 +554,28 @@ complete(char *s)
 }
 
 bool
-execfile(char *cfgfile)
+execfile(OFString *cfgfile)
 {
-	string s;
-	strcpy_s(s, cfgfile);
-	char *buf = loadfile(path(s), NULL);
-	if (!buf)
-		return false;
-	execute(buf);
-	free(buf);
-	return true;
+	@autoreleasepool {
+		string s;
+		strcpy_s(s, cfgfile.UTF8String);
+		char *buf = loadfile(path(s), NULL);
+		if (!buf)
+			return false;
+		execute(buf);
+		free(buf);
+		return true;
+	}
 }
 
 void
-exec(char *cfgfile)
+exec(OFString *cfgfile)
 {
-	if (!execfile(cfgfile))
-		conoutf(@"could not read \"%s\"", cfgfile);
+	if (!execfile(cfgfile)) {
+		@autoreleasepool {
+			conoutf(@"could not read \"%s\"", cfgfile.UTF8String);
+		}
+	}
 }
 
 void
@@ -600,36 +618,50 @@ COMMAND(writecfg, ARG_NONE)
 // () and [] expressions, any control construct can be defined trivially.
 
 void
-intset(char *name, int v)
+intset(OFString *name, int v)
 {
-	string b;
-	itoa(b, v);
-	alias(name, b);
-}
-
-void
-ifthen(char *cond, char *thenp, char *elsep)
-{
-	execute(cond[0] != '0' ? thenp : elsep);
-}
-
-void
-loopa(char *times, char *body)
-{
-	int t = atoi(times);
-	loopi(t)
-	{
-		intset("i", i);
-		execute(body);
+	@autoreleasepool {
+		alias(name, [OFString stringWithFormat:@"%d", v]);
 	}
 }
 
 void
-whilea(char *cond, char *body)
+ifthen(OFString *cond, OFString *thenp, OFString *elsep)
 {
-	while (execute(cond))
-		execute(body);
-} // can't get any simpler than this :)
+	@autoreleasepool {
+		std::unique_ptr<char> cmd(strdup(
+		    (cond.UTF8String[0] != '0' ? thenp : elsep).UTF8String));
+
+		execute(cmd.get());
+	}
+}
+
+void
+loopa(OFString *times, OFString *body_)
+{
+	@autoreleasepool {
+		int t = (int)times.longLongValue;
+		std::unique_ptr<char> body(strdup(body_.UTF8String));
+
+		loopi(t)
+		{
+			intset(@"i", i);
+			execute(body.get());
+		}
+	}
+}
+
+void
+whilea(OFString *cond_, OFString *body_)
+{
+	@autoreleasepool {
+		std::unique_ptr<char> cond(strdup(cond_.UTF8String));
+		std::unique_ptr<char> body(strdup(body_.UTF8String));
+
+		while (execute(cond.get()))
+			execute(body.get());
+	}
+}
 
 void
 onrelease(bool on, char *body)
@@ -641,7 +673,9 @@ onrelease(bool on, char *body)
 void
 concat(char *s)
 {
-	alias("s", s);
+	@autoreleasepool {
+		alias(@"s", @(s));
+	}
 }
 
 void
@@ -666,19 +700,24 @@ listlen(char *a)
 }
 
 void
-at(char *s, char *pos)
+at(OFString *s_, OFString *pos)
 {
-	int n = atoi(pos);
-	loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
-	s[strcspn(s, " \0")] = 0;
-	concat(s);
+	@autoreleasepool {
+		int n = (int)pos.longLongValue;
+		std::unique_ptr<char> copy(strdup(s_.UTF8String));
+		char *s = copy.get();
+
+		loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
+		s[strcspn(s, " \0")] = 0;
+		concat(s);
+	}
 }
 
 COMMANDN(loop, loopa, ARG_2STR)
 COMMANDN(while, whilea, ARG_2STR)
 COMMANDN(if, ifthen, ARG_3STR)
 COMMAND(onrelease, ARG_DWN1)
-COMMAND(exec, ARG_1CSTR)
+COMMAND(exec, ARG_1STR)
 COMMAND(concat, ARG_VARI)
 COMMAND(concatword, ARG_VARI)
 COMMAND(at, ARG_2STR)

@@ -320,7 +320,7 @@ template <class T> struct vector {
 template <class T> struct hashtable {
 	struct chain {
 		chain *next;
-		char *key;
+		const char *key;
 		T data;
 	};
 
@@ -344,14 +344,15 @@ template <class T> struct hashtable {
 	void operator=(hashtable<T> &v);
 
 	T *
-	access(char *key, T *data = NULL)
+	access(const char *key, T *data = NULL)
 	{
 		unsigned int h = 5381;
 		for (int i = 0, k; k = key[i]; i++)
 			h = ((h << 5) + h) ^ k; // bernstein k=33 xor
 		h = h & (size - 1); // primes not much of an advantage
 		for (chain *c = table[h]; c; c = c->next) {
-			for (char *p1 = key, *p2 = c->key, ch;
+			char ch;
+			for (const char *p1 = key, *p2 = c->key;
 			     (ch = *p1++) == *p2++;)
 				if (!ch) // if(strcmp(key,c->key)==0)
 				{
@@ -359,8 +360,8 @@ template <class T> struct hashtable {
 					if (data)
 						c->data = *data;
 					return d;
-				};
-		};
+				}
+		}
 		if (data) {
 			chain *c = (chain *)parent->alloc(sizeof(chain));
 			c->data = *data;
@@ -368,9 +369,9 @@ template <class T> struct hashtable {
 			c->next = table[h];
 			table[h] = c;
 			numelems++;
-		};
+		}
 		return NULL;
-	};
+	}
 };
 
 #define enumerate(ht, t, e, b)                                                 \

@@ -171,19 +171,19 @@ calclight()
 	{
 		sqr *s = S(x, y);
 		s->r = s->g = s->b = 10;
-	};
+	}
 
 	loopv(ents)
 	{
 		entity &e = ents[i];
 		if (e.type == LIGHT)
 			calclightsource(e);
-	};
+	}
 
 	block b = {1, 1, ssize - 2, ssize - 2};
 	postlightarea(b);
-	setvar("fullbright", 0);
-};
+	setvar(@"fullbright", 0);
+}
 
 VARP(dynlight, 0, 16, 32);
 
@@ -196,8 +196,8 @@ cleardlights()
 		block *backup = dlights.pop();
 		blockpaste(*backup);
 		free(backup);
-	};
-};
+	}
+}
 
 void
 dodynlight(vec &vold, vec &v, int reach, int strength, dynent *owner)
@@ -230,7 +230,7 @@ dodynlight(vec &vold, vec &v, int reach, int strength, dynent *owner)
 	    LIGHT, (uchar)strength, 0, 0};
 	calclightsource(l);
 	postlightarea(b);
-};
+}
 
 // utility functions also used by editing code
 
@@ -244,7 +244,7 @@ blockcopy(block &s)
 		for (int y = s.y; y < s.ys + s.y; y++)
 			*q++ = *S(x, y);
 	return b;
-};
+}
 
 void
 blockpaste(block &b)
@@ -254,4 +254,4 @@ blockpaste(block &b)
 		for (int y = b.y; y < b.ys + b.y; y++)
 			*S(x, y) = *q++;
 	remipmore(b);
-};
+}
