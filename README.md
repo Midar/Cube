@@ -15,6 +15,7 @@ LICENSE
 Cube game engine source code, any release.
 
 Copyright (C) 2001-2005 Wouter van Oortmerssen.
+Copyright (C) 2024-2025 Jonathan Schleifer.
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
@@ -35,6 +36,7 @@ freely, subject to the following restrictions:
 
 LICENSE NOTES
 =============
+
 The license covers the source code found in the "src" directory of this
 archive, the included enet network library which cube uses is covered by
 an MIT-style license, which is however compatible with the above license
@@ -47,6 +49,7 @@ distribution restrictions (see individual readmes).
 
 USAGE
 =====
+
 Compiling the sources should be straight forward.
 
 Unix users need to make sure to have the development version of all libs
@@ -77,18 +80,20 @@ it is merely the author's idea of a fun little programming project.
 
 OPEN SOURCE
 ===========
+
 Cube is open source (see ZLIB license above). This only means that you have
 great freedom using it for your own projects, but does NOT mean the main cube
 code is an "open source project" in the sense that everyone is invited to
 contribute to it. The main cube code will remain a one man project (me), as my
-minimalistic design is highly incompatible with the open source philosophy. If you
-add to the cube source code, you fork the code and it becomes your own project,
-do not ask for me to integrate your changes into the main branch, no matter
-how brilliant they are.
+minimalistic design is highly incompatible with the open source philosophy. If
+you add to the cube source code, you fork the code and it becomes your own
+project, do not ask for me to integrate your changes into the main branch, no
+matter how brilliant they are.
 
 
 CHEATING
 ========
+
 If you want to use cube as a base for a game where the multiplayer aspect is
 important and used by a large community, you need to be aware that cube's
 thick client - thin server architecture is extremely cheat sensitive. If you
@@ -96,9 +101,9 @@ release a cube based game with source code equivalent to the binaries, some
 minor changes can give anyone an aimbot or other cheats in online games.
 There are several ways to make this less easy, some of which are:
 
-1. only distribute binaries (the ZLIB license allows this). Executables can still
-   be hacked, but unless you have a really large online community, noone will
-   probably bother.
+1. only distribute binaries (the ZLIB license allows this). Executables can
+   still be hacked, but unless you have a really large online community, noone
+   will probably bother.
 2. write a network proxy, such as qizmo used with QuakeWorld (whose sources are
    also open source). The proxy is a small closed source program that checksums
    the executable, and maybe also some game media. You can then make servers
@@ -113,19 +118,21 @@ There are several ways to make this less easy, some of which are:
    for having him banned. Even better, you can add server side stat checking.
 
 For the cube's own game I chose option 3, i.e. you can only play the official
-cube game using the binaries supplied by me, and you can't compile your own clients
-for multiplayer use (you can still make custom clients that work with matching
-custom servers, or play cube single player maps compatible with the real thing).
-This situation is not ideal, but there is no easy way around it.
+cube game using the binaries supplied by me, and you can't compile your own
+clients for multiplayer use (you can still make custom clients that work with
+matching custom servers, or play cube single player maps compatible with the
+real thing).  This situation is not ideal, but there is no easy way around it.
 
-This scheme is probably very easy to defeat if you are capable of using disassemblers
-and packet sniffers, but please contrain yourself and don't ruin the fun of the
-cube multiplayer community. Thanks.
+This scheme is probably very easy to defeat if you are capable of using
+disassemblers and packet sniffers, but please contrain yourself and don't ruin
+the fun of the cube multiplayer community. Thanks.
 
 
-AUTHOR
-======
-Wouter van Oortmerssen aka Aardappel
-http://strlen.com
+AUTHORS
+=======
 
-For additional authors/contributors, see the cube binary distribution readme.html
+* [Wouter van Oortmerssen aka Aardappel](http://strlen.com)
+* [Jonathan Schleifer](https://nil.im)
+
+For additional authors/contributors, see the cube binary distribution
+readme.html
