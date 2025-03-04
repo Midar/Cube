@@ -9,7 +9,10 @@ add_global_arguments(
   language: 'objcpp')
 
 objfw_dep = dependency('objfw')
-sdl12_dep = dependency('sdl12_compat')
+sdl_dep = dependency('sdl12_compat', required: false)
+if not sdl_dep.found()
+  sdl_dep = dependency('SDL')
+endif
 sdlimage_dep = dependency('SDL_image')
 sdlmixer_dep = dependency('SDL_mixer')
 zlib_dep = dependency('zlib')
@@ -21,6 +24,8 @@ extra_deps = []
 if host_machine.system() == 'windows'
   client_link_args += ['-lopengl32', '-lglu32', '-lwinmm']
   server_link_args += ['-lwinmm']
+elif host_machine.system() == 'darwin'
+  extra_deps += dependency('OpenGL', method: 'extraframework')
 else
   extra_deps += dependency('gl')
   extra_deps += dependency('glu')

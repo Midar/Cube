@@ -36,7 +36,7 @@ executable('client',
   ],
   dependencies: [
     objfw_dep,
-    sdl12_dep,
+    sdl_dep,
     sdlimage_dep,
     sdlmixer_dep,
     zlib_dep,
@@ -57,7 +57,7 @@ executable('server',
   objcpp_args: ['-DSTANDALONE'],
   dependencies: [
     objfw_dep,
-    sdl12_dep
+    sdl_dep
   ],
   include_directories: [enet_includes],
   link_args: server_link_args,

@@ -14,7 +14,7 @@ block sel;
 OF_CONSTRUCTOR()
 {
 	enqueueInit(^{
-		sel = {
+		sel = (block){
 		    variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
 		    variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
 		    variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),

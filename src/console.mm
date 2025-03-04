@@ -45,10 +45,10 @@ conline(const char *sf, bool highlight) // add a line to the console buffer
 		strcpy_s(cl.cref, sf);
 	};
 	puts(cl.cref);
-#ifndef _WIN32
+#ifndef OF_WINDOWS
 	fflush(stdout);
 #endif
-};
+}
 
 void
 conoutf(OFString *str, ...)
@@ -144,7 +144,7 @@ mapmsg(OFString *s)
 }
 COMMAND(mapmsg, ARG_1STR)
 
-#ifndef _WIN32
+#if !defined(OF_WINDOWS) && !defined(OF_MACOS)
 # include <SDL_syswm.h>
 # include <X11/Xlib.h>
 #endif
@@ -152,7 +152,7 @@ COMMAND(mapmsg, ARG_1STR)
 void
 pasteconsole()
 {
-#ifdef _WIN32
+#if defined(OF_WINDOWS)
 	if (!IsClipboardFormatAvailable(CF_TEXT))
 		return;
 	if (!OpenClipboard(NULL))
@@ -161,7 +161,7 @@ pasteconsole()
 	strcat_s(commandbuf, cb);
 	GlobalUnlock(cb);
 	CloseClipboard();
-#else
+#elif !defined(OF_MACOS)
 	SDL_SysWMinfo wminfo;
 	SDL_VERSION(&wminfo.version);
 	wminfo.subsystem = SDL_SYSWM_X11;

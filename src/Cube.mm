@@ -122,7 +122,7 @@ int framesinmap = 0;
 	    {'n', @"server-desc", 1, NULL, &sdesc}, {'i', @"ip", 1, NULL, &ip},
 	    {'m', @"master", 1, NULL, &master},
 	    {'p', @"password", 1, NULL, &passwd},
-	    {'c', @"max-clients", 1, NULL, NULL}};
+	    {'c', @"max-clients", 1, NULL, NULL}, {'\0', nil, 0, NULL, NULL}};
 	OFOptionsParser *optionsParser =
 	    [OFOptionsParser parserWithOptions:options];
 	OFUnichar option;

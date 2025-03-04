@@ -460,9 +460,17 @@ enum // function signatures for script functions, see command.cpp
 
 #include <time.h>
 
-#include <GL/gl.h>
-#include <GL/glext.h>
-#include <GL/glu.h>
+#ifdef OF_MACOS
+# define GL_SILENCE_DEPRECATION
+# define GL_EXT_texture_env_combine 1
+# include <OpenGL/gl.h>
+# include <OpenGL/glext.h>
+# include <OpenGL/glu.h>
+#else
+# include <GL/gl.h>
+# include <GL/glext.h>
+# include <GL/glu.h>
+#endif
 
 #include <SDL.h>
 #include <SDL_image.h>
