@@ -35,11 +35,13 @@ quit() // normal exit
 }
 
 void
-fatal(char *s, char *o) // failure exit
+fatal(OFString *s, OFString *o) // failure exit
 {
-	sprintf_sd(msg)("%s%s (%s)\n", s, o, SDL_GetError());
+	OFString *msg =
+	    [OFString stringWithFormat:@"%@%@ (%s)\n", s, o, SDL_GetError()];
+
 	OFApplication *app = OFApplication.sharedApplication;
-	[(Cube *)app.delegate showMessage:@(msg)];
+	[(Cube *)app.delegate showMessage:msg];
 	[app terminateWithStatus:1];
 }
 
@@ -48,7 +50,7 @@ alloc(int s) // for some big chunks... most other allocs use the memory pool
 {
 	void *b = calloc(1, s);
 	if (!b)
-		fatal("out of memory!");
+		fatal(@"out of memory!");
 	return b;
 }
 
@@ -151,11 +153,11 @@ int framesinmap = 0;
 		passwd = @"";
 
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
-		fatal("Unable to initialize SDL");
+		fatal(@"Unable to initialize SDL");
 
 	log("net");
 	if (enet_initialize() < 0)
-		fatal("Unable to initialise network module");
+		fatal(@"Unable to initialise network module");
 
 	initclient();
 	// never returns if dedicated
@@ -167,13 +169,13 @@ int framesinmap = 0;
 
 	log("video: sdl");
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-		fatal("Unable to initialize SDL Video");
+		fatal(@"Unable to initialize SDL Video");
 
 	log("video: mode");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if (SDL_SetVideoMode(scr_w, scr_h, 0,
 	        SDL_OPENGL | (!windowed ? SDL_FULLSCREEN : 0)) == NULL)
-		fatal("Unable to create OpenGL screen");
+		fatal(@"Unable to create OpenGL screen");
 
 	log("video: misc");
 	SDL_WM_SetCaption("cube engine", NULL);
@@ -195,8 +197,8 @@ int framesinmap = 0;
 	    !installtex(4, path(newstring("data/explosion.jpg")), xs, ys) ||
 	    !installtex(5, path(newstring("data/items.png")), xs, ys) ||
 	    !installtex(1, path(newstring("data/crosshair.png")), xs, ys))
-		fatal("could not find core textures (hint: run cube from the "
-		      "parent of the bin directory)");
+		fatal(@"could not find core textures (hint: run cube from the "
+		      @"parent of the bin directory)");
 
 	log("sound");
 	initsound();

@@ -523,9 +523,9 @@ initserver(bool dedicated, int uprate, const char *sdesc, const char *ip,
 			printf("WARNING: server ip not resolved");
 		serverhost = enet_host_create(&address, MAXCLIENTS, 0, uprate);
 		if (!serverhost)
-			fatal("could not create server host\n");
+			fatal(@"could not create server host\n");
 		loopi(MAXCLIENTS) serverhost->peers[i].data = (void *)-1;
-	};
+	}
 
 	resetserverifempty();
 

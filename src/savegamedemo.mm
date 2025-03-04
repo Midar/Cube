@@ -40,7 +40,7 @@ void
 gzcheck(int a, int b)
 {
 	if (a != b)
-		fatal("savegame file corrupt (short)");
+		fatal(@"savegame file corrupt (short)");
 }
 
 int

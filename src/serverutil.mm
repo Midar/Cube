@@ -132,22 +132,27 @@ recvmap(int n)
 
 #ifdef STANDALONE
 
-void localservertoclient(uchar *buf, int len) {};
 void
-fatal(char *s, char *o)
+localservertoclient(uchar *buf, int len)
+{
+}
+
+void
+fatal(OFString *s, OFString *o)
 {
 	cleanupserver();
-	printf("servererror: %s\n", s);
+	[OFStdOut writeFormat:@"servererror: %@\n", s];
 	exit(1);
-};
+}
+
 void *
 alloc(int s)
 {
 	void *b = calloc(1, s);
 	if (!b)
-		fatal("no memory!");
+		fatal(@"no memory!");
 	return b;
-};
+}
 
 int
 main(int argc, char *argv[])
@@ -183,7 +188,7 @@ main(int argc, char *argv[])
 	};
 
 	if (enet_initialize() < 0)
-		fatal("Unable to initialise network module");
+		fatal(@"Unable to initialise network module");
 	initserver(true, uprate, sdesc, ip, master, @(passwd), maxcl);
 	return 0;
 }

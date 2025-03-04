@@ -13,7 +13,7 @@ setarraypointers()
 	glVertexPointer(3, GL_FLOAT, sizeof(vertex), &verts[0].x);
 	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), &verts[0].r);
 	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), &verts[0].u);
-};
+}
 
 void
 reallocv()
@@ -21,9 +21,9 @@ reallocv()
 	verts = (vertex *)realloc(verts, (curmaxverts *= 2) * sizeof(vertex));
 	curmaxverts -= 10;
 	if (!verts)
-		fatal("no vertex memory!");
+		fatal(@"no vertex memory!");
 	setarraypointers();
-};
+}
 
 // generating the actual vertices is done dynamically every frame and sits at
 // the leaves of all these functions, and are part of the cpu bottleneck on

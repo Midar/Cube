@@ -238,7 +238,7 @@ delayedload(MD2 *m)
 			sprintf_sd(name1)("packages/models/%s/tris.md2",
 			    m.loadname.UTF8String);
 			if (![m loadWithPath:path(name1)])
-				fatal("loadmodel: ", name1);
+				fatal(@"loadmodel: ", @(name1));
 			sprintf_sd(name2)("packages/models/%s/skin.jpg",
 			    m.loadname.UTF8String);
 			int xs, ys;

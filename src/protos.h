@@ -140,7 +140,7 @@ extern void computeraytable(float vx, float vy);
 extern int isoccluded(float vx, float vy, float cx, float cy, float csize);
 
 // main
-extern void fatal(char *s, char *o = "");
+extern void fatal(OFString *s, OFString *o = @"");
 extern void *alloc(int s);
 extern void keyrepeat(bool on);
 

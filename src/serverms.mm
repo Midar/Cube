@@ -143,8 +143,8 @@ serverms(int mode, int numplayers, int minremain, char *smapname, int seconds,
 		sendstring(serverdesc, p);
 		buf.dataLength = p - pong;
 		enet_socket_send(pongsock, &addr, &buf, 1);
-	};
-};
+	}
+}
 
 void
 servermsinit(const char *master, const char *sdesc, bool listen)
@@ -161,6 +161,6 @@ servermsinit(const char *master, const char *sdesc, bool listen)
 		pongsock =
 		    enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, &address);
 		if (pongsock == ENET_SOCKET_NULL)
-			fatal("could not create server info socket\n");
-	};
-};
+			fatal(@"could not create server info socket\n");
+	}
+}
