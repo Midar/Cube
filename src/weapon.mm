@@ -4,7 +4,7 @@
 
 struct guninfo {
 	short sound, attackdelay, damage, projspeed, part, kickamount;
-	char *name;
+	OFString *name;
 };
 
 const int MONSTERDAMAGEFACTOR = 4;
@@ -13,15 +13,15 @@ const float SGSPREAD = 2;
 OFVector3D sg[SGRAYS];
 
 guninfo guns[NUMGUNS] = {
-    {S_PUNCH1, 250, 50, 0, 0, 1, "fist"},
-    {S_SG, 1400, 10, 0, 0, 20, "shotgun"}, // *SGRAYS
-    {S_CG, 100, 30, 0, 0, 7, "chaingun"},
-    {S_RLFIRE, 800, 120, 80, 0, 10, "rocketlauncher"},
-    {S_RIFLE, 1500, 100, 0, 0, 30, "rifle"},
-    {S_FLAUNCH, 200, 20, 50, 4, 1, "fireball"},
-    {S_ICEBALL, 200, 40, 30, 6, 1, "iceball"},
-    {S_SLIMEBALL, 200, 30, 160, 7, 1, "slimeball"},
-    {S_PIGR1, 250, 50, 0, 0, 1, "bite"},
+    {S_PUNCH1, 250, 50, 0, 0, 1, @"fist"},
+    {S_SG, 1400, 10, 0, 0, 20, @"shotgun"}, // *SGRAYS
+    {S_CG, 100, 30, 0, 0, 7, @"chaingun"},
+    {S_RLFIRE, 800, 120, 80, 0, 10, @"rocketlauncher"},
+    {S_RIFLE, 1500, 100, 0, 0, 30, @"rifle"},
+    {S_FLAUNCH, 200, 20, 50, 4, 1, @"fireball"},
+    {S_ICEBALL, 200, 40, 30, 6, 1, @"iceball"},
+    {S_SLIMEBALL, 200, 30, 160, 7, 1, @"slimeball"},
+    {S_PIGR1, 250, 50, 0, 0, 1, @"bite"},
 };
 
 void
@@ -50,23 +50,21 @@ selectgun(int a, int b, int c)
 	if (s != player1->gunselect)
 		playsoundc(S_WEAPLOAD);
 	player1->gunselect = s;
-	// conoutf(@"%s selected", (int)guns[s].name);
-};
+	// conoutf(@"%s selected", (int)guns[s].name.UTF8String);
+}
 
 int
 reloadtime(int gun)
 {
 	return guns[gun].attackdelay;
-};
+}
 
 void
 weapon(OFString *a1, OFString *a2, OFString *a3)
 {
-	@autoreleasepool {
-		selectgun(a1.UTF8String[0] ? atoi(a1.UTF8String) : -1,
-		    a2.UTF8String[0] ? atoi(a2.UTF8String) : -1,
-		    a3.UTF8String[0] ? atoi(a3.UTF8String) : -1);
-	}
+	selectgun((a1.length > 0 ? (int)a1.longLongValue : -1),
+	    (a2.length > 0 ? (int)a2.longLongValue : -1),
+	    (a3.length > 0 ? (int)a3.longLongValue : -1));
 }
 COMMAND(weapon, ARG_3STR)
 
@@ -82,8 +80,8 @@ createrays(OFVector3D &from,
 		OFVector3D r = OFMakeVector3D(RNDD, RNDD, RNDD);
 		sg[i] = to;
 		vadd(sg[i], r);
-	};
-};
+	}
+}
 
 bool
 intersect(dynent *d, OFVector3D &from,
@@ -105,13 +103,13 @@ intersect(dynent *d, OFVector3D &from,
 			vmul(v, f);
 			vadd(v, from);
 			p = &v;
-		};
-	};
+		}
+	}
 
-	return p->x <= d->o.x + d->radius && p->x >= d->o.x - d->radius &&
-	       p->y <= d->o.y + d->radius && p->y >= d->o.y - d->radius &&
-	       p->z <= d->o.z + d->aboveeye && p->z >= d->o.z - d->eyeheight;
-};
+	return (p->x <= d->o.x + d->radius && p->x >= d->o.x - d->radius &&
+	        p->y <= d->o.y + d->radius && p->y >= d->o.y - d->radius &&
+	        p->z <= d->o.z + d->aboveeye && p->z >= d->o.z - d->eyeheight);
+}
 
 char *
 playerincrosshair()
@@ -125,9 +123,9 @@ playerincrosshair()
 			continue;
 		if (intersect(o, player1->o, worldpos))
 			return o->name;
-	};
+	}
 	return NULL;
-};
+}
 
 const int MAXPROJ = 100;
 struct projectile {
@@ -136,14 +134,13 @@ struct projectile {
 	dynent *owner;
 	int gun;
 	bool inuse, local;
-};
-projectile projs[MAXPROJ];
+} projs[MAXPROJ];
 
 void
 projreset()
 {
 	loopi(MAXPROJ) projs[i].inuse = false;
-};
+}
 
 void
 newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
@@ -162,8 +159,8 @@ newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
 		p->owner = owner;
 		p->gun = gun;
 		return;
-	};
-};
+	}
+}
 
 void
 hit(int target, int damage, dynent *d, dynent *at)
@@ -178,7 +175,7 @@ hit(int target, int damage, dynent *d, dynent *at)
 	};
 	particle_splash(3, damage, 1000, d->o);
 	demodamage(damage, d->o);
-};
+}
 
 const float RL_RADIUS = 5;
 const float RL_DAMRAD = 7; // hack
@@ -197,8 +194,8 @@ radialeffect(dynent *o, OFVector3D &v, int cn, int qdam, dynent *at)
 		hit(cn, damage, o, at);
 		vmul(temp, (RL_DAMRAD - dist) * damage / 800);
 		vadd(o->vel, temp);
-	};
-};
+	}
+}
 
 void
 splash(projectile *p, OFVector3D &v, OFVector3D &vold, int notthisplayer,
@@ -224,12 +221,12 @@ splash(projectile *p, OFVector3D &v, OFVector3D &vold, int notthisplayer,
 			if (!o)
 				continue;
 			radialeffect(o, v, i, qdam, p->owner);
-		};
+		}
 		dvector &mv = getmonsters();
 		loopv(mv) if (i != notthismonster)
 		    radialeffect(mv[i], v, i, qdam, p->owner);
-	};
-};
+	}
+}
 
 inline void
 projdamage(dynent *o, projectile *p, OFVector3D &v, int i, int im, int qdam)
@@ -239,8 +236,8 @@ projdamage(dynent *o, projectile *p, OFVector3D &v, int i, int im, int qdam)
 	if (intersect(o, p->o, v)) {
 		splash(p, v, p->o, i, im, qdam);
 		hit(i, qdam, o, p->owner);
-	};
-};
+	}
+}
 
 void
 moveprojectiles(float time)
@@ -289,8 +286,8 @@ moveprojectiles(float time)
 			}
 		}
 		p->o = v;
-	};
-};
+	}
+}
 
 void
 shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d,
@@ -305,7 +302,7 @@ shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d,
 	case GUN_SG: {
 		loopi(SGRAYS) particle_splash(0, 5, 200, sg[i]);
 		break;
-	};
+	}
 
 	case GUN_CG:
 		particle_splash(0, 100, 250, to);
@@ -326,8 +323,8 @@ shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d,
 		particle_splash(0, 50, 200, to);
 		particle_trail(1, 500, from, to);
 		break;
-	};
-};
+	}
+}
 
 void
 hitpush(int target, int damage, dynent *d, dynent *at, OFVector3D &from,
@@ -356,7 +353,7 @@ raydamage(dynent *o, OFVector3D &from, OFVector3D &to, dynent *d, int i)
 			hitpush(i, damage, o, d, from, to);
 	} else if (intersect(o, from, to))
 		hitpush(i, qdam, o, d, from, to);
-};
+}
 
 void
 shoot(dynent *d, OFVector3D &targ)
@@ -374,7 +371,7 @@ shoot(dynent *d, OFVector3D &targ)
 		d->gunwait = 250;
 		d->lastattackgun = -1;
 		return;
-	};
+	}
 	if (d->gunselect)
 		d->ammo[d->gunselect]--;
 	OFVector3D from = d->o;
@@ -393,7 +390,7 @@ shoot(dynent *d, OFVector3D &targ)
 		vmul(unitv, 3); // punch range
 		to = from;
 		vadd(to, unitv);
-	};
+	}
 	if (d->gunselect == GUN_SG)
 		createrays(from, to);
 
@@ -415,11 +412,11 @@ shoot(dynent *d, OFVector3D &targ)
 		if (!o)
 			continue;
 		raydamage(o, from, to, d, i);
-	};
+	}
 
 	dvector &v = getmonsters();
 	loopv(v) if (v[i] != d) raydamage(v[i], from, to, d, -2);
 
 	if (d->monsterstate)
 		raydamage(player1, from, to, d, -1);
-};
+}
