@@ -239,7 +239,7 @@ renderstripssky()
 	glBindTexture(GL_TEXTURE_2D, skyoglid);
 	loopv(strips) if (strips[i].tex == skyoglid)
 	    glDrawArrays(GL_TRIANGLE_STRIP, strips[i].start, strips[i].num);
-};
+}
 
 void
 renderstrips()
@@ -250,17 +250,17 @@ renderstrips()
 		if (strips[i].tex != lasttex) {
 			glBindTexture(GL_TEXTURE_2D, strips[i].tex);
 			lasttex = strips[i].tex;
-		};
+		}
 		glDrawArrays(GL_TRIANGLE_STRIP, strips[i].start, strips[i].num);
-	};
-};
+	}
+}
 
 void
 overbright(float amount)
 {
 	if (hasoverbright)
 		glTexEnvf(GL_TEXTURE_ENV, GL_RGB_SCALE_EXT, amount);
-};
+}
 
 void
 addstrip(int tex, int start, int n)
@@ -269,16 +269,20 @@ addstrip(int tex, int start, int n)
 	s.tex = tex;
 	s.start = start;
 	s.num = n;
-};
+}
 
 VARFP(gamma, 30, 100, 300, {
 	float f = gamma / 100.0f;
-	if (SDL_SetGamma(f, f, f) == -1) {
+	Uint16 ramp[256];
+
+	SDL_CalculateGammaRamp(f, ramp);
+
+	if (SDL_SetWindowGammaRamp(window, ramp, ramp, ramp) == -1) {
 		conoutf(
 		    @"Could not set gamma (card/driver doesn't support it?)");
 		conoutf(@"sdl: %s", SDL_GetError());
-	};
-});
+	}
+})
 
 void
 transplayer()

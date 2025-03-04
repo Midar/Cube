@@ -54,6 +54,7 @@ alloc(int s) // for some big chunks... most other allocs use the memory pool
 	return b;
 }
 
+SDL_Window *window;
 int scr_w = 640;
 int scr_h = 480;
 
@@ -90,12 +91,7 @@ screenshot()
 COMMAND(screenshot, ARG_NONE)
 COMMAND(quit, ARG_NONE)
 
-void
-keyrepeat(bool on)
-{
-	SDL_EnableKeyRepeat(
-	    on ? SDL_DEFAULT_REPEAT_DELAY : 0, SDL_DEFAULT_REPEAT_INTERVAL);
-}
+bool keyrepeat = false;
 
 VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
 VARP(minmillis, 0, 5, 1000);
@@ -176,14 +172,17 @@ int framesinmap = 0;
 
 	log("video: mode");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	if (SDL_SetVideoMode(scr_w, scr_h, 0,
-	        SDL_OPENGL | (!windowed ? SDL_FULLSCREEN : 0)) == NULL)
+	if ((window = SDL_CreateWindow("cube engine", SDL_WINDOWPOS_UNDEFINED,
+	         SDL_WINDOWPOS_UNDEFINED, scr_w, scr_h,
+	         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
+	             (!windowed ? SDL_WINDOW_FULLSCREEN : 0))) == NULL ||
+	    SDL_GL_CreateContext(window) == NULL)
 		fatal(@"Unable to create OpenGL screen");
 
 	log("video: misc");
-	SDL_WM_SetCaption("cube engine", NULL);
-	SDL_WM_GrabInput(SDL_GRAB_ON);
-	keyrepeat(false);
+	SDL_SetWindowGrab(window, SDL_TRUE);
+	SDL_SetRelativeMouseMode(SDL_TRUE);
+	keyrepeat = false;
 	SDL_ShowCursor(0);
 
 	log("gl");
@@ -241,7 +240,7 @@ int framesinmap = 0;
 		fps = (1000.0f / curtime + fps * 50) / 51;
 		computeraytable(player1->o.x, player1->o.y);
 		readdepth(scr_w, scr_h);
-		SDL_GL_SwapBuffers();
+		SDL_GL_SwapWindow(window);
 		extern void updatevol();
 		updatevol();
 		if (framesinmap++ <
@@ -263,16 +262,17 @@ int framesinmap = 0;
 
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				keypress(event.key.keysym.sym,
-				    event.key.state == SDL_PRESSED,
-				    event.key.keysym.unicode);
+				if (keyrepeat || event.key.repeat == 0)
+					keypress(event.key.keysym.sym,
+					    event.key.state == SDL_PRESSED,
+					    event.key.keysym.sym);
 				break;
 
 			case SDL_MOUSEMOTION:
 				if (ignore) {
 					ignore--;
 					break;
-				};
+				}
 				mousemove(event.motion.xrel, event.motion.yrel);
 				break;
 

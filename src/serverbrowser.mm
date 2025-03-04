@@ -60,23 +60,25 @@ resolverinit(int threads, int limit)
 		resolverthread &rt = resolverthreads.add();
 		rt.query = NULL;
 		rt.starttime = 0;
-		rt.thread = SDL_CreateThread(resolverloop, &rt);
+		rt.thread =
+		    SDL_CreateThread(resolverloop, "resolverthread", &rt);
 		--threads;
-	};
-};
+	}
+}
 
 void
 resolverstop(resolverthread &rt, bool restart)
 {
 	SDL_LockMutex(resolvermutex);
-	SDL_KillThread(rt.thread);
+	// SDL_KillThread(rt.thread);
 	rt.query = NULL;
 	rt.starttime = 0;
 	rt.thread = NULL;
 	if (restart)
-		rt.thread = SDL_CreateThread(resolverloop, &rt);
+		rt.thread =
+		    SDL_CreateThread(resolverloop, "resolverthread", &rt);
 	SDL_UnlockMutex(resolvermutex);
-};
+}
 
 void
 resolverclear()

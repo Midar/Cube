@@ -9,12 +9,9 @@ add_global_arguments(
   language: 'objcpp')
 
 objfw_dep = dependency('objfw')
-sdl_dep = dependency('sdl12_compat', required: false)
-if not sdl_dep.found()
-  sdl_dep = dependency('SDL')
-endif
-sdlimage_dep = dependency('SDL_image')
-sdlmixer_dep = dependency('SDL_mixer')
+sdl_dep = dependency('SDL2')
+sdlimage_dep = dependency('SDL2_image')
+sdlmixer_dep = dependency('SDL2_mixer')
 zlib_dep = dependency('zlib')
 
 client_link_args = []

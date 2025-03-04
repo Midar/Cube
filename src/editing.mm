@@ -68,8 +68,8 @@ toggleedit()
 			monsterclear(); // all monsters back at their spawns for
 			                // editing
 		projreset();
-	};
-	keyrepeat(editmode);
+	}
+	keyrepeat = editmode;
 	selset = false;
 	editing = editmode;
 }

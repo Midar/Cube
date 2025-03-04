@@ -126,9 +126,13 @@ COMMANDN(bind, bindkey, ARG_2STR)
 void
 saycommand(char *init) // turns input to the command line on or off
 {
-	SDL_EnableUNICODE(saycommandon = (init != NULL));
+	saycommandon = (init != NULL);
+	if (saycommandon)
+		SDL_StartTextInput();
+	else
+		SDL_StopTextInput();
 	if (!editmode)
-		keyrepeat(saycommandon);
+		keyrepeat = saycommandon;
 	if (!init)
 		init = "";
 	strcpy_s(commandbuf, init);
@@ -144,52 +148,12 @@ mapmsg(OFString *s)
 }
 COMMAND(mapmsg, ARG_1STR)
 
-#if !defined(OF_WINDOWS) && !defined(OF_MACOS)
-# include <SDL_syswm.h>
-# include <X11/Xlib.h>
-#endif
-
 void
 pasteconsole()
 {
-#if defined(OF_WINDOWS)
-	if (!IsClipboardFormatAvailable(CF_TEXT))
-		return;
-	if (!OpenClipboard(NULL))
-		return;
-	char *cb = (char *)GlobalLock(GetClipboardData(CF_TEXT));
+	char *cb = SDL_GetClipboardText();
 	strcat_s(commandbuf, cb);
-	GlobalUnlock(cb);
-	CloseClipboard();
-#elif !defined(OF_MACOS)
-	SDL_SysWMinfo wminfo;
-	SDL_VERSION(&wminfo.version);
-	wminfo.subsystem = SDL_SYSWM_X11;
-	if (!SDL_GetWMInfo(&wminfo))
-		return;
-	int cbsize;
-	char *cb = XFetchBytes(wminfo.info.x11.display, &cbsize);
-	if (!cb || !cbsize)
-		return;
-	int commandlen = strlen(commandbuf);
-	for (char *cbline = cb, *cbend;
-	     commandlen + 1 < _MAXDEFSTR && cbline < &cb[cbsize];
-	     cbline = cbend + 1) {
-		cbend = (char *)memchr(cbline, '\0', &cb[cbsize] - cbline);
-		if (!cbend)
-			cbend = &cb[cbsize];
-		if (commandlen + cbend - cbline + 1 > _MAXDEFSTR)
-			cbend = cbline + _MAXDEFSTR - commandlen - 1;
-		memcpy(&commandbuf[commandlen], cbline, cbend - cbline);
-		commandlen += cbend - cbline;
-		commandbuf[commandlen] = '\n';
-		if (commandlen + 1 < _MAXDEFSTR && cbend < &cb[cbsize])
-			++commandlen;
-		commandbuf[commandlen] = '\0';
-	};
-	XFree(cb);
-#endif
-};
+}
 
 cvector vhistory;
 int histpos = 0;
