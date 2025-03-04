@@ -115,11 +115,14 @@ int framesinmap = 0;
 	log("sdl");
 
 	const OFOptionsParserOption options[] = {
-	    {'d', nil, 0, &dedicated, NULL}, {'t', nil, 0, &windowed, NULL},
-	    {'w', nil, 1, NULL, NULL}, {'h', nil, 1, NULL, NULL},
-	    {'u', nil, 1, NULL, NULL}, {'n', nil, 1, NULL, &sdesc},
-	    {'i', nil, 1, NULL, &ip}, {'m', nil, 1, NULL, &master},
-	    {'p', nil, 1, NULL, &passwd}, {'c', nil, 1, NULL, NULL}};
+	    {'d', @"dedicated", 0, &dedicated, NULL},
+	    {'t', @"window", 0, &windowed, NULL},
+	    {'w', @"width", 1, NULL, NULL}, {'h', @"height", 1, NULL, NULL},
+	    {'u', @"upload-rate", 1, NULL, NULL},
+	    {'n', @"server-desc", 1, NULL, &sdesc}, {'i', @"ip", 1, NULL, &ip},
+	    {'m', @"master", 1, NULL, &master},
+	    {'p', @"password", 1, NULL, &passwd},
+	    {'c', @"max-clients", 1, NULL, NULL}};
 	OFOptionsParser *optionsParser =
 	    [OFOptionsParser parserWithOptions:options];
 	OFUnichar option;
