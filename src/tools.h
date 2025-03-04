@@ -68,29 +68,33 @@ strn0cpy(char *d, const char *s, size_t m)
 {
 	strncpy(d, s, m);
 	d[(m)-1] = 0;
-};
+}
+
 inline void
 strcpy_s(char *d, const char *s)
 {
 	strn0cpy(d, s, _MAXDEFSTR);
-};
+}
+
 inline void
 strcat_s(char *d, const char *s)
 {
 	size_t n = strlen(d);
 	strn0cpy(d + n, s, _MAXDEFSTR - n);
-};
+}
 
 inline void
 formatstring(char *d, const char *fmt, va_list v)
 {
 	_vsnprintf(d, _MAXDEFSTR, fmt, v);
 	d[_MAXDEFSTR - 1] = 0;
-};
+}
 
 struct sprintf_s_f {
 	char *d;
+
 	sprintf_s_f(char *str) : d(str) {};
+
 	void
 	operator()(const char *fmt, ...)
 	{
@@ -99,7 +103,7 @@ struct sprintf_s_f {
 		_vsnprintf(d, _MAXDEFSTR, fmt, v);
 		va_end(v);
 		d[_MAXDEFSTR - 1] = 0;
-	};
+	}
 };
 
 #define sprintf_s(d) sprintf_s_f((char *)d)
@@ -116,22 +120,7 @@ struct sprintf_s_f {
 	}
 #define sprintf_sdv(d, fmt) sprintf_sdlv(d, fmt, fmt)
 
-// fast pentium f2i
-
-#ifdef _MSC_VER
-inline int
-fast_f2nat(float a)
-{ // only for positive floats
-	static const float fhalf = 0.5f;
-	int retval;
-
-	__asm fld a __asm fsub fhalf __asm fistp retval // perf regalloc?
-
-	    return retval;
-};
-#else
-# define fast_f2nat(val) ((int)(val))
-#endif
+#define fast_f2nat(val) ((int)(val))
 
 extern char *path(char *s);
 extern char *loadfile(char *fn, int *size);
@@ -147,11 +136,13 @@ struct pool {
 		MAXBUCKETS = 65
 	}; // meaning up to size 256 on 32bit pointer systems
 	enum { MAXREUSESIZE = MAXBUCKETS * PTRSIZE - PTRSIZE };
+
 	inline size_t
 	bucket(size_t s)
 	{
 		return (s + PTRSIZE - 1) >> PTRBITS;
-	};
+	}
+
 	enum { PTRBITS = PTRSIZE == 2 ? 1 : PTRSIZE == 4 ? 2 : 3 };
 
 	char *p;
@@ -204,13 +195,13 @@ template <class T> struct vector {
 		alen = 8;
 		buf = (T *)p->alloc(alen * sizeof(T));
 		ulen = 0;
-	};
+	}
 
 	~vector()
 	{
 		setsize(0);
 		p->dealloc(buf, alen * sizeof(T));
-	};
+	}
 
 	vector(vector<T> &v);
 	void operator=(vector<T> &v);
@@ -222,7 +213,7 @@ template <class T> struct vector {
 			realloc();
 		new (&buf[ulen]) T(x);
 		return buf[ulen++];
-	};
+	}
 
 	T &
 	add()
@@ -231,53 +222,58 @@ template <class T> struct vector {
 			realloc();
 		new (&buf[ulen]) T;
 		return buf[ulen++];
-	};
+	}
 
 	T &
 	pop()
 	{
 		return buf[--ulen];
-	};
+	}
+
 	T &
 	last()
 	{
 		return buf[ulen - 1];
-	};
+	}
+
 	bool
 	empty()
 	{
 		return ulen == 0;
-	};
+	}
 
 	int
 	length()
 	{
 		return ulen;
-	};
+	}
+
 	T &
 	operator[](int i)
 	{
 		assert(i >= 0 && i < ulen);
 		return buf[i];
-	};
+	}
+
 	void
 	setsize(int i)
 	{
 		for (; ulen > i; ulen--)
 			buf[ulen - 1].~T();
-	};
+	}
+
 	T *
 	getbuf()
 	{
 		return buf;
-	};
+	}
 
 	void
 	sort(void *cf)
 	{
 		qsort(buf, ulen, sizeof(T),
 		    (int(__cdecl *)(const void *, const void *))cf);
-	};
+	}
 
 	void
 	realloc()
@@ -285,7 +281,7 @@ template <class T> struct vector {
 		int olen = alen;
 		buf = (T *)p->realloc(
 		    buf, olen * sizeof(T), (alen *= 2) * sizeof(T));
-	};
+	}
 
 	T
 	remove(int i)
@@ -295,7 +291,7 @@ template <class T> struct vector {
 			buf[p - 1] = buf[p];
 		ulen--;
 		return e;
-	};
+	}
 
 	T &
 	insert(int i, const T &e)
@@ -305,7 +301,7 @@ template <class T> struct vector {
 			buf[p] = buf[p - 1];
 		buf[i] = e;
 		return buf[i];
-	};
+	}
 };
 
 #define loopv(v)                                                               \
