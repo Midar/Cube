@@ -105,10 +105,17 @@ struct header // map file format header
 struct block {
 	int x, y, xs, ys;
 };
-struct mapmodelinfo {
-	int rad, h, zoff, snap;
-	const char *name;
-};
+
+@interface MapModelInfo : OFObject
+@property (nonatomic) int rad, h, zoff, snap;
+@property (copy, nonatomic) OFString *name;
+
+- (instancetype)initWithRad:(int)rad
+                          h:(int)h
+                       zoff:(int)zoff
+                       snap:(int)snap
+                       name:(OFString *)name;
+@end
 
 enum {
 	GUN_FIST = 0,

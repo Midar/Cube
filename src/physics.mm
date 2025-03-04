@@ -59,21 +59,21 @@ mmcollide(dynent *d, float &hi, float &lo) // collide with a mapmodel
 		entity &e = ents[i];
 		if (e.type != MAPMODEL)
 			continue;
-		mapmodelinfo *mmi = getmminfo(e.attr2);
-		if (!mmi || !mmi->h)
+		MapModelInfo *mmi = getmminfo(e.attr2);
+		if (mmi == nil || !mmi.h)
 			continue;
-		const float r = mmi->rad + d->radius;
+		const float r = mmi.rad + d->radius;
 		if (fabs(e.x - d->o.x) < r && fabs(e.y - d->o.y) < r) {
 			float mmz =
-			    (float)(S(e.x, e.y)->floor + mmi->zoff + e.attr3);
+			    (float)(S(e.x, e.y)->floor + mmi.zoff + e.attr3);
 			if (d->o.z - d->eyeheight < mmz) {
 				if (mmz < hi)
 					hi = mmz;
-			} else if (mmz + mmi->h > lo)
-				lo = mmz + mmi->h;
-		};
-	};
-};
+			} else if (mmz + mmi.h > lo)
+				lo = mmz + mmi.h;
+		}
+	}
+}
 
 // all collision happens here
 // spawn is a dirty side effect used in spawning
