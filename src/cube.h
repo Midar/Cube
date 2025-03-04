@@ -102,9 +102,6 @@ struct header // map file format header
 	((x) < MINBORD || (y) < MINBORD || (x) >= ssize - MINBORD ||           \
 	    (y) >= ssize - MINBORD)
 
-struct vec {
-	float x, y, z;
-};
 struct block {
 	int x, y, xs, ys;
 };
@@ -128,8 +125,8 @@ enum {
 
 struct dynent // players & monsters
 {
-	vec o, vel;             // origin, velocity
-	float yaw, pitch, roll; // used as vec in one place
+	OFVector3D o, vel;      // origin, velocity
+	float yaw, pitch, roll; // used as OFVector3D in one place
 	float maxspeed;         // cubes per second, 24 for player
 	bool outsidemap;        // from his eyes
 	bool inwater;
@@ -154,8 +151,8 @@ struct dynent // players & monsters
 	bool blocked, moving; // used by physics to signal ai
 	int trigger; // millis at which transition to another monsterstate takes
 	             // place
-	vec attacktarget; // delayed attacks
-	int anger;        // how many times already hit by fellow monster
+	OFVector3D attacktarget; // delayed attacks
+	int anger;               // how many times already hit by fellow monster
 	string name, team;
 };
 
@@ -295,7 +292,7 @@ extern dynent
 extern dvector players; // all the other clients (in multiplayer)
 extern bool editmode;
 extern vector<entity> ents; // map entities
-extern vec worldpos;        // current target of the crosshair in the world
+extern OFVector3D worldpos; // current target of the crosshair in the world
 extern int lastmillis;      // last time
 extern int curtime;         // current frame time
 extern int gamemode, nextmode;
@@ -341,7 +338,7 @@ extern bool demoplayback;
 		(u).z -= (v).z;                                                \
 	};
 #define vdist(d, v, e, s)                                                      \
-	vec v = s;                                                             \
+	OFVector3D v = s;                                                      \
 	vsub(v, e);                                                            \
 	float d = (float)sqrt(dotprod(v, v));
 #define vreject(v, u, max)                                                     \

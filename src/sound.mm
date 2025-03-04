@@ -16,7 +16,7 @@ bool nosound = false;
 #define SOUNDFREQ 22050
 
 struct soundloc {
-	vec loc;
+	OFVector3D loc;
 	bool inuse;
 } soundlocs[MAXCHAN];
 
@@ -150,7 +150,7 @@ cleansound()
 VAR(stereo, 0, 1, 1);
 
 void
-updatechanvol(int chan, vec *loc)
+updatechanvol(int chan, OFVector3D *loc)
 {
 	int vol = soundvol, pan = 255 / 2;
 	if (loc) {
@@ -178,7 +178,7 @@ updatechanvol(int chan, vec *loc)
 };
 
 void
-newsoundloc(int chan, vec *loc)
+newsoundloc(int chan, OFVector3D *loc)
 {
 	assert(chan >= 0 && chan < MAXCHAN);
 	soundlocs[chan].loc = *loc;
@@ -213,7 +213,7 @@ playsoundc(int n)
 int soundsatonce = 0, lastsoundmillis = 0;
 
 void
-playsound(int n, vec *loc)
+playsound(int n, OFVector3D *loc)
 {
 	if (nosound)
 		return;

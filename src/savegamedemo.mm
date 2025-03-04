@@ -31,9 +31,9 @@ gzputi(int i)
 }
 
 void
-gzputv(vec &v)
+gzputv(OFVector3D &v)
 {
-	gzwrite(f, &v, sizeof(vec));
+	gzwrite(f, &v, sizeof(OFVector3D));
 }
 
 void
@@ -59,9 +59,9 @@ gzgeti()
 }
 
 void
-gzgetv(vec &v)
+gzgetv(OFVector3D &v)
 {
-	gzcheck(gzread(f, &v, sizeof(vec)), sizeof(vec));
+	gzcheck(gzread(f, &v, sizeof(OFVector3D)), sizeof(OFVector3D));
 }
 
 void
@@ -244,7 +244,7 @@ loadgamerest()
 int starttime = 0;
 int playbacktime = 0;
 int ddamage, bdamage;
-vec dorig;
+OFVector3D dorig;
 
 void
 record(OFString *name)
@@ -269,7 +269,7 @@ record(OFString *name)
 COMMAND(record, ARG_1STR)
 
 void
-demodamage(int damage, vec &o)
+demodamage(int damage, OFVector3D &o)
 {
 	ddamage = damage;
 	dorig = o;
@@ -363,11 +363,12 @@ startdemo()
 
 VAR(demodelaymsec, 0, 120, 500);
 
+// spline interpolation
 void
-catmulrom(
-    vec &z, vec &a, vec &b, vec &c, float s, vec &dest) // spline interpolation
+catmulrom(OFVector3D &z, OFVector3D &a, OFVector3D &b, OFVector3D &c, float s,
+    OFVector3D &dest)
 {
-	vec t1 = b, t2 = c;
+	OFVector3D t1 = b, t2 = c;
 
 	vsub(t1, z);
 	vmul(t1, 0.5f) vsub(t2, a);
@@ -377,7 +378,7 @@ catmulrom(
 	float s3 = s * s2;
 
 	dest = a;
-	vec t = b;
+	OFVector3D t = b;
 
 	vmul(dest, 2 * s3 - 3 * s2 + 1);
 	vmul(t, -2 * s3 + 3 * s2);
@@ -407,7 +408,7 @@ demoplaybackstep()
 			    @"error: huge packet during demo play (%d)", len);
 			stopreset();
 			return;
-		};
+		}
 		uchar buf[MAXTRANS];
 		gzread(f, buf, len);
 		localservertoclient(buf, len); // update game state
@@ -434,9 +435,9 @@ demoplaybackstep()
 			if (ddamage = gzgeti()) {
 				gzgetv(dorig);
 				particle_splash(3, ddamage, 1000, dorig);
-			};
+			}
 			// FIXME: set more client state here
-		};
+		}
 
 		// insert latest copy of player into history
 		if (extras &&
@@ -449,11 +450,11 @@ demoplaybackstep()
 			if (playerhistory.length() > 20) {
 				zapdynent(playerhistory[0]);
 				playerhistory.remove(0);
-			};
-		};
+			}
+		}
 
 		readdemotime();
-	};
+	}
 
 	if (demoplayback) {
 		int itime = lastmillis - demodelaymsec;
@@ -489,18 +490,19 @@ demoplaybackstep()
 				{
 					catmulrom(z->o, a->o, b->o, c->o, bf,
 					    player1->o);
-					catmulrom(*(vec *)&z->yaw,
-					    *(vec *)&a->yaw, *(vec *)&b->yaw,
-					    *(vec *)&c->yaw, bf,
-					    *(vec *)&player1->yaw);
-				};
+					catmulrom(*(OFVector3D *)&z->yaw,
+					    *(OFVector3D *)&a->yaw,
+					    *(OFVector3D *)&b->yaw,
+					    *(OFVector3D *)&c->yaw, bf,
+					    *(OFVector3D *)&player1->yaw);
+				}
 				fixplayer1range();
-			};
+			}
 			break;
-		};
+		}
 		// if(player1->state!=CS_DEAD) showscores(false);
-	};
-};
+	}
+}
 
 void
 stopn()

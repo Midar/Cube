@@ -200,7 +200,8 @@ cleardlights()
 }
 
 void
-dodynlight(vec &vold, vec &v, int reach, int strength, dynent *owner)
+dodynlight(
+    OFVector3D &vold, OFVector3D &v, int reach, int strength, dynent *owner)
 {
 	if (!reach)
 		reach = dynlight;

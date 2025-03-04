@@ -5,7 +5,7 @@
 const int MAXPARTICLES = 10500;
 const int NUMPARTCUTOFF = 20;
 struct particle {
-	vec o, d;
+	OFVector3D o, d;
 	int fade, type;
 	int millis;
 	particle *next;
@@ -16,7 +16,7 @@ bool parinit = false;
 VARP(maxparticles, 100, 2000, MAXPARTICLES - 500);
 
 void
-newparticle(vec &o, vec &d, int fade, int type)
+newparticle(OFVector3D &o, OFVector3D &d, int fade, int type)
 {
 	if (!parinit) {
 		loopi(MAXPARTICLES)
@@ -42,22 +42,22 @@ newparticle(vec &o, vec &d, int fade, int type)
 VAR(demotracking, 0, 0, 1);
 VARP(particlesize, 20, 100, 500);
 
-vec right, up;
+OFVector3D right, up;
 
 void
-setorient(vec &r, vec &u)
+setorient(OFVector3D &r, OFVector3D &u)
 {
 	right = r;
 	up = u;
-};
+}
 
 void
 render_particles(int time)
 {
 	if (demoplayback && demotracking) {
-		vec nom = {0, 0, 0};
+		OFVector3D nom = OFMakeVector3D(0, 0, 0);
 		newparticle(player1->o, nom, 100000000, 8);
-	};
+	}
 
 	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);
@@ -118,13 +118,13 @@ render_particles(int time)
 			if (pt->gr)
 				p->o.z -= ((lastmillis - p->millis) / 3.0f) *
 				          curtime / (pt->gr * 10000);
-			vec a = p->d;
+			OFVector3D a = p->d;
 			vmul(a, time);
 			vdiv(a, 20000.0f);
 			vadd(p->o, a);
 			pp = &p->next;
-		};
-	};
+		}
+	}
 
 	glEnable(GL_FOG);
 	glDisable(GL_BLEND);
@@ -132,7 +132,7 @@ render_particles(int time)
 };
 
 void
-particle_splash(int type, int num, int fade, vec &p)
+particle_splash(int type, int num, int fade, OFVector3D &p)
 {
 	loopi(num)
 	{
@@ -143,22 +143,22 @@ particle_splash(int type, int num, int fade, vec &p)
 			y = rnd(radius * 2) - radius;
 			z = rnd(radius * 2) - radius;
 		} while (x * x + y * y + z * z > radius * radius);
-		vec d = {(float)x, (float)y, (float)z};
+		OFVector3D d = OFMakeVector3D(x, y, z);
 		newparticle(p, d, rnd(fade * 3), type);
-	};
-};
+	}
+}
 
 void
-particle_trail(int type, int fade, vec &s, vec &e)
+particle_trail(int type, int fade, OFVector3D &s, OFVector3D &e)
 {
 	vdist(d, v, s, e);
 	vdiv(v, d * 2 + 0.1f);
-	vec p = s;
+	OFVector3D p = s;
 	loopi((int)d * 2)
 	{
 		vadd(p, v);
-		vec d = {
-		    float(rnd(11) - 5), float(rnd(11) - 5), float(rnd(11) - 5)};
+		OFVector3D d =
+		    OFMakeVector3D(rnd(11) - 5, rnd(11) - 5, rnd(11) - 5);
 		newparticle(p, d, rnd(fade) + fade, type);
-	};
-};
+	}
+}

@@ -298,15 +298,15 @@ pickup(int n, dynent *d)
 		if (lastmillis - lastjumppad < 300)
 			break;
 		lastjumppad = lastmillis;
-		vec v = {(int)(char)ents[n].attr3 / 10.0f,
-		    (int)(char)ents[n].attr2 / 10.0f, ents[n].attr1 / 10.0f};
+		OFVector3D v = OFMakeVector3D((int)(char)ents[n].attr3 / 10.0f,
+		    (int)(char)ents[n].attr2 / 10.0f, ents[n].attr1 / 10.0f);
 		player1->vel.z = 0;
 		vadd(player1->vel, v);
 		playsoundc(S_JUMPPAD);
 		break;
-	};
-	};
-};
+	}
+	}
+}
 
 void
 checkitems()
@@ -322,13 +322,13 @@ checkitems()
 			continue;
 		if (OUTBORD(e.x, e.y))
 			continue;
-		vec v = {(float)e.x, (float)e.y,
-		    (float)S(e.x, e.y)->floor + player1->eyeheight};
+		OFVector3D v = OFMakeVector3D(
+		    e.x, e.y, (float)S(e.x, e.y)->floor + player1->eyeheight);
 		vdist(dist, t, player1->o, v);
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);
-	};
-};
+	}
+}
 
 void
 checkquad(int time)

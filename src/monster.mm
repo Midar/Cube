@@ -126,7 +126,7 @@ monsterclear() // called after map start of when toggling edit mode to
 
 bool
 los(float lx, float ly, float lz, float bx, float by, float bz,
-    vec &v) // height-correct line of sight for monster shooting/seeing
+    OFVector3D &v) // height-correct line of sight for monster shooting/seeing
 {
 	if (OUTBORD((int)lx, (int)ly) || OUTBORD((int)bx, (int)by))
 		return false;
@@ -162,7 +162,7 @@ los(float lx, float ly, float lz, float bx, float by, float bz,
 };
 
 bool
-enemylos(dynent *m, vec &v)
+enemylos(dynent *m, OFVector3D &v)
 {
 	v = m->o;
 	return los(m->o.x, m->o.y, m->o.z, m->enemy->o.x, m->enemy->o.y,
@@ -253,7 +253,7 @@ monsteraction(
 	case M_SLEEP: // state classic sp monster start in, wait for visual
 	              // contact
 	{
-		vec target;
+		OFVector3D target;
 		if (editmode || !enemylos(m, target))
 			return; // skip running physics
 		normalise(m, enemyyaw);
@@ -283,7 +283,7 @@ monsteraction(
 	             // and may want to shoot at any time
 		m->targetyaw = enemyyaw;
 		if (m->trigger < lastmillis) {
-			vec target;
+			OFVector3D target;
 			if (!enemylos(
 			        m, target)) // no visual contact anymore, let
 			                    // monster get as close as possible
@@ -380,7 +380,8 @@ monsterthink()
 			continue;
 		if (OUTBORD(e.x, e.y))
 			continue;
-		vec v = {(float)e.x, (float)e.y, (float)S(e.x, e.y)->floor};
+		OFVector3D v =
+		    OFMakeVector3D(e.x, e.y, (float)S(e.x, e.y)->floor);
 		loopv(monsters) if (monsters[i]->state == CS_DEAD)
 		{
 			if (lastmillis - monsters[i]->lastaction < 2000) {

@@ -80,7 +80,7 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 
 const int MAXSPHERES = 50;
 struct sphere {
-	vec o;
+	OFVector3D o;
 	float size, max;
 	int type;
 	sphere *next;
@@ -89,7 +89,7 @@ sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
 bool sinit = false;
 
 void
-newsphere(vec &o, float max, int type)
+newsphere(OFVector3D &o, float max, int type)
 {
 	if (!sinit) {
 		loopi(MAXSPHERES)
@@ -184,9 +184,9 @@ renderents() // show sparkly thingies for map entities in edit mode
 		entity &e = ents[i];
 		if (e.type == NOTUSED)
 			continue;
-		vec v = {(float)e.x, (float)e.y, (float)e.z};
+		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
 		particle_splash(2, 2, 40, v);
-	};
+	}
 	int e = closestent();
 	if (e >= 0) {
 		entity &c = ents[e];
@@ -226,7 +226,7 @@ COMMAND(loadsky, ARG_1STR)
 float cursordepth = 0.9f;
 GLint viewport[4];
 GLdouble mm[16], pm[16];
-vec worldpos;
+OFVector3D worldpos;
 
 void
 readmatrices()
@@ -262,8 +262,8 @@ readdepth(int w, int h)
 	worldpos.x = (float)worldx;
 	worldpos.y = (float)worldy;
 	worldpos.z = (float)worldz;
-	vec r = {(float)mm[0], (float)mm[4], (float)mm[8]};
-	vec u = {(float)mm[1], (float)mm[5], (float)mm[9]};
+	OFVector3D r = OFMakeVector3D(mm[0], mm[4], mm[8]);
+	OFVector3D u = OFMakeVector3D(mm[1], mm[5], mm[9]);
 	setorient(r, u);
 };
 

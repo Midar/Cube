@@ -267,7 +267,7 @@ closestent() // used for delent and edit mode ent display
 		entity &e = ents[i];
 		if (e.type == NOTUSED)
 			continue;
-		vec v = {(float)e.x, (float)e.y, (float)e.z};
+		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
 		vdist(dist, t, player1->o, v);
 		if (dist < bdist) {
 			best = i;

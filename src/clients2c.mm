@@ -201,7 +201,7 @@ localservertoclient(
 
 		case SV_SHOT: {
 			int gun = getint(p);
-			vec s, e;
+			OFVector3D s, e;
 			s.x = getint(p) / DMF;
 			s.y = getint(p) / DMF;
 			s.z = getint(p) / DMF;
@@ -274,8 +274,8 @@ localservertoclient(
 			setspawn(i, true);
 			if (i >= (uint)ents.length())
 				break;
-			vec v = {(float)ents[i].x, (float)ents[i].y,
-			    (float)ents[i].z};
+			OFVector3D v =
+			    OFMakeVector3D(ents[i].x, ents[i].y, ents[i].z);
 			playsound(S_ITEMSPAWN, &v);
 			break;
 		}

@@ -10,7 +10,7 @@ struct guninfo {
 const int MONSTERDAMAGEFACTOR = 4;
 const int SGRAYS = 20;
 const float SGSPREAD = 2;
-vec sg[SGRAYS];
+OFVector3D sg[SGRAYS];
 
 guninfo guns[NUMGUNS] = {
     {S_PUNCH1, 250, 50, 0, 0, 1, "fist"},
@@ -71,23 +71,25 @@ weapon(OFString *a1, OFString *a2, OFString *a3)
 COMMAND(weapon, ARG_3STR)
 
 void
-createrays(vec &from, vec &to) // create random spread of rays for the shotgun
+createrays(OFVector3D &from,
+    OFVector3D &to) // create random spread of rays for the shotgun
 {
 	vdist(dist, dvec, from, to);
 	float f = dist * SGSPREAD / 1000;
 	loopi(SGRAYS)
 	{
 #define RNDD (rnd(101) - 50) * f
-		vec r = {RNDD, RNDD, RNDD};
+		OFVector3D r = OFMakeVector3D(RNDD, RNDD, RNDD);
 		sg[i] = to;
 		vadd(sg[i], r);
 	};
 };
 
 bool
-intersect(dynent *d, vec &from, vec &to) // if lineseg hits entity bounding box
+intersect(dynent *d, OFVector3D &from,
+    OFVector3D &to) // if lineseg hits entity bounding box
 {
-	vec v = to, w = d->o, *p;
+	OFVector3D v = to, w = d->o, *p;
 	vsub(v, from);
 	vsub(w, from);
 	float c1 = dotprod(w, v);
@@ -129,7 +131,7 @@ playerincrosshair()
 
 const int MAXPROJ = 100;
 struct projectile {
-	vec o, to;
+	OFVector3D o, to;
 	float speed;
 	dynent *owner;
 	int gun;
@@ -144,8 +146,8 @@ projreset()
 };
 
 void
-newprojectile(
-    vec &from, vec &to, float speed, bool local, dynent *owner, int gun)
+newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
+    dynent *owner, int gun)
 {
 	loopi(MAXPROJ)
 	{
@@ -182,7 +184,7 @@ const float RL_RADIUS = 5;
 const float RL_DAMRAD = 7; // hack
 
 void
-radialeffect(dynent *o, vec &v, int cn, int qdam, dynent *at)
+radialeffect(dynent *o, OFVector3D &v, int cn, int qdam, dynent *at)
 {
 	if (o->state != CS_ALIVE)
 		return;
@@ -199,8 +201,8 @@ radialeffect(dynent *o, vec &v, int cn, int qdam, dynent *at)
 };
 
 void
-splash(projectile *p, vec &v, vec &vold, int notthisplayer, int notthismonster,
-    int qdam)
+splash(projectile *p, OFVector3D &v, OFVector3D &vold, int notthisplayer,
+    int notthismonster, int qdam)
 {
 	particle_splash(0, 50, 300, v);
 	p->inuse = false;
@@ -230,7 +232,7 @@ splash(projectile *p, vec &v, vec &vold, int notthisplayer, int notthismonster,
 };
 
 inline void
-projdamage(dynent *o, projectile *p, vec &v, int i, int im, int qdam)
+projdamage(dynent *o, projectile *p, OFVector3D &v, int i, int im, int qdam)
 {
 	if (o->state != CS_ALIVE)
 		return;
@@ -264,14 +266,14 @@ moveprojectiles(float time)
 				if (!o)
 					continue;
 				projdamage(o, p, v, i, -1, qdam);
-			};
+			}
 			if (p->owner != player1)
 				projdamage(player1, p, v, -1, -1, qdam);
 			dvector &mv = getmonsters();
 			loopv(mv) if (!vreject(mv[i]->o, v, 10.0f) &&
 			              mv[i] != p->owner)
 			    projdamage(mv[i], p, v, -1, i, qdam);
-		};
+		}
 		if (p->inuse) {
 			if (time == dtime)
 				splash(p, v, p->o, -1, -1, qdam);
@@ -283,15 +285,15 @@ moveprojectiles(float time)
 					particle_splash(1, 1, 200, v);
 					particle_splash(
 					    guns[p->gun].part, 1, 1, v);
-				};
-			};
-		};
+				}
+			}
+		}
 		p->o = v;
 	};
 };
 
 void
-shootv(int gun, vec &from, vec &to, dynent *d,
+shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d,
     bool local) // create visual effect from a shot
 {
 	playsound(guns[gun].sound, d == player1 ? NULL : &d->o);
@@ -328,16 +330,17 @@ shootv(int gun, vec &from, vec &to, dynent *d,
 };
 
 void
-hitpush(int target, int damage, dynent *d, dynent *at, vec &from, vec &to)
+hitpush(int target, int damage, dynent *d, dynent *at, OFVector3D &from,
+    OFVector3D &to)
 {
 	hit(target, damage, d, at);
 	vdist(dist, v, from, to);
 	vmul(v, damage / dist / 50);
 	vadd(d->vel, v);
-};
+}
 
 void
-raydamage(dynent *o, vec &from, vec &to, dynent *d, int i)
+raydamage(dynent *o, OFVector3D &from, OFVector3D &to, dynent *d, int i)
 {
 	if (o->state != CS_ALIVE)
 		return;
@@ -356,7 +359,7 @@ raydamage(dynent *o, vec &from, vec &to, dynent *d, int i)
 };
 
 void
-shoot(dynent *d, vec &targ)
+shoot(dynent *d, OFVector3D &targ)
 {
 	int attacktime = lastmillis - d->lastaction;
 	if (attacktime < d->gunwait)
@@ -374,13 +377,13 @@ shoot(dynent *d, vec &targ)
 	};
 	if (d->gunselect)
 		d->ammo[d->gunselect]--;
-	vec from = d->o;
-	vec to = targ;
+	OFVector3D from = d->o;
+	OFVector3D to = targ;
 	from.z -= 0.2f; // below eye
 
 	vdist(dist, unitv, from, to);
 	vdiv(unitv, dist);
-	vec kickback = unitv;
+	OFVector3D kickback = unitv;
 	vmul(kickback, guns[d->gunselect].kickamount * -0.01f);
 	vadd(d->vel, kickback);
 	if (d->pitch < 80.0f)

@@ -32,7 +32,7 @@ struct md2 {
 	int numFrames;
 	int numVerts;
 	char *frames;
-	vec **mverts;
+	OFVector3D **mverts;
 	int displaylist;
 	int displaylistverts;
 
@@ -42,9 +42,9 @@ struct md2 {
 	bool loaded;
 
 	bool load(char *filename);
-	void render(vec &light, int numFrame, int range, float x, float y,
-	    float z, float yaw, float pitch, float scale, float speed, int snap,
-	    int basetime);
+	void render(OFVector3D &light, int numFrame, int range, float x,
+	    float y, float z, float yaw, float pitch, float scale, float speed,
+	    int snap, int basetime);
 	void scale(int frame, float scale, int sn);
 
 	md2()
@@ -103,7 +103,7 @@ md2::load(char *filename)
 
 	fclose(file);
 
-	mverts = new vec *[numFrames];
+	mverts = new OFVector3D *[numFrames];
 	loopj(numFrames) mverts[j] = NULL;
 
 	return true;
@@ -118,13 +118,13 @@ snap(int sn, float f)
 void
 md2::scale(int frame, float scale, int sn)
 {
-	mverts[frame] = new vec[numVerts];
+	mverts[frame] = new OFVector3D[numVerts];
 	md2_frame *cf = (md2_frame *)((char *)frames + frameSize * frame);
 	float sc = 16.0f / scale;
 	loop(vi, numVerts)
 	{
 		uchar *cv = (uchar *)&cf->vertices[vi].vertex;
-		vec *v = &(mverts[frame])[vi];
+		OFVector3D *v = &(mverts[frame])[vi];
 		v->x = (snap(sn, cv[0] * cf->scale[0]) + cf->translate[0]) / sc;
 		v->y =
 		    -(snap(sn, cv[1] * cf->scale[1]) + cf->translate[1]) / sc;
@@ -133,7 +133,7 @@ md2::scale(int frame, float scale, int sn)
 };
 
 void
-md2::render(vec &light, int frame, int range, float x, float y, float z,
+md2::render(OFVector3D &light, int frame, int range, float x, float y, float z,
     float yaw, float pitch, float sc, float speed, int snap, int basetime)
 {
 	loopi(range) if (!mverts[frame + i]) scale(frame + i, sc, snap);
@@ -163,8 +163,8 @@ md2::render(vec &light, int frame, int range, float x, float y, float z,
 		int fr2 = fr1 + 1;
 		if (fr2 >= frame + range)
 			fr2 = frame;
-		vec *verts1 = mverts[fr1];
-		vec *verts2 = mverts[fr2];
+		OFVector3D *verts1 = mverts[fr1];
+		OFVector3D *verts2 = mverts[fr2];
 
 		for (int *command = glCommands; (*command) != 0;) {
 			int numVertex = *command++;
@@ -181,8 +181,8 @@ md2::render(vec &light, int frame, int range, float x, float y, float z,
 				float tv = *((float *)command++);
 				glTexCoord2f(tu, tv);
 				int vn = *command++;
-				vec &v1 = verts1[vn];
-				vec &v2 = verts2[vn];
+				OFVector3D &v1 = verts1[vn];
+				OFVector3D &v2 = verts2[vn];
 #define ip(c) v1.c *frac2 + v2.c *frac1
 				glVertex3f(ip(x), ip(z), ip(y));
 			};
@@ -283,7 +283,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
 
 	int ix = (int)x;
 	int iy = (int)z;
-	vec light = {1.0f, 1.0f, 1.0f};
+	OFVector3D light = OFMakeVector3D(1, 1, 1);
 
 	if (!OUTBORD(ix, iy)) {
 		sqr *s = S(ix, iy);
