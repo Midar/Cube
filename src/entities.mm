@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "MapModelInfo.h"
+
 vector<entity> ents;
 
 static OFString *entmdlnames[] = {

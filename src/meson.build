@@ -1,6 +1,10 @@
 executable('client',
   [
     'Cube.mm',
+    'Ident.m',
+    'KeyMapping.m',
+    'MD2.mm',
+    'MapModelInfo.m',
     'client.mm',
     'clientextras.mm',
     'clientgame.mm',

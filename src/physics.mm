@@ -6,6 +6,8 @@
 
 #include "cube.h"
 
+#import "MapModelInfo.h"
+
 bool
 plcollide(dynent *d, dynent *o, float &headspace, float &hi,
     float &lo) // collide with player or monster

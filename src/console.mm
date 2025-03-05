@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <memory>
 
+#import "KeyMapping.h"
+
 struct cline {
 	char *cref;
 	int outtime;
@@ -92,26 +94,6 @@ renderconsole() // render buffer taking into account time & scrolling
 };
 
 // keymap is defined externally in keymap.cfg
-
-@interface KeyMapping : OFObject
-@property (readonly) int code;
-@property (readonly, nonatomic) OFString *name;
-@property (copy, nonatomic) OFString *action;
-
-- (instancetype)initWithCode:(int)code name:(OFString *)name;
-@end
-
-@implementation KeyMapping
-- (instancetype)initWithCode:(int)code name:(OFString *)name
-{
-	self = [super init];
-
-	_code = code;
-	_name = [name copy];
-
-	return self;
-}
-@end
 
 static OFMutableArray<KeyMapping *> *keyMappings = nil;
 

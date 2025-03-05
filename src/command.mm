@@ -5,21 +5,7 @@
 
 #include <memory>
 
-enum { ID_VAR, ID_COMMAND, ID_ALIAS };
-
-@interface Ident : OFObject
-@property (nonatomic) int type; // one of ID_* above
-@property (copy, nonatomic) OFString *name;
-@property (nonatomic) int min, max;           // ID_VAR
-@property (nonatomic) int *storage;           // ID_VAR
-@property (nonatomic) void (*fun)();          // ID_VAR, ID_COMMAND
-@property (nonatomic) int narg;               // ID_VAR, ID_COMMAND
-@property (copy, nonatomic) OFString *action; // ID_ALIAS
-@property (nonatomic) bool persist;
-@end
-
-@implementation Ident
-@end
+#import "Ident.h"
 
 void
 itoa(char *s, int i)

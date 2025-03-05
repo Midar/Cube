@@ -1,12 +1,14 @@
-project('Cube', ['c', 'objcpp'],
+project('Cube', ['c', 'objc', 'objcpp'],
   meson_version: '>=1.5.0')
 
-add_global_arguments(
-  [
-    '-fobjc-arc',
-    '-fobjc-arc-exceptions'
-  ],
-  language: 'objcpp')
+foreach lang : ['objc', 'objcpp']
+  add_global_arguments(
+    [
+      '-fobjc-arc',
+      '-fobjc-arc-exceptions'
+    ],
+    language: lang)
+endforeach
 
 objfw_dep = dependency('objfw')
 sdl_dep = dependency('SDL2')
