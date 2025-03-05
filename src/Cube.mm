@@ -69,6 +69,18 @@ VARP(minmillis, 0, 5, 1000);
 	if (passwd == nil)
 		passwd = @"";
 
+	_gameDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
+	_userDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
+
+	[OFFileManager.defaultManager
+	    createDirectoryAtIRI:[_userDataIRI
+	                             IRIByAppendingPathComponent:@"demos"]
+	           createParents:true];
+	[OFFileManager.defaultManager
+	    createDirectoryAtIRI:[_userDataIRI
+	                             IRIByAppendingPathComponent:@"savegames"]
+	           createParents:true];
+
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 		fatal(@"Unable to initialize SDL");
 
@@ -118,8 +130,6 @@ VARP(minmillis, 0, 5, 1000);
 	gl_init(_width, _height);
 
 	log(@"basetex");
-	_gameDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
-	_userDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
 	int xs, ys;
 	if (!installtex(2,
 	        [_userDataIRI IRIByAppendingPathComponent:@"data/newchars.png"],

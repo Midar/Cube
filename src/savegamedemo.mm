@@ -88,94 +88,108 @@ stopifrecording()
 }
 
 void
-savestate(char *fn)
+savestate(OFIRI *IRI)
 {
-	stop();
-	f = gzopen(fn, "wb9");
-	if (!f) {
-		conoutf(@"could not write %s", fn);
-		return;
-	}
-	gzwrite(f, (void *)"CUBESAVE", 8);
-	gzputc(f, islittleendian);
-	gzputi(SAVEGAMEVERSION);
-	gzputi(sizeof(dynent));
 	@autoreleasepool {
+		stop();
+		f = gzopen([IRI.fileSystemRepresentation
+		               cStringWithEncoding:OFLocale.encoding],
+		    "wb9");
+		if (!f) {
+			conoutf(@"could not write %@", IRI.string);
+			return;
+		}
+		gzwrite(f, (void *)"CUBESAVE", 8);
+		gzputc(f, islittleendian);
+		gzputi(SAVEGAMEVERSION);
+		gzputi(sizeof(dynent));
 		gzwrite(f, getclientmap().UTF8String, _MAXDEFSTR);
-	}
-	gzputi(gamemode);
-	gzputi(ents.length());
-	loopv(ents) gzputc(f, ents[i].spawned);
-	gzwrite(f, player1, sizeof(dynent));
-	dvector &monsters = getmonsters();
-	gzputi(monsters.length());
-	loopv(monsters) gzwrite(f, monsters[i], sizeof(dynent));
-	gzputi(players.length());
-	loopv(players)
-	{
-		gzput(players[i] == NULL);
-		gzwrite(f, players[i], sizeof(dynent));
+		gzputi(gamemode);
+		gzputi(ents.length());
+		loopv(ents) gzputc(f, ents[i].spawned);
+		gzwrite(f, player1, sizeof(dynent));
+		dvector &monsters = getmonsters();
+		gzputi(monsters.length());
+		loopv(monsters) gzwrite(f, monsters[i], sizeof(dynent));
+		gzputi(players.length());
+		loopv(players)
+		{
+			gzput(players[i] == NULL);
+			gzwrite(f, players[i], sizeof(dynent));
+		}
 	}
 }
 
 void
 savegame(OFString *name)
 {
+	if (!m_classicsp) {
+		conoutf(@"can only save classic sp games");
+		return;
+	}
+
 	@autoreleasepool {
-		if (!m_classicsp) {
-			conoutf(@"can only save classic sp games");
-			return;
-		}
-		sprintf_sd(fn)("savegames/%s.csgz", name.UTF8String);
-		savestate(fn);
+		OFString *path =
+		    [OFString stringWithFormat:@"savegames/%@.csgz", name];
+		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+		    IRIByAppendingPathComponent:path];
+		savestate(IRI);
 		stop();
-		conoutf(@"wrote %s", fn);
+		conoutf(@"wrote %@", IRI.string);
 	}
 }
 COMMAND(savegame, ARG_1STR)
 
 void
-loadstate(char *fn)
+loadstate(OFIRI *IRI)
 {
-	stop();
-	if (multiplayer())
-		return;
-	f = gzopen(fn, "rb9");
-	if (!f) {
-		conoutf(@"could not open %s", fn);
-		return;
-	}
-
-	string buf;
-	gzread(f, buf, 8);
-	if (strncmp(buf, "CUBESAVE", 8))
-		goto out;
-	if (gzgetc(f) != islittleendian)
-		goto out; // not supporting save->load accross incompatible
-		          // architectures simpifies things a LOT
-	if (gzgeti() != SAVEGAMEVERSION || gzgeti() != sizeof(dynent))
-		goto out;
-	string mapname;
-	gzread(f, mapname, _MAXDEFSTR);
-	nextmode = gzgeti();
 	@autoreleasepool {
-		// continue below once map has been loaded and client & server
-		// have updated
-		changemap(@(mapname));
+		stop();
+		if (multiplayer())
+			return;
+		f = gzopen([IRI.fileSystemRepresentation
+		               cStringWithEncoding:OFLocale.encoding],
+		    "rb9");
+		if (!f) {
+			conoutf(@"could not open %@", IRI.string);
+			return;
+		}
+
+		string buf;
+		gzread(f, buf, 8);
+		if (strncmp(buf, "CUBESAVE", 8))
+			goto out;
+		if (gzgetc(f) != islittleendian)
+			goto out; // not supporting save->load accross
+			          // incompatible architectures simpifies things
+			          // a LOT
+		if (gzgeti() != SAVEGAMEVERSION || gzgeti() != sizeof(dynent))
+			goto out;
+		string mapname;
+		gzread(f, mapname, _MAXDEFSTR);
+		nextmode = gzgeti();
+		@autoreleasepool {
+			// continue below once map has been loaded and client &
+			// server have updated
+			changemap(@(mapname));
+		}
+		return;
+	out:
+		conoutf(@"aborting: savegame/demo from a different version of "
+		        @"cube or cpu architecture");
+		stop();
 	}
-	return;
-out:
-	conoutf(@"aborting: savegame/demo from a different version of cube or "
-	        @"cpu architecture");
-	stop();
 }
 
 void
 loadgame(OFString *name)
 {
 	@autoreleasepool {
-		sprintf_sd(fn)("savegames/%s.csgz", name.UTF8String);
-		loadstate(fn);
+		OFString *path =
+		    [OFString stringWithFormat:@"savegames/%@.csgz", name];
+		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+		    IRIByAppendingPathComponent:path];
+		loadstate(IRI);
 	}
 }
 COMMAND(loadgame, ARG_1STR)
@@ -249,18 +263,23 @@ OFVector3D dorig;
 void
 record(OFString *name)
 {
+	if (m_sp) {
+		conoutf(@"cannot record singleplayer games");
+		return;
+	}
+
+	int cn = getclientnum();
+	if (cn < 0)
+		return;
+
 	@autoreleasepool {
-		if (m_sp) {
-			conoutf(@"cannot record singleplayer games");
-			return;
-		}
-		int cn = getclientnum();
-		if (cn < 0)
-			return;
-		sprintf_sd(fn)("demos/%s.cdgz", name.UTF8String);
-		savestate(fn);
+		OFString *path =
+		    [OFString stringWithFormat:@"demos/%@.cdgz", name];
+		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+		    IRIByAppendingPathComponent:path];
+		savestate(IRI);
 		gzputi(cn);
-		conoutf(@"started recording demo to %s", fn);
+		conoutf(@"started recording demo to %@", IRI.string);
 		demorecording = true;
 		starttime = lastmillis;
 		ddamage = bdamage = 0;
@@ -315,8 +334,11 @@ void
 demo(OFString *name)
 {
 	@autoreleasepool {
-		sprintf_sd(fn)("demos/%s.cdgz", name.UTF8String);
-		loadstate(fn);
+		OFString *path =
+		    [OFString stringWithFormat:@"demos/%@.cdgz", name];
+		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+		    IRIByAppendingPathComponent:path];
+		loadstate(IRI);
 		demoloading = true;
 	}
 }

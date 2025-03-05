@@ -254,8 +254,7 @@ playsound(int n, OFVector3D *loc)
 #endif
 
 		if (!samples[n]) {
-			conoutf(@"failed to load sample: %s",
-			    IRI.string.UTF8String);
+			conoutf(@"failed to load sample: %@", IRI.string);
 			return;
 		}
 	}
