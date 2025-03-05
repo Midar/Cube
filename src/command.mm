@@ -557,13 +557,17 @@ bool
 execfile(OFString *cfgfile)
 {
 	@autoreleasepool {
-		string s;
-		strcpy_s(s, cfgfile.UTF8String);
-		char *buf = loadfile(path(s), NULL);
-		if (!buf)
+		OFMutableData *data;
+		@try {
+			data = [OFMutableData dataWithContentsOfFile:cfgfile];
+		} @catch (id e) {
 			return false;
-		execute(buf);
-		free(buf);
+		}
+
+		// Ensure \0 termination.
+		[data addItem:""];
+
+		execute((char *)data.mutableItems);
 		return true;
 	}
 }

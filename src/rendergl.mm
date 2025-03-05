@@ -73,79 +73,87 @@ cleangl()
 }
 
 bool
-installtex(int tnum, char *texname, int &xs, int &ys, bool clamp)
+installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 {
-	SDL_Surface *s = IMG_Load(texname);
-	if (s == NULL) {
-		conoutf(@"couldn't load texture %s", texname);
-		return false;
-	}
-
-	if (s->format->BitsPerPixel != 24) {
-		SDL_PixelFormat *format =
-		    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
-		if (format == NULL) {
-			conoutf(@"texture cannot be converted to 24bpp: %s",
-			    texname);
+	@autoreleasepool {
+		SDL_Surface *s =
+		    IMG_Load(IRI.fileSystemRepresentation.UTF8String);
+		if (s == NULL) {
+			conoutf(
+			    @"couldn't load texture %s", IRI.string.UTF8String);
 			return false;
 		}
 
-		@try {
-			SDL_Surface *converted =
-			    SDL_ConvertSurface(s, format, 0);
-			if (converted == NULL) {
+		if (s->format->BitsPerPixel != 24) {
+			SDL_PixelFormat *format =
+			    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
+			if (format == NULL) {
 				conoutf(
 				    @"texture cannot be converted to 24bpp: %s",
-				    texname);
+				    IRI.string.UTF8String);
 				return false;
 			}
 
-			SDL_FreeSurface(s);
-			s = converted;
-		} @finally {
-			SDL_FreeFormat(format);
+			@try {
+				SDL_Surface *converted =
+				    SDL_ConvertSurface(s, format, 0);
+				if (converted == NULL) {
+					conoutf(@"texture cannot be converted "
+					        @"to 24bpp: %s",
+					    IRI.string.UTF8String);
+					return false;
+				}
+
+				SDL_FreeSurface(s);
+				s = converted;
+			} @finally {
+				SDL_FreeFormat(format);
+			}
 		}
+
+		// loopi(s->w*s->h*3) { uchar *p = (uchar *)s->pixels+i; *p =
+		// 255-*p; };
+		glBindTexture(GL_TEXTURE_2D, tnum);
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+		    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+		    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+		glTexParameteri(
+		    GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+		    GL_LINEAR_MIPMAP_LINEAR); // NEAREST);
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+		*xs = s->w;
+		*ys = s->h;
+		while (*xs > glmaxtexsize || *ys > glmaxtexsize) {
+			*xs /= 2;
+			*ys /= 2;
+		}
+
+		void *scaledimg = s->pixels;
+
+		if (*xs != s->w) {
+			conoutf(@"warning: quality loss: scaling %s",
+			    IRI.string
+			        .UTF8String); // for voodoo cards under linux
+			scaledimg = alloc(*xs * *ys * 3);
+			gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE,
+			    s->pixels, *xs, *ys, GL_UNSIGNED_BYTE, scaledimg);
+		}
+
+		if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, *xs, *ys, GL_RGB,
+		        GL_UNSIGNED_BYTE, scaledimg))
+			fatal(@"could not build mipmaps");
+
+		if (*xs != s->w)
+			free(scaledimg);
+
+		SDL_FreeSurface(s);
+
+		return true;
 	}
-
-	// loopi(s->w*s->h*3) { uchar *p = (uchar *)s->pixels+i; *p = 255-*p; };
-	glBindTexture(GL_TEXTURE_2D, tnum);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-	    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-	    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-	    GL_LINEAR_MIPMAP_LINEAR); // NEAREST);
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	xs = s->w;
-	ys = s->h;
-	while (xs > glmaxtexsize || ys > glmaxtexsize) {
-		xs /= 2;
-		ys /= 2;
-	}
-
-	void *scaledimg = s->pixels;
-
-	if (xs != s->w) {
-		conoutf(@"warning: quality loss: scaling %s",
-		    texname); // for voodoo cards under linux
-		scaledimg = alloc(xs * ys * 3);
-		gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE, s->pixels,
-		    xs, ys, GL_UNSIGNED_BYTE, scaledimg);
-	}
-
-	if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, xs, ys, GL_RGB,
-	        GL_UNSIGNED_BYTE, scaledimg))
-		fatal(@"could not build mipmaps");
-
-	if (xs != s->w)
-		free(scaledimg);
-
-	SDL_FreeSurface(s);
-
-	return true;
 }
 
 // management of texture slots
@@ -189,36 +197,35 @@ texture(OFString *aframe, OFString *name)
 		mapping[num][frame] = 1;
 		char *n = mapname[num][frame];
 		strcpy_s(n, name.UTF8String);
-		path(n);
 	}
 }
 COMMAND(texture, ARG_2STR)
 
 int
-lookuptexture(int tex, int &xs, int &ys)
+lookuptexture(int tex, int *xs, int *ys)
 {
 	int frame = 0; // other frames?
 	int tid = mapping[tex][frame];
 
 	if (tid >= FIRSTTEX) {
-		xs = texx[tid - FIRSTTEX];
-		ys = texy[tid - FIRSTTEX];
+		*xs = texx[tid - FIRSTTEX];
+		*ys = texy[tid - FIRSTTEX];
 		return tid;
-	};
+	}
 
-	xs = ys = 16;
-	if (!tid)
+	*xs = *ys = 16;
+	if (tid == 0)
 		return 1; // crosshair :)
 
 	loopi(curtex) // lazily happens once per "texture" command, basically
 	{
 		if (strcmp(mapname[tex][frame], texname[i]) == 0) {
 			mapping[tex][frame] = tid = i + FIRSTTEX;
-			xs = texx[i];
-			ys = texy[i];
+			*xs = texx[i];
+			*ys = texy[i];
 			return tid;
-		};
-	};
+		}
+	}
 
 	if (curtex == MAXTEX)
 		fatal(@"loaded too many textures");
@@ -226,18 +233,24 @@ lookuptexture(int tex, int &xs, int &ys)
 	int tnum = curtex + FIRSTTEX;
 	strcpy_s(texname[curtex], mapname[tex][frame]);
 
-	sprintf_sd(name)("packages%c%s", PATHDIV, texname[curtex]);
+	@autoreleasepool {
+		OFString *path =
+		    [OFString stringWithFormat:@"packages/%s", texname[curtex]];
 
-	if (installtex(tnum, name, xs, ys)) {
-		mapping[tex][frame] = tnum;
-		texx[curtex] = xs;
-		texy[curtex] = ys;
-		curtex++;
-		return tnum;
-	} else {
-		return mapping[tex][frame] = FIRSTTEX; // temp fix
-	};
-};
+		if (installtex(tnum,
+		        [Cube.sharedInstance.gameDataIRI
+		            IRIByAppendingPathComponent:path],
+		        xs, ys, false)) {
+			mapping[tex][frame] = tnum;
+			texx[curtex] = *xs;
+			texy[curtex] = *ys;
+			curtex++;
+			return tnum;
+		} else {
+			return mapping[tex][frame] = FIRSTTEX; // temp fix
+		}
+	}
+}
 
 void
 setupworld()
@@ -418,7 +431,7 @@ gl_drawframe(int w, int h, float curfps)
 	glEnable(GL_TEXTURE_2D);
 
 	int xs, ys;
-	skyoglid = lookuptexture(DEFAULT_SKY, xs, ys);
+	skyoglid = lookuptexture(DEFAULT_SKY, &xs, &ys);
 
 	resetcubes();
 

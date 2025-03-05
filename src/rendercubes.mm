@@ -103,7 +103,7 @@ render_flat(int wtex, int x, int y, int size, int h, sqr *l1, sqr *l2, sqr *l3,
 	};
 
 	int sx, sy;
-	int gltex = lookuptexture(wtex, sx, sy);
+	int gltex = lookuptexture(wtex, &sx, &sy);
 	float xf = TEXTURESCALE / sx;
 	float yf = TEXTURESCALE / sy;
 	float xs = size * xf;
@@ -184,7 +184,7 @@ render_flatdelta(int wtex, int x, int y, int size, float h1, float h2, float h3,
 	};
 
 	int sx, sy;
-	int gltex = lookuptexture(wtex, sx, sy);
+	int gltex = lookuptexture(wtex, &sx, &sy);
 	float xf = TEXTURESCALE / sx;
 	float yf = TEXTURESCALE / sy;
 	float xs = size * xf;
@@ -238,7 +238,7 @@ render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
 	vertcheck();
 
 	int sx, sy;
-	int gltex = lookuptexture(h->ftex, sx, sy);
+	int gltex = lookuptexture(h->ftex, &sx, &sy);
 	float xf = TEXTURESCALE / sx;
 	float yf = TEXTURESCALE / sy;
 
@@ -247,7 +247,7 @@ render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
 	vertf((float)x3, h->floor, (float)y3, l3, xf * x3, yf * y3);
 	addstrip(gltex, curvert - 3, 3);
 
-	gltex = lookuptexture(h->ctex, sx, sy);
+	gltex = lookuptexture(h->ctex, &sx, &sy);
 	xf = TEXTURESCALE / sx;
 	yf = TEXTURESCALE / sy;
 
@@ -292,7 +292,7 @@ render_square(int wtex, float floor1, float floor2, float ceil1, float ceil2,
 	};
 
 	int sx, sy;
-	int gltex = lookuptexture(wtex, sx, sy);
+	int gltex = lookuptexture(wtex, &sx, &sy);
 	float xf = TEXTURESCALE / sx;
 	float yf = TEXTURESCALE / sy;
 	float xs = size * xf;
@@ -352,7 +352,7 @@ renderwater(float hf)
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_ONE, GL_SRC_COLOR);
 	int sx, sy;
-	glBindTexture(GL_TEXTURE_2D, lookuptexture(DEFAULT_LIQUID, sx, sy));
+	glBindTexture(GL_TEXTURE_2D, lookuptexture(DEFAULT_LIQUID, &sx, &sy));
 
 	wx1 &= ~(watersubdiv - 1);
 	wy1 &= ~(watersubdiv - 1);

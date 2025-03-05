@@ -42,7 +42,7 @@ struct md2_frame {
 @property (nonatomic) int mdlnum;
 @property (nonatomic) bool loaded;
 
-- (bool)loadWithPath:(char *)filename;
+- (bool)loadWithIRI:(OFIRI *)IRI;
 - (void)renderWithLight:(OFVector3D &)light
                   frame:(int)frame
                   range:(int)range
@@ -79,51 +79,62 @@ static OFMutableArray<MD2 *> *mapmodels = nil;
 		delete[] _frames;
 }
 
-- (bool)loadWithPath:(char *)filename
+- (bool)loadWithIRI:(OFIRI *)IRI
 {
-	FILE *file;
-	md2_header header;
+	@autoreleasepool {
+		OFSeekableStream *stream;
+		@try {
+			stream = (OFSeekableStream *)[[OFIRIHandler
+			    handlerForIRI:IRI] openItemAtIRI:IRI mode:@"r"];
+		} @catch (id e) {
+			return false;
+		}
 
-	if ((file = fopen(filename, "rb")) == NULL)
-		return false;
+		if (![stream isKindOfClass:[OFSeekableStream class]])
+			return false;
 
-	fread(&header, sizeof(md2_header), 1, file);
-	endianswap(&header, sizeof(int), sizeof(md2_header) / sizeof(int));
+		md2_header header;
+		[stream readIntoBuffer:&header exactLength:sizeof(md2_header)];
+		endianswap(
+		    &header, sizeof(int), sizeof(md2_header) / sizeof(int));
 
-	if (header.magic != 844121161 || header.version != 8)
-		return false;
+		if (header.magic != 844121161 || header.version != 8)
+			return false;
 
-	_frames = new char[header.frameSize * header.numFrames];
-	if (_frames == NULL)
-		return false;
+		_frames = new char[header.frameSize * header.numFrames];
+		if (_frames == NULL)
+			return false;
 
-	fseek(file, header.offsetFrames, SEEK_SET);
-	fread(_frames, header.frameSize * header.numFrames, 1, file);
+		[stream seekToOffset:header.offsetFrames whence:OFSeekSet];
+		[stream readIntoBuffer:_frames
+		           exactLength:header.frameSize * header.numFrames];
 
-	for (int i = 0; i < header.numFrames; ++i)
-		endianswap(_frames + i * header.frameSize, sizeof(float), 6);
+		for (int i = 0; i < header.numFrames; ++i)
+			endianswap(
+			    _frames + i * header.frameSize, sizeof(float), 6);
 
-	_glCommands = new int[header.numGlCommands];
-	if (_glCommands == NULL)
-		return false;
+		_glCommands = new int[header.numGlCommands];
+		if (_glCommands == NULL)
+			return false;
 
-	fseek(file, header.offsetGlCommands, SEEK_SET);
-	fread(_glCommands, header.numGlCommands * sizeof(int), 1, file);
+		[stream seekToOffset:header.offsetGlCommands whence:OFSeekSet];
+		[stream readIntoBuffer:_glCommands
+		           exactLength:header.numGlCommands * sizeof(int)];
+		endianswap(_glCommands, sizeof(int), header.numGlCommands);
 
-	endianswap(_glCommands, sizeof(int), header.numGlCommands);
+		_numFrames = header.numFrames;
+		_numGlCommands = header.numGlCommands;
+		_frameSize = header.frameSize;
+		_numTriangles = header.numTriangles;
+		_numVerts = header.numVertices;
 
-	_numFrames = header.numFrames;
-	_numGlCommands = header.numGlCommands;
-	_frameSize = header.frameSize;
-	_numTriangles = header.numTriangles;
-	_numVerts = header.numVertices;
+		[stream close];
 
-	fclose(file);
+		_mverts = new OFVector3D *[_numFrames];
+		loopj(_numFrames) _mverts[j] = NULL;
 
-	_mverts = new OFVector3D *[_numFrames];
-	loopj(_numFrames) _mverts[j] = NULL;
-
-	return true;
+		return true;
+	}
 }
 
 float
@@ -235,14 +246,20 @@ delayedload(MD2 *m)
 {
 	if (!m.loaded) {
 		@autoreleasepool {
-			sprintf_sd(name1)("packages/models/%s/tris.md2",
-			    m.loadname.UTF8String);
-			if (![m loadWithPath:path(name1)])
-				fatal(@"loadmodel: ", @(name1));
-			sprintf_sd(name2)("packages/models/%s/skin.jpg",
-			    m.loadname.UTF8String);
+			OFString *path = [OFString
+			    stringWithFormat:@"packages/models/%@", m.loadname];
+			OFIRI *baseIRI = [Cube.sharedInstance.gameDataIRI
+			    IRIByAppendingPathComponent:path];
+
+			OFIRI *IRI1 =
+			    [baseIRI IRIByAppendingPathComponent:@"tris.md2"];
+			if (![m loadWithIRI:IRI1])
+				fatal(@"loadmodel: ", IRI1.string);
+
+			OFIRI *IRI2 =
+			    [baseIRI IRIByAppendingPathComponent:@"skin.jpg"];
 			int xs, ys;
-			installtex(FIRSTMDL + m.mdlnum, path(name2), xs, ys);
+			installtex(FIRSTMDL + m.mdlnum, IRI2, &xs, &ys, false);
 			m.loaded = true;
 		}
 	}
@@ -314,7 +331,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
 
 	int xs, ys;
 	glBindTexture(GL_TEXTURE_2D,
-	    tex ? lookuptexture(tex, xs, ys) : FIRSTMDL + m.mdlnum);
+	    tex ? lookuptexture(tex, &xs, &ys) : FIRSTMDL + m.mdlnum);
 
 	int ix = (int)x;
 	int iy = (int)z;

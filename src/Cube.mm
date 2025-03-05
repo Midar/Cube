@@ -9,6 +9,7 @@ VARP(minmillis, 0, 5, 1000);
 
 @implementation Cube {
 	int _width, _height;
+	OFIRI *_userDataIRI;
 }
 
 + (Cube *)sharedInstance
@@ -116,16 +117,43 @@ VARP(minmillis, 0, 5, 1000);
 	gl_init(_width, _height);
 
 	log("basetex");
+	_gameDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
+	_userDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
 	int xs, ys;
-	if (!installtex(2, path(newstring("data/newchars.png")), xs, ys) ||
-	    !installtex(3, path(newstring("data/martin/base.png")), xs, ys) ||
-	    !installtex(6, path(newstring("data/martin/ball1.png")), xs, ys) ||
-	    !installtex(7, path(newstring("data/martin/smoke.png")), xs, ys) ||
-	    !installtex(8, path(newstring("data/martin/ball2.png")), xs, ys) ||
-	    !installtex(9, path(newstring("data/martin/ball3.png")), xs, ys) ||
-	    !installtex(4, path(newstring("data/explosion.jpg")), xs, ys) ||
-	    !installtex(5, path(newstring("data/items.png")), xs, ys) ||
-	    !installtex(1, path(newstring("data/crosshair.png")), xs, ys))
+	if (!installtex(2,
+	        [_userDataIRI IRIByAppendingPathComponent:@"data/newchars.png"],
+	        &xs, &ys, false) ||
+	    !installtex(3,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/martin/base.png"],
+	        &xs, &ys, false) ||
+	    !installtex(6,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/martin/ball1.png"],
+	        &xs, &ys, false) ||
+	    !installtex(7,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/martin/smoke.png"],
+	        &xs, &ys, false) ||
+	    !installtex(8,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/martin/ball2.png"],
+	        &xs, &ys, false) ||
+	    !installtex(9,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/martin/ball3.png"],
+	        &xs, &ys, false) ||
+	    !installtex(4,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/explosion.jpg"],
+	        &xs, &ys, false) ||
+	    !installtex(5,
+	        [_userDataIRI IRIByAppendingPathComponent:@"data/items.png"],
+	        &xs, &ys, false) ||
+	    !installtex(1,
+	        [_userDataIRI
+	            IRIByAppendingPathComponent:@"data/crosshair.png"],
+	        &xs, &ys, false))
 		fatal(@"could not find core textures (hint: run cube from the "
 		      @"parent of the bin directory)");
 
@@ -269,9 +297,16 @@ VARP(minmillis, 0, 5, 1000);
 				endianswap(dest, 3, _width);
 			}
 
-			sprintf_sd(buf)(
-			    "screenshots/screenshot_%d.bmp", lastmillis);
-			SDL_SaveBMP(temp, path(buf));
+			@autoreleasepool {
+				OFString *path = [OFString
+				    stringWithFormat:
+				        @"screenshots/screenshot_%d.bmp",
+				    lastmillis];
+				SDL_SaveBMP(temp,
+				    [_userDataIRI
+				        IRIByAppendingPathComponent:path]
+				        .fileSystemRepresentation.UTF8String);
+			}
 			SDL_FreeSurface(temp);
 		}
 

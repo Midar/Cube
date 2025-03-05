@@ -44,12 +44,11 @@ extern void writeservercfg();
 extern void gl_init(int w, int h);
 extern void cleangl();
 extern void gl_drawframe(int w, int h, float curfps);
-extern bool installtex(
-    int tnum, char *texname, int &xs, int &ys, bool clamp = false);
+extern bool installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp);
 extern void mipstats(int a, int b, int c);
 extern void vertf(float v1, float v2, float v3, sqr *ls, float t1, float t2);
 extern void addstrip(int tex, int start, int n);
-extern int lookuptexture(int tex, int &xs, int &ys);
+extern int lookuptexture(int tex, int *xs, int *ys);
 
 // rendercubes
 extern void resetcubes();
@@ -185,7 +184,7 @@ extern void render_particles(int time);
 extern void save_world(OFString *fname);
 extern void load_world(char *mname);
 extern void writemap(char *mname, int msize, uchar *mdata);
-extern uchar *readmap(const char *mname, int *msize);
+extern OFData *readmap(OFString *mname);
 extern void loadgamerest();
 extern void incomingdemodata(uchar *buf, int len, bool extras = false);
 extern void demoplaybackstep();

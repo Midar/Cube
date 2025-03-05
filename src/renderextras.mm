@@ -206,18 +206,27 @@ loadsky(OFString *basename)
 {
 	@autoreleasepool {
 		static OFString *lastsky = @"";
+
 		if ([lastsky isEqual:basename])
 			return;
-		char *side[] = {"ft", "bk", "lf", "rt", "dn", "up"};
+
+		static const OFString *side[] = {
+		    @"ft", @"bk", @"lf", @"rt", @"dn", @"up"};
 		int texnum = 14;
 		loopi(6)
 		{
-			sprintf_sd(name)(
-			    "packages/%s_%s.jpg", basename.UTF8String, side[i]);
+			OFString *path =
+			    [OFString stringWithFormat:@"packages/%@_%@.jpg",
+			              basename, side[i]];
+
 			int xs, ys;
-			if (!installtex(texnum + i, path(name), xs, ys, true))
+			if (!installtex(texnum + i,
+			        [Cube.sharedInstance.gameDataIRI
+			            IRIByAppendingPathComponent:path],
+			        &xs, &ys, true))
 				conoutf(@"could not load sky textures");
 		}
+
 		lastsky = basename;
 	}
 }

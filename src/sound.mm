@@ -86,20 +86,25 @@ music(OFString *name)
 	stopsound();
 	if (soundvol && musicvol) {
 		@autoreleasepool {
-			string sn;
-			strcpy_s(sn, "packages/");
-			strcat_s(sn, name.UTF8String);
+			OFString *path =
+			    [OFString stringWithFormat:@"packages/%@", name];
+			OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
+			    IRIByAppendingPathComponent:path];
+
 #ifdef USE_MIXER
-			if (mod = Mix_LoadMUS(path(sn))) {
+			if (mod = Mix_LoadMUS(
+			        IRI.fileSystemRepresentation.UTF8String)) {
 				Mix_PlayMusic(mod, -1);
 				Mix_VolumeMusic((musicvol * MAXVOL) / 255);
 			}
 #else
-			if (mod = FMUSIC_LoadSong(path(sn))) {
+			if (mod = FMUSIC_LoadSong(
+			        IRI.fileSystemRepresentation.UTF8String)) {
 				FMUSIC_PlaySong(mod);
 				FMUSIC_SetMasterVolume(mod, musicvol);
 			} else if (stream = FSOUND_Stream_Open(
-			               path(sn), FSOUND_LOOP_NORMAL, 0, 0)) {
+			               IRI.fileSystemRepresentation.UTF8String,
+			               FSOUND_LOOP_NORMAL, 0, 0)) {
 				int chan =
 				    FSOUND_Stream_Play(FSOUND_FREE, stream);
 				if (chan >= 0) {
@@ -230,23 +235,29 @@ playsound(int n, OFVector3D *loc)
 	if (n < 0 || n >= samples.length()) {
 		conoutf(@"unregistered sound: %d", n);
 		return;
-	};
+	}
 
 	if (!samples[n]) {
-		sprintf_sd(buf)("packages/sounds/%s.wav", snames[n]);
+		OFString *path = [OFString
+		    stringWithFormat:@"packages/sounds/%s.wav", snames[n]];
+		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent:path];
 
 #ifdef USE_MIXER
-		samples[n] = Mix_LoadWAV(path(buf));
-#else
 		samples[n] =
-		    FSOUND_Sample_Load(n, path(buf), FSOUND_LOOP_OFF, 0, 0);
+		    Mix_LoadWAV(IRI.fileSystemRepresentation.UTF8String);
+#else
+		samples[n] = FSOUND_Sample_Load(n,
+		    IRI.fileSystemRepresentation.UTF8String, FSOUND_LOOP_OFF, 0,
+		    0);
 #endif
 
 		if (!samples[n]) {
-			conoutf(@"failed to load sample: %s", buf);
+			conoutf(@"failed to load sample: %s",
+			    IRI.string.UTF8String);
 			return;
-		};
-	};
+		}
+	}
 
 #ifdef USE_MIXER
 	int chan = Mix_PlayChannel(-1, samples[n], 0);
@@ -261,7 +272,7 @@ playsound(int n, OFVector3D *loc)
 #ifndef USE_MIXER
 	FSOUND_SetPaused(chan, false);
 #endif
-};
+}
 
 void
 sound(int n)

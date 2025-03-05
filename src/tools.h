@@ -122,8 +122,6 @@ struct sprintf_s_f {
 
 #define fast_f2nat(val) ((int)(val))
 
-extern char *path(char *s);
-extern char *loadfile(char *fn, int *size);
 extern void endianswap(void *, int, int);
 
 // memory pool that uses buckets and linear allocation for small objects

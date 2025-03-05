@@ -28,9 +28,6 @@ setnames(const char *name)
 	    "packages/%s/%s_%d.BAK", pakname, mapname, lastmillis);
 	sprintf_s(pcfname)("packages/%s/package.cfg", pakname);
 	sprintf_s(mcfname)("packages/%s/%s.cfg", pakname, mapname);
-
-	path(cgzname);
-	path(bakname);
 }
 
 // the optimize routines below are here to reduce the detrimental effects of
@@ -137,16 +134,13 @@ writemap(char *mname, int msize, uchar *mdata)
 	conoutf(@"wrote map %s as file %s", mname, cgzname);
 }
 
-uchar *
-readmap(const char *mname, int *msize)
+OFData *
+readmap(OFString *mname)
 {
-	setnames(mname);
-	uchar *mdata = (uchar *)loadfile(cgzname, msize);
-	if (!mdata) {
-		conoutf(@"could not read map %s", cgzname);
-		return NULL;
+	@autoreleasepool {
+		setnames(mname.UTF8String);
 	}
-	return mdata;
+	return [OFData dataWithContentsOfFile:mname];
 }
 
 // save map as .cgz file. uses 2 layers of compression: first does simple
@@ -362,7 +356,7 @@ load_world(char *mname) // still supports all map formats that have existed
 	calclight();
 	settagareas();
 	int xs, ys;
-	loopi(256) if (texuse) lookuptexture(i, xs, ys);
+	loopi(256) if (texuse) lookuptexture(i, &xs, &ys);
 	conoutf(@"read map %s (%d milliseconds)", cgzname,
 	    SDL_GetTicks() - lastmillis);
 	conoutf(@"%s", hdr.maptitle);

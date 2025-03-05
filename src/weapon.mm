@@ -7,12 +7,12 @@ struct guninfo {
 	OFString *name;
 };
 
-const int MONSTERDAMAGEFACTOR = 4;
-const int SGRAYS = 20;
-const float SGSPREAD = 2;
-OFVector3D sg[SGRAYS];
+static const int MONSTERDAMAGEFACTOR = 4;
+static const int SGRAYS = 20;
+static const float SGSPREAD = 2;
+static OFVector3D sg[SGRAYS];
 
-guninfo guns[NUMGUNS] = {
+static const guninfo guns[NUMGUNS] = {
     {S_PUNCH1, 250, 50, 0, 0, 1, @"fist"},
     {S_SG, 1400, 10, 0, 0, 20, @"shotgun"}, // *SGRAYS
     {S_CG, 100, 30, 0, 0, 7, @"chaingun"},

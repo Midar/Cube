@@ -169,8 +169,8 @@ sendmap(OFString *mapname)
 		changemap(mapname);
 		mapname = getclientmap();
 		int mapsize;
-		uchar *mapdata = readmap(mapname.UTF8String, &mapsize);
-		if (!mapdata)
+		OFData *mapdata = readmap(mapname);
+		if (mapdata == nil)
 			return;
 		ENetPacket *packet = enet_packet_create(
 		    NULL, MAXTRANS + mapsize, ENET_PACKET_FLAG_RELIABLE);
@@ -179,16 +179,14 @@ sendmap(OFString *mapname)
 		putint(p, SV_SENDMAP);
 		sendstring(mapname.UTF8String, p);
 		putint(p, mapsize);
-		if (65535 - (p - start) < mapsize) {
+		if (65535 - (p - start) < mapdata.count) {
 			conoutf(
 			    @"map %s is too large to send", mapname.UTF8String);
-			free(mapdata);
 			enet_packet_destroy(packet);
 			return;
-		};
-		memcpy(p, mapdata, mapsize);
+		}
+		memcpy(p, mapdata.items, mapdata.count);
 		p += mapsize;
-		free(mapdata);
 		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 		enet_packet_resize(packet, p - start);
 		sendpackettoserv(packet);
