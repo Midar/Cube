@@ -16,16 +16,6 @@ VARP(minmillis, 0, 5, 1000);
 	return (Cube *)OFApplication.sharedApplication.delegate;
 }
 
-- (instancetype)init
-{
-	self = [super init];
-
-	_width = 1920;
-	_height = 1080;
-
-	return self;
-}
-
 - (void)applicationDidFinishLaunching:(OFNotification *)notification
 {
 	bool dedicated, windowed;
@@ -97,6 +87,18 @@ VARP(minmillis, 0, 5, 1000);
 	log("video: sdl");
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		fatal(@"Unable to initialize SDL Video");
+
+	if (_width == 0 || _height == 0) {
+		SDL_DisplayMode mode;
+
+		if (SDL_GetDesktopDisplayMode(0, &mode) == 0) {
+			_width = mode.w;
+			_height = mode.h;
+		} else {
+			_width = 1920;
+			_height = 1080;
+		}
+	}
 
 	log("video: mode");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
