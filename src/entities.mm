@@ -217,7 +217,7 @@ teleport(int n, dynent *d) // also used by monsters
 		if (e == beenhere || e < 0) {
 			conoutf(@"no teleport destination for tag %d", tag);
 			return;
-		};
+		}
 		if (beenhere < 0)
 			beenhere = e;
 		if (ents[e].attr2 == tag) {

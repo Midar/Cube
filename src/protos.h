@@ -19,7 +19,7 @@ extern void writecfg();
 // console
 extern void keypress(int code, bool isdown, int cooked);
 extern void renderconsole();
-extern void conoutf(OFString *s, ...);
+extern void conoutf(OFConstantString *format, ...);
 extern char *getcurcommand();
 extern void writebinds(FILE *f);
 
@@ -78,7 +78,7 @@ extern bool allowedittoggle();
 extern void sendpackettoserv(void *packet);
 extern void gets2c();
 extern void c2sinfo(dynent *d);
-extern void neterr(char *s);
+extern void neterr(OFString *s);
 extern void initclientnet();
 extern bool netmapstart();
 extern int getclientnum();

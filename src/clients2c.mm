@@ -8,9 +8,9 @@ extern OFString *toservermap;
 extern string clientpassword;
 
 void
-neterr(char *s)
+neterr(OFString *s)
 {
-	conoutf(@"illegal network message (%s)", s);
+	conoutf(@"illegal network message (%@)", s);
 	disconnect();
 }
 
@@ -59,7 +59,7 @@ localservertoclient(
     uchar *buf, int len) // processes any updates from the server
 {
 	if (ENET_NET_TO_HOST_16(*(ushort *)buf) != len)
-		neterr("packet length");
+		neterr(@"packet length");
 	incomingdemodata(buf, len);
 
 	uchar *end = buf + len;
@@ -81,7 +81,7 @@ localservertoclient(
 				    PROTOCOL_VERSION, prot);
 				disconnect();
 				return;
-			};
+			}
 			toservermap = @"";
 			clientnum = cn; // we are now fully connected
 			if (!getint(p))
@@ -94,10 +94,9 @@ localservertoclient(
 				        @"to join this server!");
 				disconnect();
 				return;
-			};
-			if (getint(p) == 1) {
+			}
+			if (getint(p) == 1)
 				conoutf(@"server is FULL, disconnecting..");
-			};
 			break;
 		};
 
@@ -172,17 +171,17 @@ localservertoclient(
 		                 // name/team
 		{
 			sgetstr();
-			if (d->name[0]) // already connected
-			{
+			if (d->name[0]) {
+				// already connected
 				if (strcmp(d->name, text))
 					conoutf(@"%s is now known as %s",
 					    d->name, text);
-			} else // new client
-			{
+			} else {
+				// new client
 				c2sinit =
 				    false; // send new players my info again
 				conoutf(@"connected: %s", text);
-			};
+			}
 			strcpy_s(d->name, text);
 			sgetstr();
 			strcpy_s(d->team, text);
@@ -385,7 +384,7 @@ localservertoclient(
 		}
 
 		default:
-			neterr("type");
+			neterr(@"type");
 			return;
 		}
 }

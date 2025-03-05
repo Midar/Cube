@@ -11,12 +11,13 @@ dvector &
 getmonsters()
 {
 	return monsters;
-};
+}
+
 void
 restoremonsterstate()
 {
 	loopv(monsters) if (monsters[i]->state == CS_DEAD) numkilled++;
-}; // for savegames
+} // for savegames
 
 #define TOTMFREQ 13
 #define NUMMONSTERTYPES 8
@@ -345,7 +346,7 @@ monsterpain(dynent *m, int damage, dynent *d)
 			conoutf(@"only %d monster(s) remaining", remain);
 	} else {
 		playsound(monstertypes[m->mtype].painsound, &m->o);
-	};
+	}
 };
 
 void
@@ -357,7 +358,7 @@ endsp(bool allkilled)
 	    (lastmillis - mtimestart) / 1000);
 	monstertotal = 0;
 	startintermission();
-};
+}
 
 void
 monsterthink()
@@ -401,7 +402,7 @@ monsterthink()
 
 	loopv(monsters) if (monsters[i]->state == CS_ALIVE)
 	    monsteraction(monsters[i]);
-};
+}
 
 void
 monsterrender()

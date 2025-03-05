@@ -36,8 +36,8 @@ VARP(minmillis, 0, 5, 1000);
 
 	processInitQueue();
 
-#define log(s) conoutf(@"init: %s", s)
-	log("sdl");
+#define log(s) conoutf(@"init: %@", s)
+	log(@"sdl");
 
 	const OFOptionsParserOption options[] = {
 	    {'d', @"dedicated", 0, &dedicated, NULL},
@@ -83,7 +83,7 @@ VARP(minmillis, 0, 5, 1000);
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 		fatal(@"Unable to initialize SDL");
 
-	log("net");
+	log(@"net");
 	if (enet_initialize() < 0)
 		fatal(@"Unable to initialise network module");
 
@@ -92,14 +92,14 @@ VARP(minmillis, 0, 5, 1000);
 	initserver(dedicated, uprate, sdesc.UTF8String, ip.UTF8String,
 	    master.UTF8String, passwd, maxcl);
 
-	log("world");
+	log(@"world");
 	empty_world(7, true);
 
-	log("video: sdl");
+	log(@"video: sdl");
 	if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
 		fatal(@"Unable to initialize SDL Video");
 
-	log("video: mode");
+	log(@"video: mode");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 	if ((_window = SDL_CreateWindow("cube engine", SDL_WINDOWPOS_UNDEFINED,
 	         SDL_WINDOWPOS_UNDEFINED, _width, _height,
@@ -108,15 +108,15 @@ VARP(minmillis, 0, 5, 1000);
 	    SDL_GL_CreateContext(_window) == NULL)
 		fatal(@"Unable to create OpenGL screen");
 
-	log("video: misc");
+	log(@"video: misc");
 	SDL_SetWindowGrab(_window, SDL_TRUE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
 	SDL_ShowCursor(0);
 
-	log("gl");
+	log(@"gl");
 	gl_init(_width, _height);
 
-	log("basetex");
+	log(@"basetex");
 	_gameDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
 	_userDataIRI = [OFFileManager.defaultManager currentDirectoryIRI];
 	int xs, ys;
@@ -157,10 +157,10 @@ VARP(minmillis, 0, 5, 1000);
 		fatal(@"could not find core textures (hint: run cube from the "
 		      @"parent of the bin directory)");
 
-	log("sound");
+	log(@"sound");
 	initsound();
 
-	log("cfg");
+	log(@"cfg");
 	newmenu(@"frags\tpj\tping\tteam\tname");
 	newmenu(@"ping\tplr\tserver");
 	exec(@"data/keymap.cfg");
@@ -172,12 +172,12 @@ VARP(minmillis, 0, 5, 1000);
 		execfile(@"data/defaults.cfg");
 	exec(@"autoexec.cfg");
 
-	log("localconnect");
+	log(@"localconnect");
 	localconnect();
 	// if this map is changed, also change depthcorrect()
 	changemap(@"metl3");
 
-	log("mainloop");
+	log(@"mainloop");
 	int ignore = 5;
 	for (;;) {
 		int millis = SDL_GetTicks() * gamespeed / 100;

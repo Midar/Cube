@@ -95,7 +95,7 @@ savestate(char *fn)
 	if (!f) {
 		conoutf(@"could not write %s", fn);
 		return;
-	};
+	}
 	gzwrite(f, (void *)"CUBESAVE", 8);
 	gzputc(f, islittleendian);
 	gzputi(SAVEGAMEVERSION);
@@ -186,7 +186,7 @@ loadgameout()
 	stop();
 	conoutf(@"loadgame incomplete: savegame from a different version of "
 	        @"this map");
-};
+}
 
 void
 loadgamerest()
@@ -237,7 +237,7 @@ loadgamerest()
 		startdemo();
 	else
 		stop();
-};
+}
 
 // demo functions
 

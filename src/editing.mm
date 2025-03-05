@@ -95,7 +95,7 @@ noteditmode()
 	if (!editmode)
 		conoutf(@"this function is only allowed in edit mode");
 	return !editmode;
-};
+}
 
 bool
 noselection()
@@ -103,7 +103,7 @@ noselection()
 	if (!selset)
 		conoutf(@"no selection");
 	return !selset;
-};
+}
 
 #define EDITSEL                                                                \
 	if (noteditmode() || noselection())                                    \
@@ -266,11 +266,11 @@ editundo()
 	if (undos.empty()) {
 		conoutf(@"nothing more to undo");
 		return;
-	};
+	}
 	block *p = undos.pop();
 	blockpaste(*p);
 	free(p);
-};
+}
 
 block *copybuf = NULL;
 
@@ -290,19 +290,19 @@ paste()
 	if (!copybuf) {
 		conoutf(@"nothing to paste");
 		return;
-	};
+	}
 	sel.xs = copybuf->xs;
 	sel.ys = copybuf->ys;
 	correctsel();
 	if (!selset || sel.xs != copybuf->xs || sel.ys != copybuf->ys) {
 		conoutf(@"incorrect selection");
 		return;
-	};
+	}
 	makeundo();
 	copybuf->x = sel.x;
 	copybuf->y = sel.y;
 	blockpaste(*copybuf);
-};
+}
 
 void
 tofronttex() // maintain most recently used of the texture lists when applying
@@ -447,10 +447,10 @@ edittype(int type)
 	        sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
 		conoutf(@"corner selection must be power of 2 aligned");
 		return;
-	};
+	}
 	edittypexy(type, sel);
 	addmsg(1, 6, SV_EDITS, sel.x, sel.y, sel.xs, sel.ys, type);
-};
+}
 
 void
 heightfield(int t)

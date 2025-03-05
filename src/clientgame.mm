@@ -160,7 +160,7 @@ arenarespawn()
 			arenarespawnwait = 0;
 			conoutf(@"new round starting... fight!");
 			respawnself();
-		};
+		}
 	} else if (arenadetectwait == 0 || arenadetectwait < lastmillis) {
 		arenadetectwait = 0;
 		int alive = 0, dead = 0;
@@ -302,7 +302,7 @@ entinmap(dynent *
 			return;
 		d->o.x -= dx;
 		d->o.y -= dy;
-	};
+	}
 	conoutf(@"can't find entity spawn spot! (%d, %d)", (int)d->o.x,
 	    (int)d->o.y);
 	// leave ent at original pos, possibly stuck
@@ -477,9 +477,9 @@ dynent *
 getclient(int cn) // ensure valid entity
 {
 	if (cn < 0 || cn >= MAXCLIENTS) {
-		neterr("clientnum");
+		neterr(@"clientnum");
 		return NULL;
-	};
+	}
 	while (cn >= players.length())
 		players.add(NULL);
 	return players[cn] ? players[cn] : (players[cn] = newdynent());

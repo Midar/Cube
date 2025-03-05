@@ -27,8 +27,8 @@ setconskip(int n)
 }
 COMMANDN(conskip, setconskip, ARG_1INT)
 
-void
-conline(const char *sf, bool highlight) // add a line to the console buffer
+static void
+conline(OFString *sf, bool highlight) // add a line to the console buffer
 {
 	cline cl;
 	cl.cref = conlines.length() > 100
@@ -40,10 +40,10 @@ conline(const char *sf, bool highlight) // add a line to the console buffer
 	{
 		cl.cref[0] = '\f';
 		cl.cref[1] = 0;
-		strcat_s(cl.cref, sf);
+		strcat_s(cl.cref, sf.UTF8String);
 	} else {
-		strcpy_s(cl.cref, sf);
-	};
+		strcpy_s(cl.cref, sf.UTF8String);
+	}
 	puts(cl.cref);
 #ifndef OF_WINDOWS
 	fflush(stdout);
@@ -51,20 +51,25 @@ conline(const char *sf, bool highlight) // add a line to the console buffer
 }
 
 void
-conoutf(OFString *str, ...)
+conoutf(OFConstantString *format, ...)
 {
-	sprintf_sdv(sf, str.UTF8String);
-	const char *s = sf;
-	int n = 0;
-	while (strlen(s) > WORDWRAP) // cut strings to fit on screen
-	{
-		string t;
-		strn0cpy(t, s, WORDWRAP + 1);
-		conline(t, n++ != 0);
-		s += WORDWRAP;
+	@autoreleasepool {
+		va_list arguments;
+		va_start(arguments, format);
+
+		OFString *string = [[OFString alloc] initWithFormat:format
+		                                          arguments:arguments];
+
+		va_end(arguments);
+
+		int n = 0;
+		while (string.length > WORDWRAP) {
+			conline([string substringToIndex:WORDWRAP], n++ != 0);
+			string = [string substringFromIndex:WORDWRAP];
+		}
+		conline(string, n != 0);
 	}
-	conline(s, n != 0);
-};
+}
 
 void
 renderconsole() // render buffer taking into account time & scrolling

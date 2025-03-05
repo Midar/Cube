@@ -113,7 +113,8 @@ music(OFString *name)
 					FSOUND_SetPaused(chan, false);
 				}
 			} else {
-				conoutf(@"could not play music: %s", sn);
+				conoutf(
+				    @"could not play music: %@", IRI.string);
 			}
 #endif
 		}

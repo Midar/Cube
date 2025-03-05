@@ -306,10 +306,10 @@ delent()
 	if (e < 0) {
 		conoutf(@"no more entities");
 		return;
-	};
+	}
 	int t = ents[e].type;
 	@autoreleasepool {
-		conoutf(@"%s entity deleted", entnames[t].UTF8String);
+		conoutf(@"%@ entity deleted", entnames[t]);
 	}
 	ents[e].type = NOTUSED;
 	addmsg(1, 10, SV_EDITENT, e, NOTUSED, 0, 0, 0, 0, 0, 0, 0);
@@ -322,7 +322,7 @@ findtype(OFString *what)
 {
 	@autoreleasepool {
 		loopi(MAXENTTYPES) if ([what isEqual:entnames[i]]) return i;
-		conoutf(@"unknown entity type \"%s\"", what.UTF8String);
+		conoutf(@"unknown entity type \"%@\"", what);
 		return NOTUSED;
 	}
 }

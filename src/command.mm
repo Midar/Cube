@@ -54,8 +54,8 @@ alias(OFString *name, OFString *action)
 		if (b.type == ID_ALIAS)
 			b.action = action;
 		else
-			conoutf(@"cannot redefine builtin %s with an alias",
-			    name.UTF8String);
+			conoutf(
+			    @"cannot redefine builtin %@ with an alias", name);
 	}
 }
 COMMAND(alias, ARG_2STR)
@@ -577,7 +577,7 @@ exec(OFString *cfgfile)
 {
 	if (!execfile(cfgfile)) {
 		@autoreleasepool {
-			conoutf(@"could not read \"%s\"", cfgfile.UTF8String);
+			conoutf(@"could not read \"%@\"", cfgfile);
 		}
 	}
 }

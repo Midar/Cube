@@ -85,29 +85,29 @@ writeclientinfo(FILE *f)
 void
 connects(OFString *servername)
 {
-	@autoreleasepool {
-		disconnect(1); // reset state
-		addserver(servername);
+	disconnect(1); // reset state
+	addserver(servername);
 
-		conoutf(@"attempting to connect to %s", servername.UTF8String);
-		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
+	conoutf(@"attempting to connect to %@", servername);
+	ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
+	@autoreleasepool {
 		if (enet_address_set_host(&address, servername.UTF8String) <
 		    0) {
-			conoutf(@"could not resolve server %s", servername);
+			conoutf(@"could not resolve server %@", servername);
 			return;
 		}
+	}
 
-		clienthost = enet_host_create(NULL, 1, rate, rate);
+	clienthost = enet_host_create(NULL, 1, rate, rate);
 
-		if (clienthost) {
-			enet_host_connect(clienthost, &address, 1);
-			enet_host_flush(clienthost);
-			connecting = lastmillis;
-			connattempts = 0;
-		} else {
-			conoutf(@"could not connect to server");
-			disconnect();
-		}
+	if (clienthost) {
+		enet_host_connect(clienthost, &address, 1);
+		enet_host_flush(clienthost);
+		connecting = lastmillis;
+		connattempts = 0;
+	} else {
+		conoutf(@"could not connect to server");
+		disconnect();
 	}
 }
 

@@ -180,8 +180,7 @@ sendmap(OFString *mapname)
 		sendstring(mapname.UTF8String, p);
 		putint(p, mapsize);
 		if (65535 - (p - start) < mapdata.count) {
-			conoutf(
-			    @"map %s is too large to send", mapname.UTF8String);
+			conoutf(@"map %@ is too large to send", mapname);
 			enet_packet_destroy(packet);
 			return;
 		}
@@ -190,10 +189,10 @@ sendmap(OFString *mapname)
 		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 		enet_packet_resize(packet, p - start);
 		sendpackettoserv(packet);
-		conoutf(@"sending map %s to server...", mapname.UTF8String);
+		conoutf(@"sending map %@ to server...", mapname);
 		sprintf_sd(msg)(
-		    "[map %s uploaded to server, \"getmap\" to receive it]",
-		    mapname.UTF8String);
+		    "[map %@ uploaded to server, \"getmap\" to receive it]",
+		    mapname);
 		toserver(msg);
 	}
 }

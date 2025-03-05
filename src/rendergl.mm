@@ -79,8 +79,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 		SDL_Surface *s =
 		    IMG_Load(IRI.fileSystemRepresentation.UTF8String);
 		if (s == NULL) {
-			conoutf(
-			    @"couldn't load texture %s", IRI.string.UTF8String);
+			conoutf(@"couldn't load texture %@", IRI.string);
 			return false;
 		}
 
@@ -89,8 +88,8 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 			    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
 			if (format == NULL) {
 				conoutf(
-				    @"texture cannot be converted to 24bpp: %s",
-				    IRI.string.UTF8String);
+				    @"texture cannot be converted to 24bpp: %@",
+				    IRI.string);
 				return false;
 			}
 
@@ -99,8 +98,8 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 				    SDL_ConvertSurface(s, format, 0);
 				if (converted == NULL) {
 					conoutf(@"texture cannot be converted "
-					        @"to 24bpp: %s",
-					    IRI.string.UTF8String);
+					        @"to 24bpp: %@",
+					    IRI.string);
 					return false;
 				}
 
@@ -135,9 +134,8 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 		void *scaledimg = s->pixels;
 
 		if (*xs != s->w) {
-			conoutf(@"warning: quality loss: scaling %s",
-			    IRI.string
-			        .UTF8String); // for voodoo cards under linux
+			conoutf(@"warning: quality loss: scaling %@",
+			    IRI.string); // for voodoo cards under linux
 			scaledimg = alloc(*xs * *ys * 3);
 			gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE,
 			    s->pixels, *xs, *ys, GL_UNSIGNED_BYTE, scaledimg);
