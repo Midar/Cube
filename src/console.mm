@@ -93,38 +93,53 @@ renderconsole() // render buffer taking into account time & scrolling
 
 // keymap is defined externally in keymap.cfg
 
-struct keym {
-	int code;
-	char *name;
-	char *action;
-} keyms[256];
-int numkm = 0;
+@interface KeyMapping : OFObject
+@property (readonly) int code;
+@property (readonly, nonatomic) OFString *name;
+@property (copy, nonatomic) OFString *action;
+
+- (instancetype)initWithCode:(int)code name:(OFString *)name;
+@end
+
+@implementation KeyMapping
+- (instancetype)initWithCode:(int)code name:(OFString *)name
+{
+	self = [super init];
+
+	_code = code;
+	_name = [name copy];
+
+	return self;
+}
+@end
+
+static OFMutableArray<KeyMapping *> *keyMappings = nil;
 
 void
 keymap(OFString *code, OFString *key, OFString *action)
 {
-	@autoreleasepool {
-		keyms[numkm].code = (int)code.longLongValue;
-		keyms[numkm].name = newstring(key.UTF8String);
-		keyms[numkm++].action = newstringbuf(action.UTF8String);
-	}
+	if (keyMappings == nil)
+		keyMappings = [[OFMutableArray alloc] init];
+
+	KeyMapping *mapping =
+	    [[KeyMapping alloc] initWithCode:(int)code.longLongValue name:key];
+	mapping.action = action;
+	[keyMappings addObject:mapping];
 }
 COMMAND(keymap, ARG_3STR)
 
 void
-bindkey(OFString *key_, OFString *action)
+bindkey(OFString *key, OFString *action)
 {
-	@autoreleasepool {
-		std::unique_ptr<char> key(strdup(key_.UTF8String));
-		for (char *x = key.get(); *x; x++)
-			*x = toupper(*x);
-		loopi(numkm) if (strcmp(keyms[i].name, key.get()) == 0)
-		{
-			strcpy_s(keyms[i].action, action.UTF8String);
+	for (KeyMapping *mapping in keyMappings) {
+		if ([mapping.name caseInsensitiveCompare:key] ==
+		    OFOrderedSame) {
+			mapping.action = action;
 			return;
 		}
-		conoutf(@"unknown key \"%s\"", key.get());
 	}
+
+	conoutf(@"unknown key \"%@\"", key);
 }
 COMMANDN(bind, bindkey, ARG_2STR)
 
@@ -244,33 +259,33 @@ keypress(int code, bool isdown, int cooked)
 				saycommand(NULL);
 			};
 		};
-	} else if (!menukey(code, isdown)) // keystrokes go to menu
-	{
-		loopi(numkm) if (keyms[i].code ==
-		                 code) // keystrokes go to game, lookup in
-		                       // keymap and execute
-		{
-			string temp;
-			strcpy_s(temp, keyms[i].action);
-			execute(temp, isdown);
-			return;
-		};
-	};
-};
+	} else if (!menukey(code, isdown)) {
+		// keystrokes go to menu
+
+		for (KeyMapping *mapping in keyMappings) {
+			if (mapping.code == code) {
+				// keystrokes go to game, lookup in keymap and
+				// execute
+				string temp;
+				strcpy_s(temp, mapping.action.UTF8String);
+				execute(temp, isdown);
+				return;
+			}
+		}
+	}
+}
 
 char *
 getcurcommand()
 {
 	return saycommandon ? commandbuf : NULL;
-};
+}
 
 void
-writebinds(FILE *f)
+writebinds(OFStream *stream)
 {
-	loopi(numkm)
-	{
-		if (*keyms[i].action)
-			fprintf(f, "bind \"%s\" [%s]\n", keyms[i].name,
-			    keyms[i].action);
-	};
-};
+	for (KeyMapping *mapping in keyMappings)
+		if (mapping.action.length > 0)
+			[stream writeFormat:@"bind \"%@\" [%@]\n", mapping.name,
+			        mapping.action];
+}

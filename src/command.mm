@@ -585,34 +585,47 @@ exec(OFString *cfgfile)
 void
 writecfg()
 {
-	FILE *f = fopen("config.cfg", "w");
-	if (!f)
+	OFStream *stream;
+	@try {
+		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+		    IRIByAppendingPathComponent:@"config.cfg"];
+		stream = [[OFIRIHandler handlerForIRI:IRI] openItemAtIRI:IRI
+		                                                    mode:@"w"];
+	} @catch (id e) {
 		return;
-	fprintf(f, "// automatically written on exit, do not modify\n// delete "
-	           "this file to have defaults.cfg overwrite these "
-	           "settings\n// modify settings in game, or put settings in "
-	           "autoexec.cfg to override anything\n\n");
-	writeclientinfo(f);
-	fprintf(f, "\n");
+	}
+
+	[stream writeString:
+	            @"// automatically written on exit, do not modify\n"
+	            @"// delete this file to have defaults.cfg overwrite these "
+	            @"settings\n"
+	            @"// modify settings in game, or put settings in "
+	            @"autoexec.cfg to override anything\n"
+	            @"\n"];
+	writeclientinfo(stream);
+	[stream writeString:@"\n"];
+
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
 		if (ident.type == ID_VAR && ident.persist) {
-			fprintf(f, "%s %d\n", ident.name.UTF8String,
-			    *ident.storage);
+			[stream
+			    writeFormat:@"%@ %d\n", ident.name, *ident.storage];
 		}
 	}];
-	fprintf(f, "\n");
-	writebinds(f);
-	fprintf(f, "\n");
+	[stream writeString:@"\n"];
+
+	writebinds(stream);
+	[stream writeString:@"\n"];
+
 	[idents enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, Ident *ident, bool *stop) {
 		if (ident.type == ID_ALIAS &&
-		    !strstr(ident.name.UTF8String, "nextmap_")) {
-			fprintf(f, "alias \"%s\" [%s]\n", ident.name.UTF8String,
-			    ident.action.UTF8String);
-		}
+		    ![ident.name hasPrefix:@"nextmap_"])
+			[stream writeFormat:@"alias \"%@\" [%@]\n", ident.name,
+			        ident.action];
 	}];
-	fclose(f);
+
+	[stream close];
 }
 
 COMMAND(writecfg, ARG_NONE)

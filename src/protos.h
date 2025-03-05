@@ -21,7 +21,7 @@ extern void keypress(int code, bool isdown, int cooked);
 extern void renderconsole();
 extern void conoutf(OFConstantString *format, ...);
 extern char *getcurcommand();
-extern void writebinds(FILE *f);
+extern void writebinds(OFStream *stream);
 
 // init
 extern void enqueueInit(void (^init)(void));
@@ -83,7 +83,7 @@ extern void initclientnet();
 extern bool netmapstart();
 extern int getclientnum();
 extern void changemapserv(char *name, int mode);
-extern void writeclientinfo(FILE *f);
+extern void writeclientinfo(OFStream *stream);
 
 // clientgame
 extern void mousemove(int dx, int dy);

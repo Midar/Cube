@@ -9,7 +9,6 @@ VARP(minmillis, 0, 5, 1000);
 
 @implementation Cube {
 	int _width, _height;
-	OFIRI *_userDataIRI;
 }
 
 + (Cube *)sharedInstance

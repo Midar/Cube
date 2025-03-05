@@ -11,7 +11,7 @@
 @interface Cube : OFObject <OFApplicationDelegate>
 @property (class, readonly, nonatomic) Cube *sharedInstance;
 @property (readonly, nonatomic) SDL_Window *window;
-@property (readonly, nonatomic) OFIRI *gameDataIRI;
+@property (readonly, nonatomic) OFIRI *gameDataIRI, *userDataIRI;
 @property (nonatomic) bool repeatsKeys;
 @property (nonatomic) int framesInMap;
 @end

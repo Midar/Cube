@@ -77,9 +77,10 @@ newteam(OFString *name)
 COMMANDN(team, newteam, ARG_1STR)
 
 void
-writeclientinfo(FILE *f)
+writeclientinfo(OFStream *stream)
 {
-	fprintf(f, "name \"%s\"\nteam \"%s\"\n", player1->name, player1->team);
+	[stream writeFormat:@"name \"%s\"\nteam \"%s\"\n", player1->name,
+	        player1->team];
 }
 
 void
