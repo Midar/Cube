@@ -70,20 +70,43 @@ cleangl()
 {
 	if (qsphere)
 		gluDeleteQuadric(qsphere);
-};
+}
 
 bool
 installtex(int tnum, char *texname, int &xs, int &ys, bool clamp)
 {
 	SDL_Surface *s = IMG_Load(texname);
-	if (!s) {
+	if (s == NULL) {
 		conoutf(@"couldn't load texture %s", texname);
 		return false;
-	};
+	}
+
 	if (s->format->BitsPerPixel != 24) {
-		conoutf(@"texture must be 24bpp: %s", texname);
-		return false;
-	};
+		SDL_PixelFormat *format =
+		    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
+		if (format == NULL) {
+			conoutf(@"texture cannot be converted to 24bpp: %s",
+			    texname);
+			return false;
+		}
+
+		@try {
+			SDL_Surface *converted =
+			    SDL_ConvertSurface(s, format, 0);
+			if (converted == NULL) {
+				conoutf(
+				    @"texture cannot be converted to 24bpp: %s",
+				    texname);
+				return false;
+			}
+
+			SDL_FreeSurface(s);
+			s = converted;
+		} @finally {
+			SDL_FreeFormat(format);
+		}
+	}
+
 	// loopi(s->w*s->h*3) { uchar *p = (uchar *)s->pixels+i; *p = 255-*p; };
 	glBindTexture(GL_TEXTURE_2D, tnum);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -95,28 +118,35 @@ installtex(int tnum, char *texname, int &xs, int &ys, bool clamp)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
 	    GL_LINEAR_MIPMAP_LINEAR); // NEAREST);
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
 	xs = s->w;
 	ys = s->h;
 	while (xs > glmaxtexsize || ys > glmaxtexsize) {
 		xs /= 2;
 		ys /= 2;
-	};
+	}
+
 	void *scaledimg = s->pixels;
+
 	if (xs != s->w) {
 		conoutf(@"warning: quality loss: scaling %s",
 		    texname); // for voodoo cards under linux
 		scaledimg = alloc(xs * ys * 3);
 		gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE, s->pixels,
 		    xs, ys, GL_UNSIGNED_BYTE, scaledimg);
-	};
+	}
+
 	if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, xs, ys, GL_RGB,
 	        GL_UNSIGNED_BYTE, scaledimg))
 		fatal(@"could not build mipmaps");
+
 	if (xs != s->w)
 		free(scaledimg);
+
 	SDL_FreeSurface(s);
+
 	return true;
-};
+}
 
 // management of texture slots
 // each texture slot can have multople texture frames, of which currently only
