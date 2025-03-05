@@ -27,8 +27,6 @@ int lastmillis = 0;
 int curtime = 10;
 OFString *clientmap;
 
-extern int framesinmap;
-
 OFString *
 getclientmap()
 {
@@ -519,7 +517,7 @@ startmap(char *name) // called just after a map load
 	setvar(@"fogcolour", 0x8099B3);
 	showscores(false);
 	intermission = false;
-	framesinmap = 0;
+	Cube.sharedInstance.framesInMap = 0;
 	conoutf(@"game mode is %s", modestr(gamemode));
 }
 

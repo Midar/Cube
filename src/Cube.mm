@@ -4,99 +4,27 @@
 
 OF_APPLICATION_DELEGATE(Cube)
 
-@implementation Cube
-- (void)showMessage:(OFString *)msg
-{
-#ifdef _WIN32
-	MessageBoxW(
-	    NULL, msg.UTF16String, L"cube fatal error", MB_OK | MB_SYSTEMMODAL);
-#else
-	[OFStdOut writeString:msg];
-#endif
-}
-
-- (void)applicationWillTerminate:(OFNotification *)notification
-{
-	stop();
-	disconnect(true);
-	writecfg();
-	cleangl();
-	cleansound();
-	cleanupserver();
-	SDL_ShowCursor(1);
-	SDL_Quit();
-}
-
-void
-quit() // normal exit
-{
-	writeservercfg();
-	[OFApplication.sharedApplication terminateWithStatus:0];
-}
-
-void
-fatal(OFString *s, OFString *o) // failure exit
-{
-	OFString *msg =
-	    [OFString stringWithFormat:@"%@%@ (%s)\n", s, o, SDL_GetError()];
-
-	OFApplication *app = OFApplication.sharedApplication;
-	[(Cube *)app.delegate showMessage:msg];
-	[app terminateWithStatus:1];
-}
-
-void *
-alloc(int s) // for some big chunks... most other allocs use the memory pool
-{
-	void *b = calloc(1, s);
-	if (!b)
-		fatal(@"out of memory!");
-	return b;
-}
-
-SDL_Window *window;
-int scr_w = 640;
-int scr_h = 480;
-
-void
-screenshot()
-{
-	SDL_Surface *image;
-	SDL_Surface *temp;
-	int idx;
-	if (image = SDL_CreateRGBSurface(SDL_SWSURFACE, scr_w, scr_h, 24,
-	        0x0000FF, 0x00FF00, 0xFF0000, 0)) {
-		if (temp = SDL_CreateRGBSurface(SDL_SWSURFACE, scr_w, scr_h, 24,
-		        0x0000FF, 0x00FF00, 0xFF0000, 0)) {
-			glReadPixels(0, 0, scr_w, scr_h, GL_RGB,
-			    GL_UNSIGNED_BYTE, image->pixels);
-			for (idx = 0; idx < scr_h; idx++) {
-				char *dest =
-				    (char *)temp->pixels + 3 * scr_w * idx;
-				memcpy(dest,
-				    (char *)image->pixels +
-				        3 * scr_w * (scr_h - 1 - idx),
-				    3 * scr_w);
-				endianswap(dest, 3, scr_w);
-			};
-			sprintf_sd(buf)(
-			    "screenshots/screenshot_%d.bmp", lastmillis);
-			SDL_SaveBMP(temp, path(buf));
-			SDL_FreeSurface(temp);
-		};
-		SDL_FreeSurface(image);
-	};
-}
-
-COMMAND(screenshot, ARG_NONE)
-COMMAND(quit, ARG_NONE)
-
-bool keyrepeat = false;
-
 VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
 VARP(minmillis, 0, 5, 1000);
 
-int framesinmap = 0;
+@implementation Cube {
+	int _width, _height;
+}
+
++ (Cube *)sharedInstance
+{
+	return (Cube *)OFApplication.sharedApplication.delegate;
+}
+
+- (instancetype)init
+{
+	self = [super init];
+
+	_width = 1920;
+	_height = 1080;
+
+	return self;
+}
 
 - (void)applicationDidFinishLaunching:(OFNotification *)notification
 {
@@ -125,16 +53,16 @@ int framesinmap = 0;
 	while ((option = [optionsParser nextOption]) != '\0') {
 		switch (option) {
 		case 'w':
-			scr_w = optionsParser.argument.longLongValue;
+			_width = (int)optionsParser.argument.longLongValue;
 			break;
 		case 'h':
-			scr_h = optionsParser.argument.longLongValue;
+			_height = (int)optionsParser.argument.longLongValue;
 			break;
 		case 'u':
-			uprate = optionsParser.argument.longLongValue;
+			uprate = (int)optionsParser.argument.longLongValue;
 			break;
 		case 'c':
-			maxcl = optionsParser.argument.longLongValue;
+			maxcl = (int)optionsParser.argument.longLongValue;
 			break;
 		case ':':
 		case '=':
@@ -172,21 +100,20 @@ int framesinmap = 0;
 
 	log("video: mode");
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	if ((window = SDL_CreateWindow("cube engine", SDL_WINDOWPOS_UNDEFINED,
-	         SDL_WINDOWPOS_UNDEFINED, scr_w, scr_h,
+	if ((_window = SDL_CreateWindow("cube engine", SDL_WINDOWPOS_UNDEFINED,
+	         SDL_WINDOWPOS_UNDEFINED, _width, _height,
 	         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
 	             (!windowed ? SDL_WINDOW_FULLSCREEN : 0))) == NULL ||
-	    SDL_GL_CreateContext(window) == NULL)
+	    SDL_GL_CreateContext(_window) == NULL)
 		fatal(@"Unable to create OpenGL screen");
 
 	log("video: misc");
-	SDL_SetWindowGrab(window, SDL_TRUE);
+	SDL_SetWindowGrab(_window, SDL_TRUE);
 	SDL_SetRelativeMouseMode(SDL_TRUE);
-	keyrepeat = false;
 	SDL_ShowCursor(0);
 
 	log("gl");
-	gl_init(scr_w, scr_h);
+	gl_init(_width, _height);
 
 	log("basetex");
 	int xs, ys;
@@ -232,42 +159,46 @@ int framesinmap = 0;
 			lastmillis = millis - 1;
 		if (millis - lastmillis < minmillis)
 			SDL_Delay(minmillis - (millis - lastmillis));
+
 		cleardlights();
 		updateworld(millis);
+
 		if (!demoplayback)
 			serverslice((int)time(NULL), 0);
+
 		static float fps = 30.0f;
 		fps = (1000.0f / curtime + fps * 50) / 51;
+
 		computeraytable(player1->o.x, player1->o.y);
-		readdepth(scr_w, scr_h);
-		SDL_GL_SwapWindow(window);
+		readdepth(_width, _height);
+		SDL_GL_SwapWindow(_window);
 		extern void updatevol();
 		updatevol();
-		if (framesinmap++ <
-		    5) // cheap hack to get rid of initial sparklies, even when
-		       // triple buffering etc.
-		{
+
+		// cheap hack to get rid of initial sparklies, even when triple
+		// buffering etc.
+		if (_framesInMap++ < 5) {
 			player1->yaw += 5;
-			gl_drawframe(scr_w, scr_h, fps);
+			gl_drawframe(_width, _height, fps);
 			player1->yaw -= 5;
 		}
-		gl_drawframe(scr_w, scr_h, fps);
+
+		gl_drawframe(_width, _height, fps);
+
 		SDL_Event event;
 		int lasttype = 0, lastbut = 0;
 		while (SDL_PollEvent(&event)) {
 			switch (event.type) {
 			case SDL_QUIT:
-				quit();
+				[self quit];
 				break;
-
 			case SDL_KEYDOWN:
 			case SDL_KEYUP:
-				if (keyrepeat || event.key.repeat == 0)
+				if (_repeatsKeys || event.key.repeat == 0)
 					keypress(event.key.keysym.sym,
 					    event.key.state == SDL_PRESSED,
 					    event.key.keysym.sym);
 				break;
-
 			case SDL_MOUSEMOTION:
 				if (ignore) {
 					ignore--;
@@ -275,13 +206,13 @@ int framesinmap = 0;
 				}
 				mousemove(event.motion.xrel, event.motion.yrel);
 				break;
-
 			case SDL_MOUSEBUTTONDOWN:
 			case SDL_MOUSEBUTTONUP:
 				if (lasttype == event.type &&
 				    lastbut == event.button.button)
-					break; // why?? get event twice without
-					       // it
+					// why?? get event twice without it
+					break;
+
 				keypress(-event.button.button,
 				    event.button.state != 0, 0);
 				lasttype = event.type;
@@ -290,6 +221,100 @@ int framesinmap = 0;
 			}
 		}
 	}
-	quit();
+
+	[self quit];
+}
+
+- (void)applicationWillTerminate:(OFNotification *)notification
+{
+	stop();
+	disconnect(true);
+	writecfg();
+	cleangl();
+	cleansound();
+	cleanupserver();
+	SDL_ShowCursor(1);
+	SDL_Quit();
+}
+
+- (void)showMessage:(OFString *)msg
+{
+#ifdef _WIN32
+	MessageBoxW(
+	    NULL, msg.UTF16String, L"cube fatal error", MB_OK | MB_SYSTEMMODAL);
+#else
+	[OFStdOut writeString:msg];
+#endif
+}
+
+- (void)screenshot
+{
+	SDL_Surface *image;
+	SDL_Surface *temp;
+
+	if ((image = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height, 24,
+	         0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
+		if ((temp = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height,
+		         24, 0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
+			glReadPixels(0, 0, _width, _height, GL_RGB,
+			    GL_UNSIGNED_BYTE, image->pixels);
+
+			for (int idx = 0; idx < _height; idx++) {
+				char *dest =
+				    (char *)temp->pixels + 3 * _width * idx;
+				memcpy(dest,
+				    (char *)image->pixels +
+				        3 * _width * (_height - 1 - idx),
+				    3 * _width);
+				endianswap(dest, 3, _width);
+			}
+
+			sprintf_sd(buf)(
+			    "screenshots/screenshot_%d.bmp", lastmillis);
+			SDL_SaveBMP(temp, path(buf));
+			SDL_FreeSurface(temp);
+		}
+
+		SDL_FreeSurface(image);
+	}
+}
+
+- (void)quit
+{
+	writeservercfg();
+	[OFApplication terminateWithStatus:0];
 }
 @end
+
+void
+fatal(OFString *s, OFString *o) // failure exit
+{
+	OFString *msg =
+	    [OFString stringWithFormat:@"%@%@ (%s)\n", s, o, SDL_GetError()];
+
+	[Cube.sharedInstance showMessage:msg];
+	[OFApplication terminateWithStatus:1];
+}
+
+void *
+alloc(int s) // for some big chunks... most other allocs use the memory pool
+{
+	void *b = calloc(1, s);
+	if (!b)
+		fatal(@"out of memory!");
+	return b;
+}
+
+void
+quit() // normal exit
+{
+	[Cube.sharedInstance quit];
+}
+COMMAND(quit, ARG_NONE)
+
+void
+screenshot()
+{
+	[Cube.sharedInstance screenshot];
+}
+COMMAND(screenshot, ARG_NONE)

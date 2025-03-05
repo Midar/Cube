@@ -2,9 +2,17 @@
 
 #import <ObjFW/ObjFW.h>
 
+#define gamma gamma__
+#include <SDL2/SDL.h>
+#undef gamma
+
 #include "tools.h"
 
 @interface Cube : OFObject <OFApplicationDelegate>
+@property (class, readonly, nonatomic) Cube *sharedInstance;
+@property (readonly, nonatomic) SDL_Window *window;
+@property (nonatomic) bool repeatsKeys;
+@property (nonatomic) int framesInMap;
 @end
 
 enum // block types, order matters!

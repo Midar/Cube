@@ -277,7 +277,8 @@ VARFP(gamma, 30, 100, 300, {
 
 	SDL_CalculateGammaRamp(f, ramp);
 
-	if (SDL_SetWindowGammaRamp(window, ramp, ramp, ramp) == -1) {
+	if (SDL_SetWindowGammaRamp(
+	        Cube.sharedInstance.window, ramp, ramp, ramp) == -1) {
 		conoutf(
 		    @"Could not set gamma (card/driver doesn't support it?)");
 		conoutf(@"sdl: %s", SDL_GetError());

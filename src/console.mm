@@ -132,7 +132,7 @@ saycommand(char *init) // turns input to the command line on or off
 	else
 		SDL_StopTextInput();
 	if (!editmode)
-		keyrepeat = saycommandon;
+		Cube.sharedInstance.repeatsKeys = saycommandon;
 	if (!init)
 		init = "";
 	strcpy_s(commandbuf, init);

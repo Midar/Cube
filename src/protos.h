@@ -142,8 +142,6 @@ extern int isoccluded(float vx, float vy, float cx, float cy, float csize);
 // main
 extern void fatal(OFString *s, OFString *o = @"");
 extern void *alloc(int s);
-extern SDL_Window *window;
-extern bool keyrepeat;
 
 // rendertext
 extern void draw_text(char *str, int left, int top, int gl_num);

@@ -69,7 +69,7 @@ toggleedit()
 			                // editing
 		projreset();
 	}
-	keyrepeat = editmode;
+	Cube.sharedInstance.repeatsKeys = editmode;
 	selset = false;
 	editing = editmode;
 }
