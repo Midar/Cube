@@ -18,7 +18,9 @@ void
 changemapserv(char *name, int mode) // forced map change from the server
 {
 	gamemode = mode;
-	load_world(name);
+	@autoreleasepool {
+		load_world(@(name));
+	}
 }
 
 void
@@ -364,7 +366,9 @@ localservertoclient(
 			conoutf(@"received map \"%s\" from server, reloading..",
 			    text);
 			int mapsize = getint(p);
-			writemap(text, mapsize, p);
+			@autoreleasepool {
+				writemap(@(text), mapsize, p);
+			}
 			p += mapsize;
 			changemapserv(text, gamemode);
 			break;

@@ -469,7 +469,7 @@ empty_world(
 		s->ceil = 16;
 		s->vdelta = 0;
 		s->defer = 0;
-	};
+	}
 
 	strncpy(hdr.head, "CUBE", 4);
 	hdr.version = MAPVERSION;
@@ -481,12 +481,12 @@ empty_world(
 		{
 			*S(x + ssize / 4, y + ssize / 4) =
 			    *SWS(oldworld, x, y, ssize / 2);
-		};
+		}
 		loopv(ents)
 		{
 			ents[i].x += ssize / 4;
 			ents[i].y += ssize / 4;
-		};
+		}
 	} else {
 		strn0cpy(hdr.maptitle, "Untitled Map by Unknown", 128);
 		hdr.waterlevel = -100000;
@@ -495,27 +495,28 @@ empty_world(
 		ents.setsize(0);
 		block b = {8, 8, ssize - 16, ssize - 16};
 		edittypexy(SPACE, b);
-	};
+	}
 
 	calclight();
-	startmap("base/unnamed");
+	startmap(@"base/unnamed");
 	if (oldworld) {
 		free(oldworld);
 		toggleedit();
 		execute("fullbright 1");
-	};
-};
+	}
+}
 
 void
 mapenlarge()
 {
 	empty_world(-1, false);
-};
+}
+
 void
 newmap(int i)
 {
 	empty_world(i, false);
-};
+}
 
 COMMAND(mapenlarge, ARG_NONE)
 COMMAND(newmap, ARG_1INT)

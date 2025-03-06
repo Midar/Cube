@@ -120,10 +120,13 @@ toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 // these two are used by getmap/sendmap.. transfers compressed maps directly
 
 void
-writemap(char *mname, int msize, uchar *mdata)
+writemap(OFString *mname, int msize, uchar *mdata)
 {
-	setnames(mname);
+	@autoreleasepool {
+		setnames(mname.UTF8String);
+	}
 	backup(cgzname, bakname);
+
 	FILE *f = fopen(cgzname, "wb");
 	if (!f) {
 		conoutf(@"could not write map to %s", cgzname);
@@ -131,7 +134,7 @@ writemap(char *mname, int msize, uchar *mdata)
 	}
 	fwrite(mdata, 1, msize, f);
 	fclose(f);
-	conoutf(@"wrote map %s as file %s", mname, cgzname);
+	conoutf(@"wrote map %@ as file %s", mname, cgzname);
 }
 
 OFData *
@@ -241,13 +244,15 @@ save_world(OFString *mname)
 COMMANDN(savemap, save_world, ARG_1STR)
 
 void
-load_world(char *mname) // still supports all map formats that have existed
-                        // since the earliest cube betas!
+load_world(OFString *mname) // still supports all map formats that have existed
+                            // since the earliest cube betas!
 {
 	stopifrecording();
 	cleardlights();
 	pruneundos();
-	setnames(mname);
+	@autoreleasepool {
+		setnames(mname.UTF8String);
+	}
 	gzFile f = gzopen(cgzname, "rb9");
 	if (!f) {
 		conoutf(@"could not read map %s", cgzname);

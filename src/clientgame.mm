@@ -11,7 +11,7 @@ void
 mode(int n)
 {
 	addmsg(1, 2, SV_GAMEMODE, nextmode = n);
-};
+}
 COMMAND(mode, ARG_1INT)
 
 bool intermission = false;
@@ -493,7 +493,7 @@ initclient()
 }
 
 void
-startmap(char *name) // called just after a map load
+startmap(OFString *name) // called just after a map load
 {
 	if (netmapstart() && m_sp) {
 		gamemode = 0;
@@ -507,9 +507,7 @@ startmap(char *name) // called just after a map load
 	player1->frags = 0;
 	loopv(players) if (players[i]) players[i]->frags = 0;
 	resetspawns();
-	@autoreleasepool {
-		clientmap = @(name);
-	}
+	clientmap = name;
 	if (editmode)
 		toggleedit();
 	setvar(@"gamespeed", 100);
