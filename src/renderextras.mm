@@ -361,18 +361,21 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		dblend -= curtime / 3;
 		if (dblend < 0)
 			dblend = 0;
-	};
+	}
 
 	glEnable(GL_TEXTURE_2D);
 
-	char *command = getcurcommand();
-	char *player = playerincrosshair();
-	if (command)
-		draw_textf("> %s_", 20, 1570, 2, command);
-	else if (closeent[0])
-		draw_text(closeent, 20, 1570, 2);
-	else if (player)
-		draw_text(player, 20, 1570, 2);
+	@autoreleasepool {
+		char *command = getcurcommand();
+		char *player = playerincrosshair();
+
+		if (command)
+			draw_textf(@"> %s_", 20, 1570, 2, command);
+		else if (closeent[0])
+			draw_text(@(closeent), 20, 1570, 2);
+		else if (player)
+			draw_text(@(player), 20, 1570, 2);
+	}
 
 	renderscores();
 	if (!rendermenu()) {
@@ -387,7 +390,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 				glColor3ub(255, 0, 0);
 			else if (player1->health <= 50)
 				glColor3ub(255, 128, 0);
-		};
+		}
 		float chsize = (float)crosshairsize;
 		glTexCoord2d(0.0, 0.0);
 		glVertex2f(VIRTW / 2 - chsize, VIRTH / 2 - chsize);
@@ -398,7 +401,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glTexCoord2d(0.0, 1.0);
 		glVertex2f(VIRTW / 2 - chsize, VIRTH / 2 + chsize);
 		glEnd();
-	};
+	}
 
 	glPopMatrix();
 
@@ -410,22 +413,22 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glPopMatrix();
 		glPushMatrix();
 		glOrtho(0, VIRTW * 3 / 2, VIRTH * 3 / 2, 0, -1, 1);
-		draw_textf("fps %d", 3200, 2390, 2, curfps);
-		draw_textf("wqd %d", 3200, 2460, 2, nquads);
-		draw_textf("wvt %d", 3200, 2530, 2, curvert);
-		draw_textf("evt %d", 3200, 2600, 2, xtraverts);
-	};
+		draw_textf(@"fps %d", 3200, 2390, 2, curfps);
+		draw_textf(@"wqd %d", 3200, 2460, 2, nquads);
+		draw_textf(@"wvt %d", 3200, 2530, 2, curvert);
+		draw_textf(@"evt %d", 3200, 2600, 2, xtraverts);
+	}
 
 	glPopMatrix();
 
 	if (player1->state == CS_ALIVE) {
 		glPushMatrix();
 		glOrtho(0, VIRTW / 2, VIRTH / 2, 0, -1, 1);
-		draw_textf("%d", 90, 827, 2, player1->health);
+		draw_textf(@"%d", 90, 827, 2, player1->health);
 		if (player1->armour)
-			draw_textf("%d", 390, 827, 2, player1->armour);
+			draw_textf(@"%d", 390, 827, 2, player1->armour);
 		draw_textf(
-		    "%d", 690, 827, 2, player1->ammo[player1->gunselect]);
+		    @"%d", 690, 827, 2, player1->ammo[player1->gunselect]);
 		glPopMatrix();
 		glPushMatrix();
 		glOrtho(0, VIRTW, VIRTH, 0, -1, 1);
@@ -442,10 +445,10 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		};
 		drawicon((float)(g * 64), (float)r, 1220, 1650);
 		glPopMatrix();
-	};
+	}
 
 	glDepthMask(GL_TRUE);
 	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
 	glEnable(GL_DEPTH_TEST);
-};
+}

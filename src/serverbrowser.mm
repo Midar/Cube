@@ -243,10 +243,10 @@ checkpings()
 				sgetstr();
 				strcpy_s(si.sdesc, text);
 				break;
-			};
-		};
-	};
-};
+			}
+		}
+	}
+}
 
 int
 sicompare(const serverinfo *a, const serverinfo *b)
@@ -254,7 +254,7 @@ sicompare(const serverinfo *a, const serverinfo *b)
 	return a->ping > b->ping
 	           ? 1
 	           : (a->ping < b->ping ? -1 : strcmp(a->name, b->name));
-};
+}
 
 void
 refreshservers()
@@ -285,11 +285,13 @@ refreshservers()
 			    si.name);
 		}
 		si.full[50] = 0; // cut off too long server descriptions
-		menumanual(1, i, si.full);
+		@autoreleasepool {
+			menumanual(1, i, @(si.full));
+		}
 		if (!--maxmenu)
 			return;
-	};
-};
+	}
+}
 
 void
 servermenu()

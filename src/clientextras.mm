@@ -107,8 +107,10 @@ renderscore(dynent *d)
 	sprintf_s(scorelines.add().s)("%d\t%s\t%d\t%s\t%s", d->frags,
 	    d->state == CS_LAGGED ? "LAG" : lag, d->ping, d->team,
 	    d->state == CS_DEAD ? name : d->name);
-	menumanual(0, scorelines.length() - 1, scorelines.last().s);
-};
+	@autoreleasepool {
+		menumanual(0, scorelines.length() - 1, @(scorelines.last().s));
+	}
+}
 
 const int maxteams = 4;
 char *teamname[maxteams];
@@ -141,7 +143,7 @@ renderscores()
 	if (!demoplayback)
 		renderscore(player1);
 	loopv(players) if (players[i]) renderscore(players[i]);
-	sortmenu(0, scorelines.length());
+	sortmenu();
 	if (m_teammode) {
 		teamsused = 0;
 		loopv(players) addteamscore(players[i]);
@@ -152,11 +154,13 @@ renderscores()
 		{
 			sprintf_sd(sc)("[ %s: %d ]", teamname[j], teamscore[j]);
 			strcat_s(teamscores, sc);
-		};
-		menumanual(0, scorelines.length(), "");
-		menumanual(0, scorelines.length() + 1, teamscores);
-	};
-};
+		}
+		menumanual(0, scorelines.length(), @"");
+		@autoreleasepool {
+			menumanual(0, scorelines.length() + 1, @(teamscores));
+		}
+	}
+}
 
 // sendmap/getmap commands, should be replaced by more intuitive map downloading
 

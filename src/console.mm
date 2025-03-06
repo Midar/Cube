@@ -85,13 +85,15 @@ renderconsole() // render buffer taking into account time & scrolling
 		refs[nd++] = conlines[i].cref;
 		if (nd == ndraw)
 			break;
-	};
-	loopj(nd)
-	{
-		draw_text(refs[j], FONTH / 3,
-		    (FONTH / 4 * 5) * (nd - j - 1) + FONTH / 3, 2);
-	};
-};
+	}
+	@autoreleasepool {
+		loopj(nd)
+		{
+			draw_text(@(refs[j]), FONTH / 3,
+			    (FONTH / 4 * 5) * (nd - j - 1) + FONTH / 3, 2);
+		}
+	}
+}
 
 // keymap is defined externally in keymap.cfg
 
@@ -164,11 +166,12 @@ void
 history(int n)
 {
 	static bool rec = false;
+
 	if (!rec && n >= 0 && n < vhistory.length()) {
 		rec = true;
 		execute(vhistory[vhistory.length() - n - 1]);
 		rec = false;
-	};
+	}
 }
 COMMAND(history, ARG_1INT)
 

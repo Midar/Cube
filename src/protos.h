@@ -30,8 +30,8 @@ extern void processInitQueue(void);
 // menus
 extern bool rendermenu();
 extern void menuset(int menu);
-extern void menumanual(int m, int n, char *text);
-extern void sortmenu(int start, int num);
+extern void menumanual(int m, int n, OFString *text);
+extern void sortmenu();
 extern bool menukey(int code, bool isdown);
 extern void newmenu(OFString *name);
 
@@ -143,9 +143,10 @@ extern void fatal(OFString *s, OFString *o = @"");
 extern void *alloc(int s);
 
 // rendertext
-extern void draw_text(char *str, int left, int top, int gl_num);
-extern void draw_textf(char *fstr, int left, int top, int gl_num, ...);
-extern int text_width(char *str);
+extern void draw_text(OFString *string, int left, int top, int gl_num);
+extern void draw_textf(
+    OFConstantString *format, int left, int top, int gl_num, ...);
+extern int text_width(OFString *string);
 extern void draw_envbox(int t, int fogdist);
 
 // editing

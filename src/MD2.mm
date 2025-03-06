@@ -24,6 +24,12 @@ struct md2_frame {
 	md2_vertex vertices[1];
 };
 
+static float
+snap(int sn, float f)
+{
+	return sn ? (float)(((int)(f + sn * 0.5f)) & (~(sn - 1))) : f;
+}
+
 @implementation MD2 {
 	int _numGlCommands;
 	int *_glCommands;
@@ -103,12 +109,6 @@ struct md2_frame {
 	}
 }
 
-float
-snap(int sn, float f)
-{
-	return sn ? (float)(((int)(f + sn * 0.5f)) & (~(sn - 1))) : f;
-}
-
 - (void)scaleWithFrame:(int)frame scale:(float)scale snap:(int)sn
 {
 	_mverts[frame] = new OFVector3D[_numVerts];
@@ -125,7 +125,7 @@ snap(int sn, float f)
 	}
 }
 
-- (void)renderWithLight:(OFVector3D &)light
+- (void)renderWithLight:(OFVector3D)light
                   frame:(int)frame
                   range:(int)range
                       x:(float)x

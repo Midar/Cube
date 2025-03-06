@@ -11,7 +11,7 @@ OF_ASSUME_NONNULL_BEGIN
 @property (nonatomic) bool loaded;
 
 - (bool)loadWithIRI:(OFIRI *)IRI;
-- (void)renderWithLight:(OFVector3D &)light
+- (void)renderWithLight:(OFVector3D)light
                   frame:(int)frame
                   range:(int)range
                       x:(float)x
