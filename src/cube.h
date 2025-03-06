@@ -282,8 +282,6 @@ struct vertex {
 };
 
 typedef vector<dynent *> dvector;
-typedef vector<char *> cvector;
-typedef vector<int> ivector;
 
 // globals ooh naughty
 

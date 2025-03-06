@@ -128,15 +128,29 @@ vector<Mix_Chunk *> samples;
 vector<FSOUND_SAMPLE *> samples;
 #endif
 
-cvector snames;
+static OFMutableArray<OFString *> *snames;
 
 int
-registersound(char *name)
+registersound(char *name_)
 {
-	loopv(snames) if (strcmp(snames[i], name) == 0) return i;
-	snames.add(newstring(name));
-	samples.add(NULL);
-	return samples.length() - 1;
+	@autoreleasepool {
+		OFString *name = @(name_);
+
+		int i = 0;
+		for (OFString *iter in snames) {
+			if ([iter isEqual:name])
+				return i;
+
+			i++;
+		}
+
+		if (snames == nil)
+			snames = [[OFMutableArray alloc] init];
+
+		[snames addObject:name];
+		samples.add(NULL);
+		return samples.length() - 1;
+	}
 }
 COMMAND(registersound, ARG_1EST)
 
@@ -240,7 +254,7 @@ playsound(int n, OFVector3D *loc)
 
 	if (!samples[n]) {
 		OFString *path = [OFString
-		    stringWithFormat:@"packages/sounds/%s.wav", snames[n]];
+		    stringWithFormat:@"packages/sounds/%@.wav", snames[n]];
 		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
 		    IRIByAppendingPathComponent:path];
 

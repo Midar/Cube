@@ -159,7 +159,7 @@ pasteconsole()
 	strcat_s(commandbuf, cb);
 }
 
-cvector vhistory;
+static OFMutableArray<OFString *> *vhistory;
 int histpos = 0;
 
 void
@@ -167,9 +167,11 @@ history(int n)
 {
 	static bool rec = false;
 
-	if (!rec && n >= 0 && n < vhistory.length()) {
+	if (!rec && n >= 0 && n < vhistory.count) {
 		rec = true;
-		execute(vhistory[vhistory.length() - n - 1]);
+		OFString *cmd = vhistory[vhistory.count - n - 1];
+		std::unique_ptr<char> copy(strdup(cmd.UTF8String));
+		execute(copy.get());
 		rec = false;
 	}
 }
@@ -192,18 +194,26 @@ keypress(int code, bool isdown, int cooked)
 						commandbuf[i] = 0;
 				resetcomplete();
 				break;
-			};
+			}
 
 			case SDLK_UP:
-				if (histpos)
-					strcpy_s(
-					    commandbuf, vhistory[--histpos]);
+				if (histpos) {
+					@autoreleasepool {
+						strcpy_s(commandbuf,
+						    vhistory[--histpos]
+						        .UTF8String);
+					}
+				}
 				break;
 
 			case SDLK_DOWN:
-				if (histpos < vhistory.length())
-					strcpy_s(
-					    commandbuf, vhistory[histpos++]);
+				if (histpos < vhistory.count) {
+					@autoreleasepool {
+						strcpy_s(commandbuf,
+						    vhistory[histpos++]
+						        .UTF8String);
+					}
+				}
 				break;
 
 			case SDLK_TAB:
@@ -222,28 +232,39 @@ keypress(int code, bool isdown, int cooked)
 				if (cooked) {
 					char add[] = {(char)cooked, 0};
 					strcat_s(commandbuf, add);
-				};
-			};
+				}
+			}
 		} else {
 			if (code == SDLK_RETURN) {
 				if (commandbuf[0]) {
-					if (vhistory.empty() ||
-					    strcmp(
-					        vhistory.last(), commandbuf)) {
-						vhistory.add(newstring(
-						    commandbuf)); // cap this?
-					};
-					histpos = vhistory.length();
+					@autoreleasepool {
+						OFString *cmdbuf =
+						    @(commandbuf);
+
+						if (vhistory == nil)
+							vhistory =
+							    [[OFMutableArray
+							        alloc] init];
+
+						if (vhistory.count == 0 ||
+						    ![vhistory.lastObject
+						        isEqual:cmdbuf]) {
+							// cap this?
+							[vhistory
+							    addObject:cmdbuf];
+						}
+					}
+					histpos = vhistory.count;
 					if (commandbuf[0] == '/')
 						execute(commandbuf, true);
 					else
 						toserver(commandbuf);
-				};
+				}
 				saycommand(NULL);
 			} else if (code == SDLK_ESCAPE) {
 				saycommand(NULL);
-			};
-		};
+			}
+		}
 	} else if (!menukey(code, isdown)) {
 		// keystrokes go to menu
 

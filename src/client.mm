@@ -185,7 +185,7 @@ COMMANDN(disconnect, trydisconnect, ARG_NONE)
 
 // collect c2s messages conveniently
 
-vector<ivector> messages;
+static OFMutableArray<OFData *> *messages;
 
 void
 addmsg(int rel, int num, int type, ...)
@@ -197,18 +197,31 @@ addmsg(int rel, int num, int type, ...)
 		    stringWithFormat:@"inconsistant msg size for %d (%d != %d)",
 		    type, num, msgsizelookup(type)]);
 	}
-	if (messages.length() == 100) {
+	if (messages.count == 100) {
 		conoutf(@"command flood protection (type %d)", type);
 		return;
 	}
-	ivector &msg = messages.add();
-	msg.add(num);
-	msg.add(rel);
-	msg.add(type);
+
+	OFMutableData *msg = [OFMutableData dataWithItemSize:sizeof(int)
+	                                            capacity:num + 2];
+	[msg addItem:&num];
+	[msg addItem:&rel];
+	[msg addItem:&type];
+
 	va_list marker;
 	va_start(marker, type);
-	loopi(num - 1) msg.add(va_arg(marker, int));
+	loopi(num - 1)
+	{
+		int tmp = va_arg(marker, int);
+		[msg addItem:&tmp];
+	}
 	va_end(marker);
+	[msg makeImmutable];
+
+	if (messages == nil)
+		messages = [[OFMutableArray alloc] init];
+
+	[messages addObject:msg];
 }
 
 void
@@ -313,7 +326,7 @@ c2sinfo(dynent *d) // send update to the server
 				putint(p, -1);
 				senditemstoserver = false;
 				serveriteminitdone = true;
-			};
+			}
 			if (ctext[0]) // player chat, not flood protected for
 			              // now
 			{
@@ -321,7 +334,7 @@ c2sinfo(dynent *d) // send update to the server
 				putint(p, SV_TEXT);
 				sendstring(ctext, p);
 				ctext[0] = 0;
-			};
+			}
 			if (!c2sinit) // tell other clients who I am
 			{
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
@@ -330,23 +343,23 @@ c2sinfo(dynent *d) // send update to the server
 				sendstring(player1->name, p);
 				sendstring(player1->team, p);
 				putint(p, player1->lifesequence);
-			};
-			loopv(messages) // send messages collected during the
-			                // previous frames
-			{
-				ivector &msg = messages[i];
-				if (msg[1])
+			}
+			for (OFData *msg in messages) {
+				// send messages collected during the previous
+				// frames
+				if (*(int *)[msg itemAtIndex:1])
 					packet->flags =
 					    ENET_PACKET_FLAG_RELIABLE;
-				loopi(msg[0]) putint(p, msg[i + 2]);
-			};
-			messages.setsize(0);
+				loopi(*(int *)[msg itemAtIndex:0])
+				    putint(p, *(int *)[msg itemAtIndex:i + 2]);
+			}
+			[messages removeAllObjects];
 			if (lastmillis - lastping > 250) {
 				putint(p, SV_PING);
 				putint(p, lastmillis);
 				lastping = lastmillis;
-			};
-		};
+			}
+		}
 		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 		enet_packet_resize(packet, p - start);
 		incomingdemodata(start, p - start, true);
