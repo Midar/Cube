@@ -92,72 +92,83 @@ showscores(bool on)
 {
 	scoreson = on;
 	menuset(((int)on) - 1);
-};
+}
 
-struct sline {
-	string s;
-};
-vector<sline> scorelines;
+static OFMutableArray<OFString *> *scoreLines;
 
 void
 renderscore(dynent *d)
 {
-	sprintf_sd(lag)("%d", d->plag);
-	sprintf_sd(name)("(%s)", d->name);
-	sprintf_s(scorelines.add().s)("%d\t%s\t%d\t%s\t%s", d->frags,
-	    d->state == CS_LAGGED ? "LAG" : lag, d->ping, d->team,
-	    d->state == CS_DEAD ? name : d->name);
 	@autoreleasepool {
-		menumanual(0, scorelines.length() - 1, @(scorelines.last().s));
+		OFString *lag = [OFString stringWithFormat:@"%d", d->plag];
+		OFString *name = [OFString stringWithFormat:@"(%s)", d->name];
+		OFString *line = [OFString
+		    stringWithFormat:@"%d\t%@\t%d\t%s\t%@", d->frags,
+		    (d->state == CS_LAGGED ? @"LAG" : lag), d->ping, d->team,
+		    (d->state == CS_DEAD ? name : @(d->name))];
+
+		if (scoreLines == nil)
+			scoreLines = [[OFMutableArray alloc] init];
+
+		[scoreLines addObject:line];
+
+		menumanual(0, scoreLines.count - 1, line);
 	}
 }
 
-const int maxteams = 4;
-char *teamname[maxteams];
-int teamscore[maxteams], teamsused;
-string teamscores;
-int timeremain = 0;
+static const int maxTeams = 4;
+static OFString *teamName[maxTeams];
+static int teamScore[maxTeams], teamsUsed;
 
 void
 addteamscore(dynent *d)
 {
-	if (!d)
+	if (d == NULL)
 		return;
-	loopi(teamsused) if (strcmp(teamname[i], d->team) == 0)
-	{
-		teamscore[i] += d->frags;
-		return;
-	};
-	if (teamsused == maxteams)
-		return;
-	teamname[teamsused] = d->team;
-	teamscore[teamsused++] = d->frags;
-};
+
+	@autoreleasepool {
+		OFString *team = @(d->team);
+
+		loopi(teamsUsed)
+		{
+			if ([teamName[i] isEqual:team]) {
+				teamScore[i] += d->frags;
+				return;
+			}
+		}
+
+		if (teamsUsed == maxTeams)
+			return;
+
+		teamName[teamsUsed] = @(d->team);
+		teamScore[teamsUsed++] = d->frags;
+	}
+}
 
 void
 renderscores()
 {
 	if (!scoreson)
 		return;
-	scorelines.setsize(0);
+	[scoreLines removeAllObjects];
 	if (!demoplayback)
 		renderscore(player1);
 	loopv(players) if (players[i]) renderscore(players[i]);
 	sortmenu();
 	if (m_teammode) {
-		teamsused = 0;
+		teamsUsed = 0;
 		loopv(players) addteamscore(players[i]);
 		if (!demoplayback)
 			addteamscore(player1);
-		teamscores[0] = 0;
-		loopj(teamsused)
+		OFMutableString *teamScores = [[OFMutableString alloc] init];
+		loopj(teamsUsed)
 		{
-			sprintf_sd(sc)("[ %s: %d ]", teamname[j], teamscore[j]);
-			strcat_s(teamscores, sc);
+			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
+			            teamScore[j]];
 		}
-		menumanual(0, scorelines.length(), @"");
+		menumanual(0, scoreLines.count, @"");
 		@autoreleasepool {
-			menumanual(0, scorelines.length() + 1, @(teamscores));
+			menumanual(0, scoreLines.count + 1, teamScores);
 		}
 	}
 }
@@ -172,24 +183,23 @@ sendmap(OFString *mapname)
 			save_world(mapname);
 		changemap(mapname);
 		mapname = getclientmap();
-		int mapsize;
 		OFData *mapdata = readmap(mapname);
 		if (mapdata == nil)
 			return;
 		ENetPacket *packet = enet_packet_create(
-		    NULL, MAXTRANS + mapsize, ENET_PACKET_FLAG_RELIABLE);
+		    NULL, MAXTRANS + mapdata.count, ENET_PACKET_FLAG_RELIABLE);
 		uchar *start = packet->data;
 		uchar *p = start + 2;
 		putint(p, SV_SENDMAP);
 		sendstring(mapname.UTF8String, p);
-		putint(p, mapsize);
+		putint(p, mapdata.count);
 		if (65535 - (p - start) < mapdata.count) {
 			conoutf(@"map %@ is too large to send", mapname);
 			enet_packet_destroy(packet);
 			return;
 		}
 		memcpy(p, mapdata.items, mapdata.count);
-		p += mapsize;
+		p += mapdata.count;
 		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 		enet_packet_resize(packet, p - start);
 		sendpackettoserv(packet);
