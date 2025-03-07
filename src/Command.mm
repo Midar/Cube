@@ -15,31 +15,34 @@
 	return self;
 }
 
-- (int)callWithArguments:(char **)arguments
-            numArguments:(size_t)numArguments
-                  isDown:(bool)isDown
+- (int)callWithArguments:(OFArray<OFString *> *)arguments isDown:(bool)isDown
 {
 	switch (_argumentsTypes) {
 	case ARG_1INT:
 		if (isDown)
-			((void(__cdecl *)(int))_function)(ATOI(arguments[1]));
+			((void(__cdecl *)(int))_function)(
+			    (int)[arguments[1] longLongValueWithBase:0]);
 		break;
 	case ARG_2INT:
 		if (isDown)
 			((void(__cdecl *)(int, int))_function)(
-			    ATOI(arguments[1]), ATOI(arguments[2]));
+			    (int)[arguments[1] longLongValueWithBase:0],
+			    (int)[arguments[2] longLongValueWithBase:0]);
 		break;
 	case ARG_3INT:
 		if (isDown)
 			((void(__cdecl *)(int, int, int))_function)(
-			    ATOI(arguments[1]), ATOI(arguments[2]),
-			    ATOI(arguments[3]));
+			    (int)[arguments[1] longLongValueWithBase:0],
+			    (int)[arguments[2] longLongValueWithBase:0],
+			    (int)[arguments[3] longLongValueWithBase:0]);
 		break;
 	case ARG_4INT:
 		if (isDown)
 			((void(__cdecl *)(int, int, int, int))_function)(
-			    ATOI(arguments[1]), ATOI(arguments[2]),
-			    ATOI(arguments[3]), ATOI(arguments[4]));
+			    (int)[arguments[1] longLongValueWithBase:0],
+			    (int)[arguments[2] longLongValueWithBase:0],
+			    (int)[arguments[3] longLongValueWithBase:0],
+			    (int)[arguments[4] longLongValueWithBase:0]);
 		break;
 	case ARG_NONE:
 		if (isDown)
@@ -47,69 +50,59 @@
 		break;
 	case ARG_1STR:
 		if (isDown)
-			((void(__cdecl *)(OFString *))_function)(
-			    @(arguments[1]));
+			((void(__cdecl *)(OFString *))_function)(arguments[1]);
 		break;
 	case ARG_2STR:
 		if (isDown)
 			((void(__cdecl *)(OFString *, OFString *))_function)(
-			    @(arguments[1]), @(arguments[2]));
+			    arguments[1], arguments[2]);
 		break;
 	case ARG_3STR:
 		if (isDown)
 			((void(__cdecl *)(
 			    OFString *, OFString *, OFString *))_function)(
-			    @(arguments[1]), @(arguments[2]), @(arguments[3]));
+			    arguments[1], arguments[2], arguments[3]);
 		break;
 	case ARG_5STR:
 		if (isDown)
 			((void(__cdecl *)(OFString *, OFString *, OFString *,
-			    OFString *, OFString *))_function)(@(arguments[1]),
-			    @(arguments[2]), @(arguments[3]), @(arguments[4]),
-			    @(arguments[5]));
+			    OFString *, OFString *))_function)(arguments[1],
+			    arguments[2], arguments[3], arguments[4],
+			    arguments[5]);
 		break;
 	case ARG_DOWN:
 		((void(__cdecl *)(bool))_function)(isDown);
 		break;
 	case ARG_DWN1:
 		((void(__cdecl *)(bool, OFString *))_function)(
-		    isDown, @(arguments[1]));
+		    isDown, arguments[1]);
 		break;
 	case ARG_1EXP:
 		if (isDown)
 			return ((int(__cdecl *)(int))_function)(
-			    execute(@(arguments[1])));
+			    execute(arguments[1]));
 		break;
 	case ARG_2EXP:
 		if (isDown)
 			return ((int(__cdecl *)(int, int))_function)(
-			    execute(@(arguments[1])), execute(@(arguments[2])));
+			    execute(arguments[1]), execute(arguments[2]));
 		break;
 	case ARG_1EST:
 		if (isDown)
 			return ((int(__cdecl *)(OFString *))_function)(
-			    @(arguments[1]));
+			    arguments[1]);
 		break;
 	case ARG_2EST:
 		if (isDown)
-			return (
-			    (int(__cdecl *)(OFString *, OFString *))_function)(
-			    @(arguments[1]), @(arguments[2]));
+			return ((int(__cdecl *)(OFString *,
+			    OFString *))_function)(arguments[1], arguments[2]);
 		break;
 	case ARG_VARI:
-		if (isDown) {
+		if (isDown)
 			// limit, remove
-			string r;
-			r[0] = 0;
-			for (int i = 1; i < numArguments; i++) {
-				// make string-list out of all arguments
-				strcat_s(r, arguments[i]);
-				if (i == numArguments - 1)
-					break;
-				strcat_s(r, " ");
-			}
-			((void(__cdecl *)(OFString *))_function)(@(r));
-		}
+			((void(__cdecl *)(OFString *))_function)([[arguments
+			    objectsInRange:OFMakeRange(1, arguments.count - 1)]
+			    componentsJoinedByString:@" "]);
 		break;
 	}
 

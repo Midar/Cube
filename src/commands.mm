@@ -170,21 +170,21 @@ parseword(char *&p) // parse single argument, including expressions
 	return newstring(word, p - word);
 }
 
-char *
-lookup(char *n) // find value of ident referenced with $ in exp
+OFString *
+lookup(OFString *n) // find value of ident referenced with $ in exp
 {
 	@autoreleasepool {
-		__kindof Identifier *identifier = identifiers[@(n + 1)];
+		__kindof Identifier *identifier =
+		    identifiers[[n substringFromIndex:1]];
 
 		if ([identifier isKindOfClass:[Variable class]]) {
-			string t;
-			itoa(t, *[identifier storage]);
-			return exchangestr(n, t);
+			return [OFString
+			    stringWithFormat:@"%d", *[identifier storage]];
 		} else if ([identifier isKindOfClass:[Alias class]])
-			return exchangestr(n, [identifier action].UTF8String);
+			return [identifier action];
 	}
 
-	conoutf(@"unknown alias lookup: %s", n + 1);
+	conoutf(@"unknown alias lookup: %@", [n substringFromIndex:1]);
 	return n;
 }
 
@@ -196,7 +196,7 @@ execute(
 		std::unique_ptr<char> copy(strdup(string.UTF8String));
 		char *p = copy.get();
 		const int MAXWORDS = 25; // limit, remove
-		char *w[MAXWORDS];
+		OFString *w[MAXWORDS];
 		int val = 0;
 		for (bool cont = true; cont;) {
 			// for each ; seperated statement
@@ -204,7 +204,7 @@ execute(
 			loopi(MAXWORDS)
 			{
 				// collect all argument values
-				w[i] = "";
+				w[i] = @"";
 				if (i > numargs)
 					continue;
 				// parse and evaluate exps
@@ -214,63 +214,69 @@ execute(
 					s = "";
 				}
 				if (*s == '$')
-					s = lookup(s); // substitute variables
-				w[i] = s;
+					// substitute variables
+					w[i] = lookup(@(s));
+				else
+					w[i] = @(s);
 			}
 
 			p += strcspn(p, ";\n\0");
 			// more statements if this isn't the end of the string
 			cont = *p++ != 0;
-			char *c = w[0];
+			OFString *c = w[0];
 			// strip irc-style command prefix
-			if (*c == '/')
-				c++;
+			if ([c hasPrefix:@"/"])
+				c = [c substringFromIndex:1];
 			// empty statement
-			if (!*c)
+			if (c.length == 0)
 				continue;
 
-			__kindof Identifier *identifier = identifiers[@(c)];
+			__kindof Identifier *identifier = identifiers[c];
 			if (identifier == nil) {
-				val = ATOI(c);
-				if (!val && *c != '0')
+				@try {
+					val = (int)[c longLongValueWithBase:0];
+				} @catch (OFInvalidFormatException *e) {
 					conoutf(@"unknown command: %s", c);
+				}
 			} else {
 				if ([identifier
 				        isKindOfClass:[Command class]]) {
 					// game defined commands use very
 					// ad-hoc function signature, and just
 					// call it
+					OFArray<OFString *> *arguments =
+					    [[OFArray alloc]
+					        initWithObjects:w
+					                  count:numargs + 1];
 					val = [identifier
-					    callWithArguments:w
-					         numArguments:numargs
+					    callWithArguments:arguments
 					               isDown:isdown];
 				} else if ([identifier
 				               isKindOfClass:[Variable
 				                                 class]]) {
 					// game defined variables
 					if (isdown) {
-						if (!w[1][0])
+						if (w[1].length == 0)
 							[identifier printValue];
 						else
 							[identifier
-							    setValue:ATOI(
-							                 w[1])];
+							    setValue:
+							        (int)[w[1]
+							            longLongValueWithBase:
+							                0]];
 					}
 				} else if ([identifier
 				               isKindOfClass:[Alias class]]) {
 					// alias, also used as functions and
 					// (global) variables
 					for (int i = 1; i < numargs; i++) {
-						@autoreleasepool {
-							// set any arguments as
-							// (global) arg values
-							// so functions can
-							// access them
-							OFString *t = [OFString
-							    stringWithFormat:
-							        @"arg%d", i];
-							alias(t, @(w[i]));
-						}
+						// set any arguments as
+						// (global) arg values so
+						// functions can access them
+						OFString *t = [OFString
+						    stringWithFormat:@"arg%d",
+						    i];
+						alias(t, w[i]);
 					}
 					// create new string here because alias
 					// could rebind itself
@@ -279,7 +285,6 @@ execute(
 					break;
 				}
 			}
-			loopj(numargs) gp()->deallocstr(w[j]);
 		}
 
 		return val;

@@ -10,9 +10,7 @@ OF_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(OFString *)name
                     function:(void (*)())function
               argumentsTypes:(int)argumentsTypes;
-- (int)callWithArguments:(char *_Nonnull *_Nonnull)arguments
-            numArguments:(size_t)numArguments
-                  isDown:(bool)isDown;
+- (int)callWithArguments:(OFArray<OFString *> *)arguments isDown:(bool)isDown;
 @end
 
 OF_ASSUME_NONNULL_END
