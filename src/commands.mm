@@ -243,89 +243,11 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 					// game defined variables
 					if (isdown) {
 						if (!w[1][0])
-							// var with no value
-							// just prints its
-							// current value
-							conoutf(@"%s = %d", c,
-							    *[identifier
-							        storage]);
-						else {
-							if ([identifier min] >
-							    [identifier max]) {
-								conoutf(
-								    @"variable "
-								    @"is "
-								    @"read-"
-								    @"only");
-							} else {
-								int i1 =
-								    ATOI(w[1]);
-								if (i1 <
-								        [identifier
-								            min] ||
-								    i1 >
-								        [identifier
-								            max]) {
-									// clamp
-									// to
-									// valid
-									// range
-									i1 =
-									    i1 < [identifier
-									             min]
-									        ? [identifier
-									              min]
-									        : [identifier
-									              max];
-									conoutf(
-									    @"v"
-									    @"a"
-									    @"l"
-									    @"i"
-									    @"d"
-									    @" "
-									    @"r"
-									    @"a"
-									    @"n"
-									    @"g"
-									    @"e"
-									    @" "
-									    @"f"
-									    @"o"
-									    @"r"
-									    @" "
-									    @"%"
-									    @"s"
-									    @" "
-									    @"i"
-									    @"s"
-									    @" "
-									    @"%"
-									    @"d"
-									    @"."
-									    @"."
-									    @"%"
-									    @"d",
-									    c,
-									    [identifier
-									        min],
-									    [identifier
-									        max]);
-								}
-								*[identifier
-								    storage] =
-								    i1;
-							}
-							if ([identifier
-							        function] !=
-							    NULL)
-								// call trigger
-								// function if
-								// available
-								((void(__cdecl
-								        *)())[identifier
-								        function])();
-						}
+							[identifier printValue];
+						else
+							[identifier
+							    setValue:ATOI(
+							                 w[1])];
 					}
 				} else if ([identifier
 				               isKindOfClass:[Alias class]]) {
