@@ -135,9 +135,10 @@ parseexp(char *&p, int right) // parse any nested set of () or []
 	char *s = newstring(word, p - word - 1);
 	if (left == '(') {
 		string t;
-		itoa(t,
-		    execute(
-		        s)); // evaluate () exps directly, and substitute result
+		// evaluate () exps directly, and substitute result
+		@autoreleasepool {
+			itoa(t, execute(@(s)));
+		}
 		s = exchangestr(s, t);
 	}
 	return s;
@@ -188,41 +189,47 @@ lookup(char *n) // find value of ident referenced with $ in exp
 }
 
 int
-execute(char *p, bool isdown) // all evaluation happens here, recursively
+execute(
+    OFString *string, bool isdown) // all evaluation happens here, recursively
 {
-	const int MAXWORDS = 25; // limit, remove
-	char *w[MAXWORDS];
-	int val = 0;
-	for (bool cont = true; cont;) // for each ; seperated statement
-	{
-		int numargs = MAXWORDS;
-		loopi(MAXWORDS) // collect all argument values
-		{
-			w[i] = "";
-			if (i > numargs)
-				continue;
-			char *s = parseword(p); // parse and evaluate exps
-			if (!s) {
-				numargs = i;
-				s = "";
+	@autoreleasepool {
+		std::unique_ptr<char> copy(strdup(string.UTF8String));
+		char *p = copy.get();
+		const int MAXWORDS = 25; // limit, remove
+		char *w[MAXWORDS];
+		int val = 0;
+		for (bool cont = true; cont;) {
+			// for each ; seperated statement
+			int numargs = MAXWORDS;
+			loopi(MAXWORDS)
+			{
+				// collect all argument values
+				w[i] = "";
+				if (i > numargs)
+					continue;
+				// parse and evaluate exps
+				char *s = parseword(p);
+				if (!s) {
+					numargs = i;
+					s = "";
+				}
+				if (*s == '$')
+					s = lookup(s); // substitute variables
+				w[i] = s;
 			}
-			if (*s == '$')
-				s = lookup(s); // substitute variables
-			w[i] = s;
-		}
 
-		p += strcspn(p, ";\n\0");
-		cont = *p++ !=
-		       0; // more statements if this isn't the end of the string
-		char *c = w[0];
-		if (*c == '/')
-			c++; // strip irc-style command prefix
-		if (!*c)
-			continue; // empty statement
+			p += strcspn(p, ";\n\0");
+			// more statements if this isn't the end of the string
+			cont = *p++ != 0;
+			char *c = w[0];
+			// strip irc-style command prefix
+			if (*c == '/')
+				c++;
+			// empty statement
+			if (!*c)
+				continue;
 
-		@autoreleasepool {
 			__kindof Identifier *identifier = identifiers[@(c)];
-
 			if (identifier == nil) {
 				val = ATOI(c);
 				if (!val && *c != '0')
@@ -230,9 +237,9 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 			} else {
 				if ([identifier
 				        isKindOfClass:[Command class]]) {
-					// game defined commands
-					// use very ad-hoc function signature,
-					// and just call it
+					// game defined commands use very
+					// ad-hoc function signature, and just
+					// call it
 					val = [identifier
 					    callWithArguments:w
 					         numArguments:numargs
@@ -267,18 +274,16 @@ execute(char *p, bool isdown) // all evaluation happens here, recursively
 					}
 					// create new string here because alias
 					// could rebind itself
-					char *action = newstring(
-					    [identifier action].UTF8String);
-					val = execute(action, isdown);
-					gp()->deallocstr(action);
+					val = execute(
+					    [[identifier action] copy], isdown);
 					break;
 				}
 			}
+			loopj(numargs) gp()->deallocstr(w[j]);
 		}
-		loopj(numargs) gp()->deallocstr(w[j]);
-	}
 
-	return val;
+		return val;
+	}
 }
 
 // tab-completion of all identifiers
@@ -345,7 +350,7 @@ execfile(OFString *cfgfile)
 		// Ensure \0 termination.
 		[data addItem:""];
 
-		execute((char *)data.mutableItems);
+		execute(@((char *)data.mutableItems));
 		return true;
 	}
 }
@@ -427,56 +432,41 @@ intset(OFString *name, int v)
 void
 ifthen(OFString *cond, OFString *thenp, OFString *elsep)
 {
-	@autoreleasepool {
-		std::unique_ptr<char> cmd(strdup(
-		    (cond.UTF8String[0] != '0' ? thenp : elsep).UTF8String));
-
-		execute(cmd.get());
-	}
+	execute((![cond hasPrefix:@"0"] ? thenp : elsep));
 }
 
 void
-loopa(OFString *times, OFString *body_)
+loopa(OFString *times, OFString *body)
 {
 	@autoreleasepool {
 		int t = (int)times.longLongValue;
-		std::unique_ptr<char> body(strdup(body_.UTF8String));
 
 		loopi(t)
 		{
 			intset(@"i", i);
-			execute(body.get());
+			execute(body);
 		}
 	}
 }
 
 void
-whilea(OFString *cond_, OFString *body_)
+whilea(OFString *cond, OFString *body)
 {
-	@autoreleasepool {
-		std::unique_ptr<char> cond(strdup(cond_.UTF8String));
-		std::unique_ptr<char> body(strdup(body_.UTF8String));
-
-		while (execute(cond.get()))
-			execute(body.get());
-	}
+	while (execute(cond))
+		execute(body);
 }
 
 void
 onrelease(bool on, OFString *body)
 {
-	if (!on) {
-		std::unique_ptr<char> copy(strdup(body.UTF8String));
-		execute(copy.get());
-	}
+	if (!on)
+		execute(body);
 }
 
 void
 concat(OFString *s)
 {
-	@autoreleasepool {
-		alias(@"s", s);
-	}
+	alias(@"s", s);
 }
 
 void

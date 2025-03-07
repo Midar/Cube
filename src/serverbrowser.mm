@@ -317,8 +317,10 @@ updatefrommaster()
 		conoutf(@"master server not replying");
 	else {
 		servers.setsize(0);
-		execute((char *)reply);
-	};
+		@autoreleasepool {
+			execute(@((char *)reply));
+		}
+	}
 	servermenu();
 }
 

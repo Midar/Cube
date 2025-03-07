@@ -78,12 +78,12 @@
 	case ARG_1EXP:
 		if (isDown)
 			return ((int(__cdecl *)(int))_function)(
-			    execute(arguments[1]));
+			    execute(@(arguments[1])));
 		break;
 	case ARG_2EXP:
 		if (isDown)
 			return ((int(__cdecl *)(int, int))_function)(
-			    execute(arguments[1]), execute(arguments[2]));
+			    execute(@(arguments[1])), execute(@(arguments[2])));
 		break;
 	case ARG_1EST:
 		if (isDown)

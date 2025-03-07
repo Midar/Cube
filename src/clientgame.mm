@@ -2,8 +2,6 @@
 
 #include "cube.h"
 
-#include <memory>
-
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
@@ -247,11 +245,7 @@ updateworld(int millis) // main game update loop
 		curtime = millis - lastmillis;
 		if (sleepwait && lastmillis > sleepwait) {
 			sleepwait = 0;
-			@autoreleasepool {
-				std::unique_ptr<char> cmd(
-				    strdup(sleepcmd.UTF8String));
-				execute(cmd.get());
-			}
+			execute(sleepcmd);
 		}
 		physicsframe();
 		checkquad(curtime);
@@ -265,7 +259,7 @@ updateworld(int millis) // main game update loop
 				                          // connected to server
 			gets2c(); // do this first, so we have most accurate
 			          // information when our player moves
-		};
+		}
 		otherplayers();
 		if (!demoplayback) {
 			monsterthink();
@@ -283,10 +277,10 @@ updateworld(int millis) // main game update loop
 			};
 			c2sinfo(player1); // do this last, to reduce the
 			                  // effective frame lag
-		};
-	};
+		}
+	}
 	lastmillis = millis;
-};
+}
 
 void
 entinmap(dynent *

@@ -7,7 +7,7 @@ extern void setvar(OFString *name, int i);
 extern int getvar(OFString *name);
 extern bool identexists(OFString *name);
 extern bool addcommand(OFString *name, void (*fun)(), int narg);
-extern int execute(char *p, bool down = true);
+extern int execute(OFString *p, bool down = true);
 extern void exec(OFString *cfgfile);
 extern bool execfile(OFString *cfgfile);
 extern void resetcomplete();

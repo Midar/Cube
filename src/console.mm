@@ -3,7 +3,6 @@
 #include "cube.h"
 
 #include <ctype.h>
-#include <memory>
 
 #import "KeyMapping.h"
 
@@ -173,9 +172,7 @@ history(int n)
 
 	if (!rec && n >= 0 && n < vhistory.count) {
 		rec = true;
-		OFString *cmd = vhistory[vhistory.count - n - 1];
-		std::unique_ptr<char> copy(strdup(cmd.UTF8String));
-		execute(copy.get());
+		execute(vhistory[vhistory.count - n - 1]);
 		rec = false;
 	}
 }
@@ -249,12 +246,9 @@ keypress(int code, bool isdown, int cooked)
 						}
 					}
 					histpos = vhistory.count;
-					if ([commandbuf hasPrefix:@"/"]) {
-						std::unique_ptr<char> copy(
-						    strdup(
-						        commandbuf.UTF8String));
-						execute(copy.get(), true);
-					} else
+					if ([commandbuf hasPrefix:@"/"])
+						execute(commandbuf, true);
+					else
 						toserver(commandbuf);
 				}
 				saycommand(NULL);
@@ -269,9 +263,7 @@ keypress(int code, bool isdown, int cooked)
 			if (mapping.code == code) {
 				// keystrokes go to game, lookup in keymap and
 				// execute
-				string temp;
-				strcpy_s(temp, mapping.action.UTF8String);
-				execute(temp, isdown);
+				execute(mapping.action, isdown);
 				return;
 			}
 		}

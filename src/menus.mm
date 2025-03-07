@@ -2,8 +2,6 @@
 
 #include "cube.h"
 
-#include <memory>
-
 #import "Menu.h"
 #import "MenuItem.h"
 
@@ -168,8 +166,7 @@ menukey(int code, bool isdown)
 			[menuStack addObject:@(vmenu)];
 			menuset(-1);
 
-			std::unique_ptr<char> copy(strdup(action.UTF8String));
-			execute(copy.get(), true);
+			execute(action, true);
 		}
 	}
 

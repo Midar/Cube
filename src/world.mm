@@ -2,8 +2,6 @@
 
 #include "cube.h"
 
-#include <memory>
-
 extern OFString *entnames[]; // lookup from map entities above to strings
 
 sqr *world = NULL;
@@ -70,10 +68,8 @@ trigger(int tag, int type, bool savegame)
 		OFString *aliasname =
 		    [OFString stringWithFormat:@"level_trigger_%d", tag];
 
-		if (identexists(aliasname)) {
-			std::unique_ptr<char> cmd(strdup(aliasname.UTF8String));
-			execute(cmd.get());
-		}
+		if (identexists(aliasname))
+			execute(aliasname);
 	}
 
 	if (type == 2)
@@ -502,7 +498,7 @@ empty_world(
 	if (oldworld) {
 		free(oldworld);
 		toggleedit();
-		execute("fullbright 1");
+		execute(@"fullbright 1");
 	}
 }
 
