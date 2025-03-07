@@ -204,9 +204,10 @@ sendmap(OFString *mapname)
 		enet_packet_resize(packet, p - start);
 		sendpackettoserv(packet);
 		conoutf(@"sending map %@ to server...", mapname);
-		sprintf_sd(msg)(
-		    "[map %@ uploaded to server, \"getmap\" to receive it]",
-		    mapname);
+		OFString *msg =
+		    [OFString stringWithFormat:@"[map %@ uploaded to server, "
+		                               @"\"getmap\" to receive it]",
+		              mapname];
 		toserver(msg);
 	}
 }

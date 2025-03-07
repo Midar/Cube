@@ -463,39 +463,48 @@ whilea(OFString *cond_, OFString *body_)
 }
 
 void
-onrelease(bool on, char *body)
+onrelease(bool on, OFString *body)
 {
-	if (!on)
-		execute(body);
-}
-
-void
-concat(char *s)
-{
-	@autoreleasepool {
-		alias(@"s", @(s));
+	if (!on) {
+		std::unique_ptr<char> copy(strdup(body.UTF8String));
+		execute(copy.get());
 	}
 }
 
 void
-concatword(char *s)
+concat(OFString *s)
 {
-	for (char *a = s, *b = s; *a = *b; b++)
-		if (*a != ' ')
-			a++;
+	@autoreleasepool {
+		alias(@"s", s);
+	}
+}
+
+void
+concatword(OFString *s)
+{
+	// The original used this code which does nothing:
+	// for (char *a = s, *b = s; *a = *b; b++)
+	//	if (*a != ' ')
+	//		a++;
 	concat(s);
 }
 
 int
-listlen(char *a)
+listlen(OFString *a_)
 {
-	if (!*a)
-		return 0;
-	int n = 0;
-	while (*a)
-		if (*a++ == ' ')
-			n++;
-	return n + 1;
+	@autoreleasepool {
+		const char *a = a_.UTF8String;
+
+		if (!*a)
+			return 0;
+
+		int n = 0;
+		while (*a)
+			if (*a++ == ' ')
+				n++;
+
+		return n + 1;
+	}
 }
 
 void
@@ -508,7 +517,7 @@ at(OFString *s_, OFString *pos)
 
 		loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
 		s[strcspn(s, " \0")] = 0;
-		concat(s);
+		concat(@(s));
 	}
 }
 
@@ -579,9 +588,9 @@ gt(int a, int b)
 COMMANDN(>, gt, ARG_2EXP)
 
 int
-strcmpa(char *a, char *b)
+strcmpa(OFString *a, OFString *b)
 {
-	return strcmp(a, b) == 0;
+	return [a isEqual:b];
 }
 COMMANDN(strcmp, strcmpa, ARG_2EST)
 

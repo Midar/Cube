@@ -128,9 +128,9 @@ bindkey(OFString *key, OFString *action)
 COMMANDN(bind, bindkey, ARG_2STR)
 
 void
-saycommand(const char *init) // turns input to the command line on or off
+saycommand(OFString *init) // turns input to the command line on or off
 {
-	saycommandon = (init != NULL);
+	saycommandon = (init != nil);
 	if (saycommandon)
 		SDL_StartTextInput();
 	else
@@ -139,10 +139,10 @@ saycommand(const char *init) // turns input to the command line on or off
 	if (!editmode)
 		Cube.sharedInstance.repeatsKeys = saycommandon;
 
-	if (!init)
-		init = "";
+	if (init == nil)
+		init = @"";
 
-	commandbuf = [[OFMutableString alloc] initWithUTF8String:init];
+	commandbuf = [init mutableCopy];
 }
 COMMAND(saycommand, ARG_VARI)
 
@@ -255,7 +255,7 @@ keypress(int code, bool isdown, int cooked)
 						        commandbuf.UTF8String));
 						execute(copy.get(), true);
 					} else
-						toserver(commandbuf.UTF8String);
+						toserver(commandbuf);
 				}
 				saycommand(NULL);
 			} else if (code == SDLK_ESCAPE) {

@@ -46,48 +46,34 @@
 			((void(__cdecl *)())_function)();
 		break;
 	case ARG_1STR:
-		if (isDown) {
-			@autoreleasepool {
-				((void(__cdecl *)(OFString *))_function)(
-				    @(arguments[1]));
-			}
-		}
+		if (isDown)
+			((void(__cdecl *)(OFString *))_function)(
+			    @(arguments[1]));
 		break;
 	case ARG_2STR:
-		if (isDown) {
-			@autoreleasepool {
-				((void(__cdecl *)(
-				    OFString *, OFString *))_function)(
-				    @(arguments[1]), @(arguments[2]));
-			}
-		}
+		if (isDown)
+			((void(__cdecl *)(OFString *, OFString *))_function)(
+			    @(arguments[1]), @(arguments[2]));
 		break;
 	case ARG_3STR:
-		if (isDown) {
-			@autoreleasepool {
-				((void(__cdecl *)(OFString *, OFString *,
-				    OFString *))_function)(@(arguments[1]),
-				    @(arguments[2]), @(arguments[3]));
-			}
-		}
+		if (isDown)
+			((void(__cdecl *)(
+			    OFString *, OFString *, OFString *))_function)(
+			    @(arguments[1]), @(arguments[2]), @(arguments[3]));
 		break;
 	case ARG_5STR:
-		if (isDown) {
-			@autoreleasepool {
-				((void(__cdecl *)(OFString *, OFString *,
-				    OFString *, OFString *,
-				    OFString *))_function)(@(arguments[1]),
-				    @(arguments[2]), @(arguments[3]),
-				    @(arguments[4]), @(arguments[5]));
-			}
-		}
+		if (isDown)
+			((void(__cdecl *)(OFString *, OFString *, OFString *,
+			    OFString *, OFString *))_function)(@(arguments[1]),
+			    @(arguments[2]), @(arguments[3]), @(arguments[4]),
+			    @(arguments[5]));
 		break;
 	case ARG_DOWN:
 		((void(__cdecl *)(bool))_function)(isDown);
 		break;
 	case ARG_DWN1:
-		((void(__cdecl *)(bool, char *))_function)(
-		    isDown, arguments[1]);
+		((void(__cdecl *)(bool, OFString *))_function)(
+		    isDown, @(arguments[1]));
 		break;
 	case ARG_1EXP:
 		if (isDown)
@@ -101,13 +87,14 @@
 		break;
 	case ARG_1EST:
 		if (isDown)
-			return ((int(__cdecl *)(char *))_function)(
-			    arguments[1]);
+			return ((int(__cdecl *)(OFString *))_function)(
+			    @(arguments[1]));
 		break;
 	case ARG_2EST:
 		if (isDown)
-			return ((int(__cdecl *)(char *, char *))_function)(
-			    arguments[1], arguments[2]);
+			return (
+			    (int(__cdecl *)(OFString *, OFString *))_function)(
+			    @(arguments[1]), @(arguments[2]));
 		break;
 	case ARG_VARI:
 		if (isDown) {
@@ -121,7 +108,7 @@
 					break;
 				strcat_s(r, " ");
 			}
-			((void(__cdecl *)(char *))_function)(r);
+			((void(__cdecl *)(OFString *))_function)(@(r));
 		}
 		break;
 	}

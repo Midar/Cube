@@ -166,16 +166,18 @@ trydisconnect()
 
 string ctext;
 void
-toserver(const char *text)
+toserver(OFString *text)
 {
-	conoutf(@"%s:\f %s", player1->name, text);
-	strn0cpy(ctext, text, 80);
+	@autoreleasepool {
+		conoutf(@"%s:\f %@", player1->name, text);
+		strn0cpy(ctext, text.UTF8String, 80);
+	}
 }
 
 void
-echo(char *text)
+echo(OFString *text)
 {
-	conoutf(@"%s", text);
+	conoutf(@"%@", text);
 }
 
 COMMAND(echo, ARG_VARI)

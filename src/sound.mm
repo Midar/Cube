@@ -131,26 +131,23 @@ vector<FSOUND_SAMPLE *> samples;
 static OFMutableArray<OFString *> *snames;
 
 int
-registersound(char *name_)
+registersound(OFString *name)
 {
-	@autoreleasepool {
-		OFString *name = @(name_);
+	int i = 0;
+	for (OFString *iter in snames) {
+		if ([iter isEqual:name])
+			return i;
 
-		int i = 0;
-		for (OFString *iter in snames) {
-			if ([iter isEqual:name])
-				return i;
-
-			i++;
-		}
-
-		if (snames == nil)
-			snames = [[OFMutableArray alloc] init];
-
-		[snames addObject:name];
-		samples.add(NULL);
-		return samples.length() - 1;
+		i++;
 	}
+
+	if (snames == nil)
+		snames = [[OFMutableArray alloc] init];
+
+	[snames addObject:name];
+	samples.add(NULL);
+
+	return samples.length() - 1;
 }
 COMMAND(registersound, ARG_1EST)
 
