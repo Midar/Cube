@@ -166,7 +166,7 @@ trydisconnect()
 
 string ctext;
 void
-toserver(char *text)
+toserver(const char *text)
 {
 	conoutf(@"%s:\f %s", player1->name, text);
 	strn0cpy(ctext, text, 80);

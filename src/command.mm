@@ -511,32 +511,43 @@ resetcomplete()
 }
 
 void
-complete(char *s)
+complete(OFString *s_)
 {
-	if (*s != '/') {
-		string t;
-		strcpy_s(t, s);
-		strcpy_s(s, "/");
-		strcat_s(s, t);
-	}
-	if (!s[1])
-		return;
-	if (!completesize) {
-		completesize = (int)strlen(s) - 1;
-		completeidx = 0;
-	}
-	__block int idx = 0;
-	[idents enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, Ident *ident, bool *stop) {
-		if (strncmp(ident.name.UTF8String, s + 1, completesize) == 0 &&
-		    idx++ == completeidx) {
+	@autoreleasepool {
+		std::unique_ptr<char> copy(strdup(s_.UTF8String));
+		char *s = copy.get();
+
+		if (*s != '/') {
+			string t;
+			strcpy_s(t, s);
 			strcpy_s(s, "/");
-			strcat_s(s, ident.name.UTF8String);
+			strcat_s(s, t);
 		}
-	}];
-	completeidx++;
-	if (completeidx >= idx)
-		completeidx = 0;
+
+		if (!s[1])
+			return;
+
+		if (!completesize) {
+			completesize = strlen(s) - 1;
+			completeidx = 0;
+		}
+
+		__block int idx = 0;
+		[idents enumerateKeysAndObjectsUsingBlock:^(
+		    OFString *name, Ident *ident, bool *stop) {
+			if (strncmp(ident.name.UTF8String, s + 1,
+			        completesize) == 0 &&
+			    idx++ == completeidx) {
+				strcpy_s(s, "/");
+				strcat_s(s, ident.name.UTF8String);
+			}
+		}];
+
+		completeidx++;
+
+		if (completeidx >= idx)
+			completeidx = 0;
+	}
 }
 
 bool

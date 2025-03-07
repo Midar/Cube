@@ -11,7 +11,7 @@ extern int execute(char *p, bool down = true);
 extern void exec(OFString *cfgfile);
 extern bool execfile(OFString *cfgfile);
 extern void resetcomplete();
-extern void complete(char *s);
+extern void complete(OFString *s);
 extern void alias(OFString *name, OFString *action);
 extern OFString *getalias(OFString *name);
 extern void writecfg();
@@ -20,7 +20,7 @@ extern void writecfg();
 extern void keypress(int code, bool isdown, int cooked);
 extern void renderconsole();
 extern void conoutf(OFConstantString *format, ...);
-extern char *getcurcommand();
+extern OFString *getcurcommand();
 extern void writebinds(OFStream *stream);
 
 // init
@@ -71,7 +71,7 @@ extern void setarraypointers();
 extern void localservertoclient(uchar *buf, int len);
 extern void connects(OFString *servername);
 extern void disconnect(int onlyclean = 0, int async = 0);
-extern void toserver(char *text);
+extern void toserver(const char *text);
 extern void addmsg(int rel, int num, int type, ...);
 extern bool multiplayer();
 extern bool allowedittoggle();

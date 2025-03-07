@@ -366,11 +366,11 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 	glEnable(GL_TEXTURE_2D);
 
 	@autoreleasepool {
-		char *command = getcurcommand();
+		OFString *command = getcurcommand();
 		char *player = playerincrosshair();
 
 		if (command)
-			draw_textf(@"> %s_", 20, 1570, 2, command);
+			draw_textf(@"> %@_", 20, 1570, 2, command);
 		else if (closeent[0])
 			draw_text(@(closeent), 20, 1570, 2);
 		else if (player)

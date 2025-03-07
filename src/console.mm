@@ -18,7 +18,7 @@ const int WORDWRAP = 80;
 int conskip = 0;
 
 bool saycommandon = false;
-string commandbuf;
+static OFMutableString *commandbuf;
 
 void
 setconskip(int n)
@@ -128,18 +128,21 @@ bindkey(OFString *key, OFString *action)
 COMMANDN(bind, bindkey, ARG_2STR)
 
 void
-saycommand(char *init) // turns input to the command line on or off
+saycommand(const char *init) // turns input to the command line on or off
 {
 	saycommandon = (init != NULL);
 	if (saycommandon)
 		SDL_StartTextInput();
 	else
 		SDL_StopTextInput();
+
 	if (!editmode)
 		Cube.sharedInstance.repeatsKeys = saycommandon;
+
 	if (!init)
 		init = "";
-	strcpy_s(commandbuf, init);
+
+	commandbuf = [[OFMutableString alloc] initWithUTF8String:init];
 }
 COMMAND(saycommand, ARG_VARI)
 
@@ -155,12 +158,13 @@ COMMAND(mapmsg, ARG_1STR)
 void
 pasteconsole()
 {
-	char *cb = SDL_GetClipboardText();
-	strcat_s(commandbuf, cb);
+	@autoreleasepool {
+		[commandbuf appendString:@(SDL_GetClipboardText())];
+	}
 }
 
 static OFMutableArray<OFString *> *vhistory;
-int histpos = 0;
+static int histpos = 0;
 
 void
 history(int n)
@@ -189,31 +193,24 @@ keypress(int code, bool isdown, int cooked)
 
 			case SDLK_BACKSPACE:
 			case SDLK_LEFT: {
-				for (int i = 0; commandbuf[i]; i++)
-					if (!commandbuf[i + 1])
-						commandbuf[i] = 0;
+				[commandbuf
+				    deleteCharactersInRange:
+				        OFMakeRange(commandbuf.length - 1, 1)];
+
 				resetcomplete();
 				break;
 			}
 
 			case SDLK_UP:
-				if (histpos) {
-					@autoreleasepool {
-						strcpy_s(commandbuf,
-						    vhistory[--histpos]
-						        .UTF8String);
-					}
-				}
+				if (histpos)
+					commandbuf =
+					    [vhistory[--histpos] mutableCopy];
 				break;
 
 			case SDLK_DOWN:
-				if (histpos < vhistory.count) {
-					@autoreleasepool {
-						strcpy_s(commandbuf,
-						    vhistory[histpos++]
-						        .UTF8String);
-					}
-				}
+				if (histpos < vhistory.count)
+					commandbuf =
+					    [vhistory[histpos++] mutableCopy];
 				break;
 
 			case SDLK_TAB:
@@ -225,22 +222,17 @@ keypress(int code, bool isdown, int cooked)
 				    (KMOD_LCTRL | KMOD_RCTRL)) {
 					pasteconsole();
 					return;
-				};
+				}
 
 			default:
 				resetcomplete();
-				if (cooked) {
-					char add[] = {(char)cooked, 0};
-					strcat_s(commandbuf, add);
-				}
+				if (cooked)
+					[commandbuf appendFormat:@"%c", cooked];
 			}
 		} else {
 			if (code == SDLK_RETURN) {
-				if (commandbuf[0]) {
+				if (commandbuf.length > 0) {
 					@autoreleasepool {
-						OFString *cmdbuf =
-						    @(commandbuf);
-
 						if (vhistory == nil)
 							vhistory =
 							    [[OFMutableArray
@@ -248,17 +240,22 @@ keypress(int code, bool isdown, int cooked)
 
 						if (vhistory.count == 0 ||
 						    ![vhistory.lastObject
-						        isEqual:cmdbuf]) {
+						        isEqual:commandbuf]) {
 							// cap this?
 							[vhistory
-							    addObject:cmdbuf];
+							    addObject:
+							        [commandbuf
+							            copy]];
 						}
 					}
 					histpos = vhistory.count;
-					if (commandbuf[0] == '/')
-						execute(commandbuf, true);
-					else
-						toserver(commandbuf);
+					if ([commandbuf hasPrefix:@"/"]) {
+						std::unique_ptr<char> copy(
+						    strdup(
+						        commandbuf.UTF8String));
+						execute(copy.get(), true);
+					} else
+						toserver(commandbuf.UTF8String);
 				}
 				saycommand(NULL);
 			} else if (code == SDLK_ESCAPE) {
@@ -281,7 +278,7 @@ keypress(int code, bool isdown, int cooked)
 	}
 }
 
-char *
+OFString *
 getcurcommand()
 {
 	return saycommandon ? commandbuf : NULL;
