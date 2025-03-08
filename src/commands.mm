@@ -247,7 +247,7 @@ execute(
 					OFArray<OFString *> *arguments =
 					    [[OFArray alloc]
 					        initWithObjects:w
-					                  count:numargs + 1];
+					                  count:numargs];
 					val = [identifier
 					    callWithArguments:arguments
 					               isDown:isdown];
