@@ -10,19 +10,6 @@
 #import "Identifier.h"
 #import "Variable.h"
 
-void
-itoa(char *s, int i)
-{
-	sprintf_s(s)("%d", i);
-}
-
-char *
-exchangestr(char *o, const char *n)
-{
-	free(o);
-	return strdup(n);
-}
-
 // contains ALL vars/commands/aliases
 static OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
 
@@ -113,8 +100,9 @@ addcommand(OFString *name, void (*function)(), int argumentsTypes)
 	return false;
 }
 
+// parse any nested set of () or []
 char *
-parseexp(char *&p, int right) // parse any nested set of () or []
+parseexp(char *&p, int right)
 {
 	int left = *p++;
 	char *word = p;
@@ -134,18 +122,23 @@ parseexp(char *&p, int right) // parse any nested set of () or []
 	}
 	char *s = strndup(word, p - word - 1);
 	if (left == '(') {
-		string t;
-		// evaluate () exps directly, and substitute result
 		@autoreleasepool {
-			itoa(t, execute(@(s)));
+			OFString *t;
+			@try {
+				t = [OFString
+				    stringWithFormat:@"%d", execute(@(s))];
+			} @finally {
+				free(s);
+			}
+			s = strdup(t.UTF8String);
 		}
-		s = exchangestr(s, t);
 	}
 	return s;
 }
 
+// parse single argument, including expressions
 char *
-parseword(char *&p) // parse single argument, including expressions
+parseword(char *&p)
 {
 	p += strspn(p, " \t\r");
 	if (p[0] == '/' && p[1] == '/')
@@ -188,9 +181,9 @@ lookup(OFString *n) // find value of ident referenced with $ in exp
 	return n;
 }
 
+// all evaluation happens here, recursively
 int
-execute(
-    OFString *string, bool isdown) // all evaluation happens here, recursively
+execute(OFString *string, bool isDown)
 {
 	@autoreleasepool {
 		std::unique_ptr<char> copy(strdup(string.UTF8String));
@@ -211,13 +204,17 @@ execute(
 				char *s = parseword(p);
 				if (!s) {
 					numargs = i;
-					s = "";
+					s = strdup("");
 				}
-				if (*s == '$')
-					// substitute variables
-					w[i] = lookup(@(s));
-				else
-					w[i] = @(s);
+				@try {
+					if (*s == '$')
+						// substitute variables
+						w[i] = lookup(@(s));
+					else
+						w[i] = @(s);
+				} @finally {
+					free(s);
+				}
 			}
 
 			p += strcspn(p, ";\n\0");
@@ -250,12 +247,12 @@ execute(
 					                  count:numargs];
 					val = [identifier
 					    callWithArguments:arguments
-					               isDown:isdown];
+					               isDown:isDown];
 				} else if ([identifier
 				               isKindOfClass:[Variable
 				                                 class]]) {
 					// game defined variables
-					if (isdown) {
+					if (isDown) {
 						if (w[1].length == 0)
 							[identifier printValue];
 						else
@@ -278,10 +275,8 @@ execute(
 						    i];
 						alias(t, w[i]);
 					}
-					// create new string here because alias
-					// could rebind itself
 					val = execute(
-					    [[identifier action] copy], isdown);
+					    [identifier action], isDown);
 					break;
 				}
 			}
