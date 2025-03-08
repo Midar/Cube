@@ -164,14 +164,12 @@ trydisconnect()
 	disconnect(0, !disconnecting);
 }
 
-string ctext;
+static OFString *ctext;
 void
 toserver(OFString *text)
 {
-	@autoreleasepool {
-		conoutf(@"%s:\f %@", player1->name, text);
-		strn0cpy(ctext, text.UTF8String, 80);
-	}
+	conoutf(@"%s:\f %@", player1->name, text);
+	ctext = text;
 }
 
 void
@@ -238,13 +236,11 @@ OFString *toservermap;
 bool senditemstoserver =
     false; // after a map change, since server doesn't have map data
 
-string clientpassword;
+OFString *clientpassword;
 void
 password(OFString *p)
 {
-	@autoreleasepool {
-		strcpy_s(clientpassword, p.UTF8String);
-	}
+	clientpassword = p;
 }
 COMMAND(password, ARG_1STR)
 
@@ -253,14 +249,14 @@ netmapstart()
 {
 	senditemstoserver = true;
 	return clienthost != NULL;
-};
+}
 
 void
 initclientnet()
 {
-	ctext[0] = 0;
+	ctext = @"";
 	toservermap = @"";
-	clientpassword[0] = 0;
+	clientpassword = @"";
 	newname(@"unnamed");
 	newteam(@"red");
 }
@@ -329,13 +325,12 @@ c2sinfo(dynent *d) // send update to the server
 				senditemstoserver = false;
 				serveriteminitdone = true;
 			}
-			if (ctext[0]) // player chat, not flood protected for
-			              // now
-			{
+			// player chat, not flood protected for now
+			if (ctext.length > 0) {
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
 				putint(p, SV_TEXT);
-				sendstring(@(ctext), p);
-				ctext[0] = 0;
+				sendstring(ctext, p);
+				ctext = @"";
 			}
 			if (!c2sinit) // tell other clients who I am
 			{

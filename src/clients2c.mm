@@ -5,7 +5,7 @@
 extern int clientnum;
 extern bool c2sinit, senditemstoserver;
 extern OFString *toservermap;
-extern string clientpassword;
+extern OFString *clientpassword;
 
 void
 neterr(OFString *s)
@@ -89,11 +89,15 @@ localservertoclient(
 				// map
 				toservermap = getclientmap();
 			sgetstr();
-			if (text[0] && strcmp(text, clientpassword)) {
-				conoutf(@"you need to set the correct password "
-				        @"to join this server!");
-				disconnect();
-				return;
+			@autoreleasepool {
+				if (text[0] &&
+				    strcmp(text, clientpassword.UTF8String)) {
+					conoutf(@"you need to set the correct "
+					        @"password "
+					        @"to join this server!");
+					disconnect();
+					return;
+				}
 			}
 			if (getint(p) == 1)
 				conoutf(@"server is FULL, disconnecting..");

@@ -121,13 +121,11 @@ playerincrosshair()
 		dynent *o = players[i];
 		if (!o)
 			continue;
-		if (intersect(o, player1->o, worldpos)) {
-			@autoreleasepool {
-				return @(o->name);
-			}
-		}
+		if (intersect(o, player1->o, worldpos))
+			return @(o->name);
 	}
-	return NULL;
+
+	return nil;
 }
 
 const int MAXPROJ = 100;
