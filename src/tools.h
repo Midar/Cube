@@ -48,14 +48,9 @@ typedef unsigned int uint;
 #define loopk(m) loop(k, m)
 #define loopl(m) loop(l, m)
 
-#ifdef WIN32
-# pragma warning(3 : 4189)
-// #pragma comment(linker,"/OPT:NOWIN98")
-# define PATHDIV '\\'
-#else
+#ifndef OF_WINDOWS
 # define __cdecl
 # define _vsnprintf vsnprintf
-# define PATHDIV '/'
 #endif
 
 // easy safe strings

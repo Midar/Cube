@@ -156,7 +156,7 @@ menukey(int code, bool isdown)
 			OFString *action = menus[vmenu].items[menusel].action;
 			if (vmenu == 1) {
 				@autoreleasepool {
-					connects(@(getservername(menusel)));
+					connects(getservername(menusel));
 				}
 			}
 

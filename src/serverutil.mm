@@ -40,38 +40,41 @@ getint(uchar *&p)
 		return n | (*p++ << 24);
 	} else
 		return c;
-};
+}
 
 void
-sendstring(const char *t, uchar *&p)
+sendstring(OFString *t_, uchar *&p)
 {
-	while (*t)
-		putint(p, *t++);
-	putint(p, 0);
+	@autoreleasepool {
+		const char *t = t_.UTF8String;
+		while (*t)
+			putint(p, *t++);
+		putint(p, 0);
+	}
+}
+
+static const OFString *modenames[] = {
+    @"SP",
+    @"DMSP",
+    @"ffa/default",
+    @"coopedit",
+    @"ffa/duel",
+    @"teamplay",
+    @"instagib",
+    @"instagib team",
+    @"efficiency",
+    @"efficiency team",
+    @"insta arena",
+    @"insta clan arena",
+    @"tactics arena",
+    @"tactics clan arena",
 };
 
-const char *modenames[] = {
-    "SP",
-    "DMSP",
-    "ffa/default",
-    "coopedit",
-    "ffa/duel",
-    "teamplay",
-    "instagib",
-    "instagib team",
-    "efficiency",
-    "efficiency team",
-    "insta arena",
-    "insta clan arena",
-    "tactics arena",
-    "tactics clan arena",
-};
-
-const char *
+OFString *
 modestr(int n)
 {
-	return (n >= -2 && n < 12) ? modenames[n + 2] : "unknown";
-};
+	return (n >= -2 && n < 12) ? modenames[n + 2] : @"unknown";
+}
 
 char msgsizesl[] = // size inclusive message token, 0 for variable or
                    // not-checked sizes
@@ -94,16 +97,16 @@ msgsizelookup(int msg)
 
 // sending of maps between clients
 
-string copyname;
+static OFString *copyname;
 int copysize;
 uchar *copydata = NULL;
 
 void
-sendmaps(int n, string mapname, int mapsize, uchar *mapdata)
+sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata)
 {
 	if (mapsize <= 0 || mapsize > 256 * 256)
 		return;
-	strcpy_s(copyname, mapname);
+	copyname = mapname;
 	copysize = mapsize;
 	if (copydata)
 		free(copydata);
@@ -189,7 +192,7 @@ main(int argc, char *argv[])
 
 	if (enet_initialize() < 0)
 		fatal(@"Unable to initialise network module");
-	initserver(true, uprate, sdesc, ip, master, @(passwd), maxcl);
+	initserver(true, uprate, @(sdesc), @(ip), @(master), @(passwd), maxcl);
 	return 0;
 }
 #endif

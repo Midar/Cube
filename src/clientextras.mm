@@ -191,7 +191,7 @@ sendmap(OFString *mapname)
 		uchar *start = packet->data;
 		uchar *p = start + 2;
 		putint(p, SV_SENDMAP);
-		sendstring(mapname.UTF8String, p);
+		sendstring(mapname, p);
 		putint(p, mapdata.count);
 		if (65535 - (p - start) < mapdata.count) {
 			conoutf(@"map %@ is too large to send", mapname);

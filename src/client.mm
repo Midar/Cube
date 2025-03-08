@@ -293,7 +293,7 @@ c2sinfo(dynent *d) // send update to the server
 		  // update
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
 			putint(p, SV_MAPCHANGE);
-			sendstring(toservermap.UTF8String, p);
+			sendstring(toservermap, p);
 			toservermap = @"";
 			putint(p, nextmode);
 		} else {
@@ -334,7 +334,7 @@ c2sinfo(dynent *d) // send update to the server
 			{
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
 				putint(p, SV_TEXT);
-				sendstring(ctext, p);
+				sendstring(@(ctext), p);
 				ctext[0] = 0;
 			}
 			if (!c2sinit) // tell other clients who I am
@@ -342,8 +342,8 @@ c2sinfo(dynent *d) // send update to the server
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
 				c2sinit = true;
 				putint(p, SV_INITC2S);
-				sendstring(player1->name, p);
-				sendstring(player1->team, p);
+				sendstring(@(player1->name), p);
+				sendstring(@(player1->team), p);
 				putint(p, player1->lifesequence);
 			}
 			for (OFData *msg in messages) {

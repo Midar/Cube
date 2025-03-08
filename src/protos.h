@@ -37,7 +37,7 @@ extern void newmenu(OFString *name);
 
 // serverbrowser
 extern void addserver(OFString *servername);
-extern char *getservername(int n);
+extern OFString *getservername(int n);
 extern void writeservercfg();
 
 // rendergl
@@ -82,7 +82,7 @@ extern void neterr(OFString *s);
 extern void initclientnet();
 extern bool netmapstart();
 extern int getclientnum();
-extern void changemapserv(char *name, int mode);
+extern void changemapserv(OFString *name, int mode);
 extern void writeclientinfo(OFStream *stream);
 
 // clientgame
@@ -95,7 +95,7 @@ extern void spawnplayer(dynent *d);
 extern void selfdamage(int damage, int actor, dynent *act);
 extern dynent *newdynent();
 extern OFString *getclientmap();
-extern const char *modestr(int n);
+extern OFString *modestr(int n);
 extern void zapdynent(dynent *&d);
 extern dynent *getclient(int cn);
 extern void timeupdate(int timeremain);
@@ -215,8 +215,8 @@ extern void rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 extern MapModelInfo *getmminfo(int i);
 
 // server
-extern void initserver(bool dedicated, int uprate, const char *sdesc,
-    const char *ip, const char *master, OFString *passwd, int maxcl);
+extern void initserver(bool dedicated, int uprate, OFString *sdesc,
+    OFString *ip, OFString *master, OFString *passwd, int maxcl);
 extern void cleanupserver();
 extern void localconnect();
 extern void localdisconnect();
@@ -224,15 +224,15 @@ extern void localclienttoserver(struct _ENetPacket *);
 extern void serverslice(int seconds, unsigned int timeout);
 extern void putint(uchar *&p, int n);
 extern int getint(uchar *&p);
-extern void sendstring(const char *t, uchar *&p);
+extern void sendstring(OFString *t, uchar *&p);
 extern void startintermission();
 extern void restoreserverstate(vector<entity> &ents);
 extern uchar *retrieveservers(uchar *buf, int buflen);
 extern char msgsizelookup(int msg);
-extern void serverms(int mode, int numplayers, int minremain, char *smapname,
-    int seconds, bool isfull);
-extern void servermsinit(const char *master, const char *sdesc, bool listen);
-extern void sendmaps(int n, string mapname, int mapsize, uchar *mapdata);
+extern void serverms(int mode, int numplayers, int minremain,
+    OFString *smapname, int seconds, bool isfull);
+extern void servermsinit(OFString *master, OFString *sdesc, bool listen);
+extern void sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata);
 extern ENetPacket *recvmap(int n);
 
 // weapon
@@ -243,7 +243,7 @@ extern void shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d = 0,
 extern void createrays(OFVector3D &from, OFVector3D &to);
 extern void moveprojectiles(float time);
 extern void projreset();
-extern char *playerincrosshair();
+extern OFString *playerincrosshair();
 extern int reloadtime(int gun);
 
 // monster

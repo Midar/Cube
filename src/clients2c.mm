@@ -15,12 +15,10 @@ neterr(OFString *s)
 }
 
 void
-changemapserv(char *name, int mode) // forced map change from the server
+changemapserv(OFString *name, int mode) // forced map change from the server
 {
 	gamemode = mode;
-	@autoreleasepool {
-		load_world(@(name));
-	}
+	load_world(name);
 }
 
 void
@@ -100,7 +98,7 @@ localservertoclient(
 			if (getint(p) == 1)
 				conoutf(@"server is FULL, disconnecting..");
 			break;
-		};
+		}
 
 		case SV_POS: // position of another client
 		{
@@ -129,7 +127,7 @@ localservertoclient(
 			if (!demoplayback)
 				updatepos(d);
 			break;
-		};
+		}
 
 		case SV_SOUND:
 			playsound(getint(p), &d->o);
@@ -142,7 +140,9 @@ localservertoclient(
 
 		case SV_MAPCHANGE:
 			sgetstr();
-			changemapserv(text, getint(p));
+			@autoreleasepool {
+				changemapserv(@(text), getint(p));
+			}
 			mapchanged = true;
 			break;
 
@@ -151,7 +151,7 @@ localservertoclient(
 			if (mapchanged) {
 				senditemstoserver = false;
 				resetspawns();
-			};
+			}
 			while ((n = getint(p)) != -1)
 				if (mapchanged)
 					setspawn(n, true);
@@ -367,10 +367,11 @@ localservertoclient(
 			    text);
 			int mapsize = getint(p);
 			@autoreleasepool {
-				writemap(@(text), mapsize, p);
+				OFString *string = @(text);
+				writemap(string, mapsize, p);
+				p += mapsize;
+				changemapserv(string, gamemode);
 			}
-			p += mapsize;
-			changemapserv(text, gamemode);
 			break;
 		}
 

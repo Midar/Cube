@@ -345,17 +345,12 @@ bool
 execfile(OFString *cfgfile)
 {
 	@autoreleasepool {
-		OFMutableData *data;
 		@try {
-			data = [OFMutableData dataWithContentsOfFile:cfgfile];
+			execute([OFString stringWithContentsOfFile:cfgfile]);
 		} @catch (id e) {
 			return false;
 		}
 
-		// Ensure \0 termination.
-		[data addItem:""];
-
-		execute(@((char *)data.mutableItems));
 		return true;
 	}
 }

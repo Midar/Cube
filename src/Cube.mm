@@ -90,8 +90,7 @@ VARP(minmillis, 0, 5, 1000);
 
 	initclient();
 	// never returns if dedicated
-	initserver(dedicated, uprate, sdesc.UTF8String, ip.UTF8String,
-	    master.UTF8String, passwd, maxcl);
+	initserver(dedicated, uprate, sdesc, ip, master, passwd, maxcl);
 
 	log(@"world");
 	empty_world(7, true);

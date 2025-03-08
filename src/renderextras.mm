@@ -367,14 +367,14 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 
 	@autoreleasepool {
 		OFString *command = getcurcommand();
-		char *player = playerincrosshair();
+		OFString *player = playerincrosshair();
 
 		if (command)
 			draw_textf(@"> %@_", 20, 1570, 2, command);
 		else if (closeent[0])
 			draw_text(@(closeent), 20, 1570, 2);
-		else if (player)
-			draw_text(@(player), 20, 1570, 2);
+		else if (player != nil)
+			draw_text(player, 20, 1570, 2);
 	}
 
 	renderscores();

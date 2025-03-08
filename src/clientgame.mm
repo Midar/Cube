@@ -510,7 +510,7 @@ startmap(OFString *name) // called just after a map load
 	showscores(false);
 	intermission = false;
 	Cube.sharedInstance.framesInMap = 0;
-	conoutf(@"game mode is %s", modestr(gamemode));
+	conoutf(@"game mode is %@", modestr(gamemode));
 }
 
 COMMANDN(map, changemap, ARG_1STR)

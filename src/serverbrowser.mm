@@ -145,10 +145,12 @@ vector<serverinfo> servers;
 ENetSocket pingsock = ENET_SOCKET_NULL;
 int lastinfo = 0;
 
-char *
+OFString *
 getservername(int n)
 {
-	return servers[n].name;
+	@autoreleasepool {
+		return @(servers[n].name);
+	}
 }
 
 void
@@ -272,11 +274,16 @@ refreshservers()
 			if (si.protocol != PROTOCOL_VERSION)
 				sprintf_s(si.full)(
 				    "%s [different cube protocol]", si.name);
-			else
-				sprintf_s(si.full)("%d\t%d\t%s, %s: %s %s",
-				    si.ping, si.numplayers,
-				    si.map[0] ? si.map : "[unknown]",
-				    modestr(si.mode), si.name, si.sdesc);
+			else {
+				@autoreleasepool {
+					sprintf_s(si.full)(
+					    "%d\t%d\t%s, %s: %s %s", si.ping,
+					    si.numplayers,
+					    si.map[0] ? si.map : "[unknown]",
+					    modestr(si.mode).UTF8String,
+					    si.name, si.sdesc);
+				}
+			}
 		} else {
 			sprintf_s(si.full)(
 			    si.address.host != ENET_HOST_ANY

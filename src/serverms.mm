@@ -12,18 +12,18 @@ httpgetsend(ENetAddress &ad, char *hostname, char *req, char *ref, char *agent)
 		enet_address_set_host(&ad, hostname);
 		if (ad.host == ENET_HOST_ANY)
 			return;
-	};
+	}
 	if (mssock != ENET_SOCKET_NULL)
 		enet_socket_destroy(mssock);
 	mssock = enet_socket_create(ENET_SOCKET_TYPE_STREAM, NULL);
 	if (mssock == ENET_SOCKET_NULL) {
 		printf("could not open socket\n");
 		return;
-	};
+	}
 	if (enet_socket_connect(mssock, &ad) < 0) {
 		printf("could not connect\n");
 		return;
-	};
+	}
 	ENetBuffer buf;
 	sprintf_sd(httpget)(
 	    "GET %s HTTP/1.0\nHost: %s\nReferer: %s\nUser-Agent: %s\n\n", req,
@@ -32,7 +32,7 @@ httpgetsend(ENetAddress &ad, char *hostname, char *req, char *ref, char *agent)
 	buf.dataLength = strlen((char *)buf.data);
 	printf("sending request to %s...\n", hostname);
 	enet_socket_send(mssock, NULL, &buf, 1);
-};
+}
 
 void
 httpgetrecieve(ENetBuffer &buf)
@@ -110,11 +110,11 @@ retrieveservers(uchar *buf, int buflen)
 };
 
 ENetSocket pongsock = ENET_SOCKET_NULL;
-string serverdesc;
+static OFString *serverdesc;
 
 void
-serverms(int mode, int numplayers, int minremain, char *smapname, int seconds,
-    bool isfull)
+serverms(int mode, int numplayers, int minremain, OFString *smapname,
+    int seconds, bool isfull)
 {
 	checkmasterreply();
 	updatemasterserver(seconds);
@@ -136,9 +136,9 @@ serverms(int mode, int numplayers, int minremain, char *smapname, int seconds,
 		putint(p, mode);
 		putint(p, numplayers);
 		putint(p, minremain);
-		string mname;
-		strcpy_s(mname, isfull ? "[FULL] " : "");
-		strcat_s(mname, smapname);
+		OFString *mname =
+		    [OFString stringWithFormat:@"%@%@",
+		              (isfull ? @"[FULL] " : @""), smapname];
 		sendstring(mname, p);
 		sendstring(serverdesc, p);
 		buf.dataLength = p - pong;
@@ -147,20 +147,24 @@ serverms(int mode, int numplayers, int minremain, char *smapname, int seconds,
 }
 
 void
-servermsinit(const char *master, const char *sdesc, bool listen)
+servermsinit(OFString *master_, OFString *sdesc, bool listen)
 {
-	const char *mid = strstr(master, "/");
-	if (!mid)
-		mid = master;
-	strcpy_s(masterpath, mid);
-	strn0cpy(masterbase, master, mid - master + 1);
-	strcpy_s(serverdesc, sdesc);
+	@autoreleasepool {
+		const char *master = master_.UTF8String;
+		const char *mid = strstr(master, "/");
+		if (!mid)
+			mid = master;
+		strcpy_s(masterpath, mid);
+		strn0cpy(masterbase, master, mid - master + 1);
+		serverdesc = sdesc;
 
-	if (listen) {
-		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVINFO_PORT};
-		pongsock =
-		    enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, &address);
-		if (pongsock == ENET_SOCKET_NULL)
-			fatal(@"could not create server info socket\n");
+		if (listen) {
+			ENetAddress address = {
+			    ENET_HOST_ANY, CUBE_SERVINFO_PORT};
+			pongsock = enet_socket_create(
+			    ENET_SOCKET_TYPE_DATAGRAM, &address);
+			if (pongsock == ENET_SOCKET_NULL)
+				fatal(@"could not create server info socket\n");
+		}
 	}
 }

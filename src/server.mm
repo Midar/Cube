@@ -18,7 +18,7 @@ struct client // server side version of "dynent" type
 vector<client> clients;
 
 int maxclients = 8;
-string smapname;
+static OFString *smapname;
 
 struct server_entity // server side version of "entity" type
 {
@@ -96,7 +96,7 @@ send2(bool rel, int cn, int a, int b)
 };
 
 void
-sendservmsg(char *msg)
+sendservmsg(OFString *msg)
 {
 	ENetPacket *packet = enet_packet_create(
 	    NULL, _MAXDEFSTR + 10, ENET_PACKET_FLAG_RELIABLE);
@@ -109,7 +109,7 @@ sendservmsg(char *msg)
 	multicast(packet, -1);
 	if (packet->referenceCount == 0)
 		enet_packet_destroy(packet);
-};
+}
 
 void
 disconnect_client(int n, char *reason)
@@ -165,12 +165,16 @@ vote(char *map, int reqmode, int sender)
 	};
 	if (yes == 1 && no == 0)
 		return true; // single player
-	sprintf_sd(msg)("%s suggests %s on map %s (set map to vote)",
-	    clients[sender].name, modestr(reqmode), map);
-	sendservmsg(msg);
+	@autoreleasepool {
+		OFString *msg =
+		    [OFString stringWithFormat:
+		                  @"%s suggests %@ on map %s (set map to vote)",
+		              clients[sender].name, modestr(reqmode), map];
+		sendservmsg(msg);
+	}
 	if (yes / (float)(yes + no) <= 0.5f)
 		return false;
-	sendservmsg("vote passed");
+	sendservmsg(@"vote passed");
 	resetvotes();
 	return true;
 };
@@ -211,7 +215,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			int reqmode = getint(p);
 			if (reqmode < 0)
 				reqmode = 0;
-			if (smapname[0] && !mapreload &&
+			if (smapname.length > 0 && !mapreload &&
 			    !vote(text, reqmode, sender))
 				return;
 			mapreload = false;
@@ -219,11 +223,13 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			minremain = mode & 1 ? 15 : 10;
 			mapend = lastsec + minremain * 60;
 			interm = 0;
-			strcpy_s(smapname, text);
+			@autoreleasepool {
+				smapname = @(text);
+			}
 			resetitems();
 			sender = -1;
 			break;
-		};
+		}
 
 		case SV_ITEMLIST: {
 			int n;
@@ -236,13 +242,13 @@ process(ENetPacket *packet, int sender) // sender may be -1
 				};
 			notgotitems = false;
 			break;
-		};
+		}
 
 		case SV_ITEMPICKUP: {
 			int n = getint(p);
 			pickup(n, getint(p), sender);
 			break;
-		};
+		}
 
 		case SV_PING:
 			send2(false, cn, SV_PONG, getint(p));
@@ -259,12 +265,14 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			assert(size != -1);
 			loopi(size - 2) getint(p);
 			break;
-		};
+		}
 
 		case SV_SENDMAP: {
 			sgetstr();
 			int mapsize = getint(p);
-			sendmaps(sender, text, mapsize, p);
+			@autoreleasepool {
+				sendmaps(sender, @(text), mapsize, p);
+			}
 			return;
 		}
 
@@ -307,21 +315,23 @@ send_welcome(int n)
 	putint(p, SV_INITS2C);
 	putint(p, n);
 	putint(p, PROTOCOL_VERSION);
-	putint(p, smapname[0]);
-	sendstring(serverpassword.UTF8String, p);
+	@autoreleasepool {
+		putint(p, *smapname.UTF8String);
+	}
+	sendstring(serverpassword, p);
 	putint(p, clients.length() > maxclients);
-	if (smapname[0]) {
+	if (smapname.length > 0) {
 		putint(p, SV_MAPCHANGE);
 		sendstring(smapname, p);
 		putint(p, mode);
 		putint(p, SV_ITEMLIST);
 		loopv(sents) if (sents[i].spawned) putint(p, i);
 		putint(p, -1);
-	};
+	}
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	send(n, packet);
-};
+}
 
 void
 multicast(ENetPacket *packet, int sender)
@@ -371,7 +381,7 @@ resetserverifempty()
 {
 	loopv(clients) if (clients[i].type != ST_EMPTY) return;
 	clients.setsize(0);
-	smapname[0] = 0;
+	smapname = @"";
 	resetvotes();
 	resetitems();
 	mode = 0;
@@ -379,7 +389,7 @@ resetserverifempty()
 	minremain = 10;
 	mapend = lastsec + minremain * 60;
 	interm = 0;
-};
+}
 
 int nonlocalclients = 0;
 int lastconnect = 0;
@@ -509,18 +519,21 @@ localconnect()
 };
 
 void
-initserver(bool dedicated, int uprate, const char *sdesc, const char *ip,
-    const char *master, OFString *passwd, int maxcl)
+initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
+    OFString *master, OFString *passwd, int maxcl)
 {
 	serverpassword = passwd;
 	maxclients = maxcl;
-	servermsinit(master ? master : "wouter.fov120.com/cube/masterserver/",
+	servermsinit(master ? master : @"wouter.fov120.com/cube/masterserver/",
 	    sdesc, dedicated);
 
 	if (isdedicated = dedicated) {
 		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
-		if (*ip && enet_address_set_host(&address, ip) < 0)
-			printf("WARNING: server ip not resolved");
+		@autoreleasepool {
+			if (ip.length > 0 &&
+			    enet_address_set_host(&address, ip.UTF8String) < 0)
+				printf("WARNING: server ip not resolved");
+		}
 		serverhost = enet_host_create(&address, MAXCLIENTS, 0, uprate);
 		if (!serverhost)
 			fatal(@"could not create server host\n");
