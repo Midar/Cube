@@ -146,7 +146,7 @@ renderspheres(int time)
 	glDepthMask(GL_TRUE);
 }
 
-string closeent;
+static OFString *closeent;
 OFString *entnames[] = {
 	@"none?",
 	@"light",
@@ -176,7 +176,7 @@ OFString *entnames[] = {
 void
 renderents() // show sparkly thingies for map entities in edit mode
 {
-	closeent[0] = 0;
+	closeent = @"";
 	if (!editmode)
 		return;
 	loopv(ents)
@@ -190,14 +190,11 @@ renderents() // show sparkly thingies for map entities in edit mode
 	int e = closestent();
 	if (e >= 0) {
 		entity &c = ents[e];
-		@autoreleasepool {
-			sprintf_s(closeent)(
-			    "closest entity = %s (%d, %d, %d, %d), "
-			    "selection = (%d, %d)",
-			    entnames[c.type].UTF8String, c.attr1, c.attr2,
-			    c.attr3, c.attr4, getvar(@"selxs"),
-			    getvar(@"selys"));
-		}
+		closeent = [[OFString alloc]
+		    initWithFormat:@"closest entity = %@ (%d, %d, %d, %d), "
+		                   @"selection = (%d, %d)",
+		    entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
+		    getvar(@"selxs"), getvar(@"selys")];
 	}
 }
 
@@ -371,8 +368,8 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 
 		if (command)
 			draw_textf(@"> %@_", 20, 1570, 2, command);
-		else if (closeent[0])
-			draw_text(@(closeent), 20, 1570, 2);
+		else if (closeent.length > 0)
+			draw_text(closeent, 20, 1570, 2);
 		else if (player != nil)
 			draw_text(player, 20, 1570, 2);
 	}
