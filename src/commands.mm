@@ -345,12 +345,14 @@ bool
 execfile(OFString *cfgfile)
 {
 	@autoreleasepool {
+		OFString *command;
 		@try {
-			execute([OFString stringWithContentsOfFile:cfgfile]);
+			command = [OFString stringWithContentsOfFile:cfgfile];
 		} @catch (id e) {
 			return false;
 		}
 
+		execute(command);
 		return true;
 	}
 }
