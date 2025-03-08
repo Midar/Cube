@@ -238,7 +238,8 @@ dodynlight(
 block *
 blockcopy(block &s)
 {
-	block *b = (block *)alloc(sizeof(block) + s.xs * s.ys * sizeof(sqr));
+	block *b = (block *)OFAllocZeroedMemory(
+	    1, sizeof(block) + s.xs * s.ys * sizeof(sqr));
 	*b = s;
 	sqr *q = (sqr *)(b + 1);
 	for (int x = s.x; x < s.xs + s.x; x++)

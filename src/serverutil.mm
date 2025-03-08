@@ -108,8 +108,8 @@ sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata)
 	copyname = mapname;
 	copysize = mapsize;
 	if (copydata)
-		free(copydata);
-	copydata = (uchar *)alloc(mapsize);
+		OFFreeMemory(copydata);
+	copydata = (uchar *)OFAllocMemory(1, mapsize);
 	memcpy(copydata, mapdata, mapsize);
 }
 

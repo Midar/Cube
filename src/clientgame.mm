@@ -100,7 +100,7 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 dynent *
 newdynent() // create a new blank player or monster
 {
-	dynent *d = (dynent *)malloc(sizeof(dynent));
+	dynent *d = (dynent *)OFAllocMemory(1, sizeof(dynent));
 	d->o.x = 0;
 	d->o.y = 0;
 	d->o.z = 0;
@@ -185,8 +185,7 @@ arenarespawn()
 void
 zapdynent(dynent *&d)
 {
-	if (d)
-		free(d);
+	OFFreeMemory(d);
 	d = NULL;
 }
 
@@ -281,9 +280,9 @@ updateworld(int millis) // main game update loop
 	lastmillis = millis;
 }
 
+// brute force but effective way to find a free spawn spot in the map
 void
-entinmap(dynent *
-        d) // brute force but effective way to find a free spawn spot in the map
+entinmap(dynent *d)
 {
 	loopi(100) // try max 100 times
 	{

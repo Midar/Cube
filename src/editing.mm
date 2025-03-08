@@ -247,7 +247,7 @@ pruneundos(int maxremain) // bound memory
 	{
 		t += undos[i]->xs * undos[i]->ys * sizeof(sqr);
 		if (t > maxremain)
-			free(undos.remove(i));
+			OFFreeMemory(undos.remove(i));
 	}
 }
 
@@ -268,7 +268,7 @@ editundo()
 	}
 	block *p = undos.pop();
 	blockpaste(*p);
-	free(p);
+	OFFreeMemory(p);
 }
 
 block *copybuf = NULL;
@@ -278,7 +278,7 @@ copy()
 {
 	EDITSELMP;
 	if (copybuf)
-		free(copybuf);
+		OFFreeMemory(copybuf);
 	copybuf = blockcopy(sel);
 }
 

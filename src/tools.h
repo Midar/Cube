@@ -25,6 +25,8 @@
 # include <new.h>
 #endif
 
+#import <ObjFW/ObjFW.h>
+
 #ifdef NULL
 # undef NULL
 #endif
@@ -127,7 +129,7 @@ template <class T> struct vector {
 	vector()
 	{
 		alen = 8;
-		buf = (T *)malloc(alen * sizeof(T));
+		buf = (T *)OFAllocMemory(alen, sizeof(T));
 		ulen = 0;
 	}
 
@@ -212,7 +214,7 @@ template <class T> struct vector {
 	void
 	realloc()
 	{
-		buf = (T *)::realloc(buf, (alen *= 2) * sizeof(T));
+		buf = (T *)OFResizeMemory(buf, (alen *= 2), sizeof(T));
 	}
 
 	T

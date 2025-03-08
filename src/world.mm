@@ -423,7 +423,7 @@ setupworld(int factor)
 	ssize = 1 << (sfactor = factor);
 	cubicsize = ssize * ssize;
 	mipsize = cubicsize * 134 / 100;
-	sqr *w = world = (sqr *)alloc(mipsize * sizeof(sqr));
+	sqr *w = world = (sqr *)OFAllocZeroedMemory(mipsize, sizeof(sqr));
 	loopi(LARGEST_FACTOR * 2)
 	{
 		wmip[i] = w;
@@ -431,10 +431,10 @@ setupworld(int factor)
 	}
 }
 
+// main empty world creation routine, if passed factor -1 will enlarge old
+// world by 1
 void
-empty_world(
-    int factor, bool force) // main empty world creation routine, if passed
-                            // factor -1 will enlarge old world by 1
+empty_world(int factor, bool force)
 {
 	if (!force && noteditmode())
 		return;
@@ -495,7 +495,7 @@ empty_world(
 	calclight();
 	startmap(@"base/unnamed");
 	if (oldworld) {
-		free(oldworld);
+		OFFreeMemory(oldworld);
 		toggleedit();
 		execute(@"fullbright 1");
 	}

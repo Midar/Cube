@@ -141,7 +141,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 		if (*xs != s->w) {
 			conoutf(@"warning: quality loss: scaling %@",
 			    IRI.string); // for voodoo cards under linux
-			scaledimg = alloc(*xs * *ys * 3);
+			scaledimg = OFAllocMemory(1, *xs * *ys * 3);
 			gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE,
 			    s->pixels, *xs, *ys, GL_UNSIGNED_BYTE, scaledimg);
 		}

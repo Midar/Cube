@@ -140,7 +140,6 @@ extern int isoccluded(float vx, float vy, float cx, float cy, float csize);
 
 // main
 extern void fatal(OFString *s, OFString *o = @"");
-extern void *alloc(int s);
 
 // rendertext
 extern void draw_text(OFString *string, int left, int top, int gl_num);
