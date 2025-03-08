@@ -222,8 +222,10 @@ execute(OFString *string, bool isDown)
 			cont = *p++ != 0;
 			OFString *c = w[0];
 			// strip irc-style command prefix
-			if ([c hasPrefix:@"/"])
+			if ([c hasPrefix:@"/"]) {
 				c = [c substringFromIndex:1];
+				w[0] = c;
+			}
 			// empty statement
 			if (c.length == 0)
 				continue;
@@ -469,11 +471,7 @@ concat(OFString *s)
 void
 concatword(OFString *s)
 {
-	// The original used this code which does nothing:
-	// for (char *a = s, *b = s; *a = *b; b++)
-	//	if (*a != ' ')
-	//		a++;
-	concat(s);
+	concat([s stringByReplacingOccurrencesOfString:@" " withString:@""]);
 }
 
 int
