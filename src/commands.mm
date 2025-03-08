@@ -236,7 +236,7 @@ execute(
 				@try {
 					val = (int)[c longLongValueWithBase:0];
 				} @catch (OFInvalidFormatException *e) {
-					conoutf(@"unknown command: %s", c);
+					conoutf(@"unknown command: %@", c);
 				}
 			} else {
 				if ([identifier

@@ -191,14 +191,15 @@ keypress(int code, bool isdown, int cooked)
 				break;
 
 			case SDLK_BACKSPACE:
-			case SDLK_LEFT: {
-				[commandbuf
-				    deleteCharactersInRange:
-				        OFMakeRange(commandbuf.length - 1, 1)];
+			case SDLK_LEFT:
+				if (commandbuf.length > 0)
+					[commandbuf
+					    deleteCharactersInRange:
+					        OFMakeRange(
+					            commandbuf.length - 1, 1)];
 
 				resetcomplete();
 				break;
-			}
 
 			case SDLK_UP:
 				if (histpos)
