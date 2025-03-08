@@ -119,81 +119,22 @@ struct sprintf_s_f {
 
 extern void endianswap(void *, int, int);
 
-// memory pool that uses buckets and linear allocation for small objects
-// VERY fast, and reasonably good memory reuse
-
-struct pool {
-	enum { POOLSIZE = 4096 }; // can be absolutely anything
-	enum { PTRSIZE = sizeof(char *) };
-	enum {
-		MAXBUCKETS = 65
-	}; // meaning up to size 256 on 32bit pointer systems
-	enum { MAXREUSESIZE = MAXBUCKETS * PTRSIZE - PTRSIZE };
-
-	inline size_t
-	bucket(size_t s)
-	{
-		return (s + PTRSIZE - 1) >> PTRBITS;
-	}
-
-	enum { PTRBITS = PTRSIZE == 2 ? 1 : PTRSIZE == 4 ? 2 : 3 };
-
-	char *p;
-	size_t left;
-	char *blocks;
-	void *reuse[MAXBUCKETS];
-
-	pool();
-	~pool() { dealloc_block(blocks); };
-
-	void *alloc(size_t size);
-	void dealloc(void *p, size_t size);
-	void *realloc(void *p, size_t oldsize, size_t newsize);
-
-	char *string(const char *s, size_t l);
-
-	char *
-	string(const char *s)
-	{
-		return string(s, strlen(s));
-	}
-
-	void
-	deallocstr(char *s)
-	{
-		dealloc(s, strlen(s) + 1);
-	}
-
-	char *
-	stringbuf(const char *s)
-	{
-		return string(s, _MAXDEFSTR - 1);
-	}
-
-	void dealloc_block(void *b);
-	void allocnext(size_t allocsize);
-};
-
-pool *gp();
-
 template <class T> struct vector {
 	T *buf;
 	int alen;
 	int ulen;
-	pool *p;
 
 	vector()
 	{
-		this->p = gp();
 		alen = 8;
-		buf = (T *)p->alloc(alen * sizeof(T));
+		buf = (T *)malloc(alen * sizeof(T));
 		ulen = 0;
 	}
 
 	~vector()
 	{
 		setsize(0);
-		p->dealloc(buf, alen * sizeof(T));
+		free(buf);
 	}
 
 	vector(vector<T> &v);
@@ -271,9 +212,7 @@ template <class T> struct vector {
 	void
 	realloc()
 	{
-		int olen = alen;
-		buf = (T *)p->realloc(
-		    buf, olen * sizeof(T), (alen *= 2) * sizeof(T));
+		buf = (T *)::realloc(buf, (alen *= 2) * sizeof(T));
 	}
 
 	T
@@ -305,23 +244,5 @@ template <class T> struct vector {
 	if (false) {                                                           \
 	} else                                                                 \
 		for (int i = (v).length() - 1; i >= 0; i--)
-
-inline char *
-newstring(const char *s)
-{
-	return gp()->string(s);
-}
-
-inline char *
-newstring(const char *s, size_t l)
-{
-	return gp()->string(s, l);
-}
-
-inline char *
-newstringbuf(const char *s)
-{
-	return gp()->stringbuf(s);
-}
 
 #endif

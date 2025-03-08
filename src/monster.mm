@@ -102,7 +102,7 @@ void
 monsterclear() // called after map start of when toggling edit mode to
                // reset/spawn all monsters to initial state
 {
-	loopv(monsters) gp()->dealloc(monsters[i], sizeof(dynent));
+	loopv(monsters) free(monsters[i]);
 	monsters.setsize(0);
 	numkilled = 0;
 	monstertotal = 0;

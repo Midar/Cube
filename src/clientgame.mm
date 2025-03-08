@@ -100,7 +100,7 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 dynent *
 newdynent() // create a new blank player or monster
 {
-	dynent *d = (dynent *)gp()->alloc(sizeof(dynent));
+	dynent *d = (dynent *)malloc(sizeof(dynent));
 	d->o.x = 0;
 	d->o.y = 0;
 	d->o.z = 0;
@@ -186,7 +186,7 @@ void
 zapdynent(dynent *&d)
 {
 	if (d)
-		gp()->dealloc(d, sizeof(dynent));
+		free(d);
 	d = NULL;
 };
 

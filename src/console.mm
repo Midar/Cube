@@ -32,10 +32,11 @@ static void
 conline(OFString *sf, bool highlight) // add a line to the console buffer
 {
 	cline cl;
-	cl.cref = conlines.length() > 100
-	              ? conlines.pop().cref
-	              : newstringbuf(""); // constrain the buffer size
-	cl.outtime = lastmillis;          // for how long to keep line on screen
+	// constrain the buffer size
+	cl.cref = conlines.length() > 100 ? conlines.pop().cref
+	                                  : (char *)calloc(_MAXDEFSTR, 1);
+	// for how long to keep line on screen
+	cl.outtime = lastmillis;
 	conlines.insert(0, cl);
 	if (highlight) // show line in a different colour, for chat etc.
 	{

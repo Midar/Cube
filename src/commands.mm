@@ -19,8 +19,8 @@ itoa(char *s, int i)
 char *
 exchangestr(char *o, const char *n)
 {
-	gp()->deallocstr(o);
-	return newstring(n);
+	free(o);
+	return strdup(n);
 }
 
 // contains ALL vars/commands/aliases
@@ -132,7 +132,7 @@ parseexp(char *&p, int right) // parse any nested set of () or []
 			return NULL;
 		}
 	}
-	char *s = newstring(word, p - word - 1);
+	char *s = strndup(word, p - word - 1);
 	if (left == '(') {
 		string t;
 		// evaluate () exps directly, and substitute result
@@ -154,7 +154,7 @@ parseword(char *&p) // parse single argument, including expressions
 		p++;
 		char *word = p;
 		p += strcspn(p, "\"\r\n\0");
-		char *s = newstring(word, p - word);
+		char *s = strndup(word, p - word);
 		if (*p == '\"')
 			p++;
 		return s;
@@ -167,7 +167,7 @@ parseword(char *&p) // parse single argument, including expressions
 	p += strcspn(p, "; \t\r\n\0");
 	if (p - word == 0)
 		return NULL;
-	return newstring(word, p - word);
+	return strndup(word, p - word);
 }
 
 OFString *
