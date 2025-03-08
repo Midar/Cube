@@ -4,7 +4,7 @@ OF_ASSUME_NONNULL_BEGIN
 
 @class MenuItem;
 
-@interface Menu : OFObject
+@interface Menu: OFObject
 @property (readonly, nonatomic) OFString *name;
 @property (readonly) OFMutableArray<MenuItem *> *items;
 @property (nonatomic) int mwidth;

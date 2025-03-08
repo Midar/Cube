@@ -31,7 +31,7 @@ plcollide(dynent *d, dynent *o, float &headspace, float &hi,
 			headspace = 10;
 	};
 	return true;
-};
+}
 
 bool
 cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
@@ -51,7 +51,7 @@ cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
 		return cornertest(mip, x, y, dx, dy, bx, by, bs);
 	};
 	return stest;
-};
+}
 
 void
 mmcollide(dynent *d, float &hi, float &lo) // collide with a mapmodel
@@ -97,9 +97,9 @@ collide(dynent *d, bool spawn, float drop, float rise)
 	const int y2 = fast_f2nat(fy2);
 	float hi = 127, lo = -128;
 	float minfloor = (d->monsterstate && !spawn && d->health > 100)
-	                     ? d->o.z - d->eyeheight - 4.5f
-	                     : -1000.0f; // big monsters are afraid of heights,
-	                                 // unless angry :)
+	    ? d->o.z - d->eyeheight - 4.5f
+	    : -1000.0f; // big monsters are afraid of heights,
+	                // unless angry :)
 
 	for (int x = x1; x <= x2; x++)
 		for (int y = y1; y <= y2; y++) // collide with map
@@ -139,14 +139,14 @@ collide(dynent *d, bool spawn, float drop, float rise)
 				floor -= (s->vdelta + S(x + 1, y)->vdelta +
 				             S(x, y + 1)->vdelta +
 				             S(x + 1, y + 1)->vdelta) /
-				         16.0f;
+				    16.0f;
 				break;
 
 			case CHF:
 				ceil += (s->vdelta + S(x + 1, y)->vdelta +
 				            S(x, y + 1)->vdelta +
 				            S(x + 1, y + 1)->vdelta) /
-				        16.0f;
+				    16.0f;
 			};
 			if (ceil < hi)
 				hi = ceil;
@@ -167,7 +167,7 @@ collide(dynent *d, bool spawn, float drop, float rise)
 			continue;
 		if (!plcollide(d, o, headspace, hi, lo))
 			return false;
-	};
+	}
 	if (d != player1)
 		if (!plcollide(d, player1, headspace, hi, lo))
 			return false;
@@ -175,7 +175,7 @@ collide(dynent *d, bool spawn, float drop, float rise)
 	// this loop can be a performance bottleneck with many monster on a slow
 	// cpu, should replace with a blockmap but seems mostly fast enough
 	loopv(v) if (!vreject(d->o, v[i]->o, 7.0f) && d != v[i] &&
-	             !plcollide(d, v[i], headspace, hi, lo)) return false;
+	    !plcollide(d, v[i], headspace, hi, lo)) return false;
 	headspace -= 0.01f;
 
 	mmcollide(d, hi, lo); // collide with map models
@@ -213,7 +213,7 @@ float
 rad(float x)
 {
 	return x * 3.14159f / 180;
-};
+}
 
 VARP(maxroll, 0, 3, 20);
 
@@ -230,7 +230,7 @@ physicsframe() // optimally schedule physics frames inside the graphics frames
 	} else {
 		physicsrepeat = 1;
 	};
-};
+}
 
 // main physics routine, moves a player/monster for a curtime step
 // moveres indicated the physics precision (which is lower for monsters and
@@ -297,8 +297,8 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 				else if (pl->monsterstate)
 					playsound(S_JUMP, &pl->o);
 			} else if (pl->timeinair >
-			           800) // if we land after long time must have
-			                // been a high jump, make thud sound
+			    800) // if we land after long time must have
+			         // been a high jump, make thud sound
 			{
 				if (local)
 					playsoundc(S_LAND);
@@ -312,18 +312,15 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 
 		const float gravity = 20;
 		const float f = 1.0f / moveres;
-		float dropf =
-		    ((gravity - 1) +
-		        pl->timeinair / 15.0f); // incorrect, but works fine
+		float dropf = ((gravity - 1) +
+		    pl->timeinair / 15.0f); // incorrect, but works fine
 		if (water) {
 			dropf = 5;
 			pl->timeinair = 0;
 		}; // float slowly down in water
-		const float drop =
-		    dropf * curtime / gravity / 100 /
+		const float drop = dropf * curtime / gravity / 100 /
 		    moveres; // at high fps, gravity kicks in too fast
-		const float rise =
-		    speed / moveres /
+		const float rise = speed / moveres /
 		    1.2f; // extra smoothness when lifting up stairs
 
 		loopi(moveres) // discrete steps collision detection & sliding
@@ -359,7 +356,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 			};
 			pl->o.z -= f * d.z;
 			break;
-		};
+		}
 	};
 
 	// detect wether player is outside map, used for skipping zbuffer clear
@@ -369,8 +366,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 		pl->outsidemap = true;
 	} else {
 		sqr *s = S((int)pl->o.x, (int)pl->o.y);
-		pl->outsidemap =
-		    SOLID(s) ||
+		pl->outsidemap = SOLID(s) ||
 		    pl->o.z < s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
 		    pl->o.z > s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
 	};
@@ -395,7 +391,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 	} else if (pl->inwater && !water)
 		playsound(S_SPLASH1, &pl->o);
 	pl->inwater = water;
-};
+}
 
 void
 moveplayer(dynent *pl, int moveres, bool local)
@@ -403,4 +399,4 @@ moveplayer(dynent *pl, int moveres, bool local)
 	loopi(physicsrepeat) moveplayer(pl, moveres, local,
 	    i ? curtime / physicsrepeat
 	      : curtime - curtime / physicsrepeat * (physicsrepeat - 1));
-};
+}

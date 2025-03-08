@@ -84,7 +84,7 @@ basicmonster(int type, int yaw, int state, int trigger, int move)
 	}
 	monsters.add(m);
 	return m;
-};
+}
 
 void
 spawnmonster() // spawn a random monster according to freq distribution in DMSP
@@ -96,7 +96,7 @@ spawnmonster() // spawn a random monster according to freq distribution in DMSP
 			break;
 		};
 	basicmonster(type, rnd(360), M_SEARCH, 1000, 1);
-};
+}
 
 void
 monsterclear() // called after map start of when toggling edit mode to
@@ -121,9 +121,9 @@ monsterclear() // called after map start of when toggling edit mode to
 			m->o.z = ents[i].z;
 			entinmap(m);
 			monstertotal++;
-		};
+		}
 	};
-};
+}
 
 bool
 los(float lx, float ly, float lz, float bx, float by, float bz,
@@ -160,7 +160,7 @@ los(float lx, float ly, float lz, float bx, float by, float bz,
 		i++;
 	};
 	return i >= steps;
-};
+}
 
 bool
 enemylos(dynent *m, OFVector3D &v)
@@ -168,7 +168,7 @@ enemylos(dynent *m, OFVector3D &v)
 	v = m->o;
 	return los(m->o.x, m->o.y, m->o.z, m->enemy->o.x, m->enemy->o.y,
 	    m->enemy->o.z, v);
-};
+}
 
 // monster AI is sequenced using transitions: they are in a particular state
 // where they execute a particular behaviour until the trigger time is hit, and
@@ -185,7 +185,7 @@ transition(dynent *m, int state, int moving, int n,
 	m->move = moving;
 	n = n * 130 / 100;
 	m->trigger = lastmillis + n - skill * (n / 16) + rnd(r + 1);
-};
+}
 
 void
 normalise(dynent *m, float angle)
@@ -194,7 +194,7 @@ normalise(dynent *m, float angle)
 		m->yaw += 360.0f;
 	while (m->yaw > angle + 180.0f)
 		m->yaw -= 360.0f;
-};
+}
 
 void
 monsteraction(
@@ -223,13 +223,13 @@ monsteraction(
 	{
 		m->blocked = false;
 		if (!rnd(20000 /
-		         monstertypes[m->mtype]
-		             .speed)) // try to jump over obstackle (rare)
+		        monstertypes[m->mtype]
+		            .speed)) // try to jump over obstackle (rare)
 		{
 			m->jumpnext = true;
 		} else if (m->trigger < lastmillis &&
-		           (m->monsterstate != M_HOME ||
-		               !rnd(5))) // search for a way around (common)
+		    (m->monsterstate != M_HOME ||
+		        !rnd(5))) // search for a way around (common)
 		{
 			m->targetyaw +=
 			    180 + rnd(180); // patented "random walk" AI
@@ -312,7 +312,7 @@ monsteraction(
 	};
 
 	moveplayer(m, 1, false); // use physics to move monster
-};
+}
 
 void
 monsterpain(dynent *m, int damage, dynent *d)
@@ -347,7 +347,7 @@ monsterpain(dynent *m, int damage, dynent *d)
 	} else {
 		playsound(monstertypes[m->mtype].painsound, &m->o);
 	}
-};
+}
 
 void
 endsp(bool allkilled)
@@ -397,8 +397,8 @@ monsterthink()
 			v.z -= monsters[i]->eyeheight;
 			if (dist < 4)
 				teleport((int)(&e - &ents[0]), monsters[i]);
-		};
-	};
+		}
+	}
 
 	loopv(monsters) if (monsters[i]->state == CS_ALIVE)
 	    monsteraction(monsters[i]);

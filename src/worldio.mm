@@ -185,16 +185,16 @@ save_world(OFString *mname)
 		}
 		sqr *t = NULL;
 		int sc = 0;
-#define spurge                                                                 \
-	while (sc) {                                                           \
-		gzputc(f, 255);                                                \
-		if (sc > 255) {                                                \
-			gzputc(f, 255);                                        \
-			sc -= 255;                                             \
-		} else {                                                       \
-			gzputc(f, sc);                                         \
-			sc = 0;                                                \
-		}                                                              \
+#define spurge                          \
+	while (sc) {                    \
+		gzputc(f, 255);         \
+		if (sc > 255) {         \
+			gzputc(f, 255); \
+			sc -= 255;      \
+		} else {                \
+			gzputc(f, sc);  \
+			sc = 0;         \
+		}                       \
 	}
 		loopk(cubicsize)
 		{

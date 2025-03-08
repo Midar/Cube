@@ -35,23 +35,23 @@ settag(int tag, int type) // set all cubes with "tag" to space, if tag is 0 then
 			if (y < miny)
 				miny = y;
 		};
-	};
+	}
 	block b = {minx, miny, maxx - minx + 1, maxy - miny + 1};
 	if (maxx)
 		remip(b); // remip minimal area of changed geometry
-};
+}
 
 void
 resettagareas()
 {
 	settag(0, 0);
-}; // reset for editing or map saving
+} // reset for editing or map saving
 void
 settagareas()
 {
 	settag(0, 1);
 	loopv(ents) if (ents[i].type == CARROT) setspawn(i, true);
-}; // set for playing
+} // set for playing
 
 void
 trigger(int tag, int type, bool savegame)
@@ -131,14 +131,13 @@ remip(block &b, int level)
 					if (r->type == SEMISOLID) {
 						if (o[i]->type == FHF)
 							fh -= o[i]->vdelta / 4 +
-							      2; // crap hack,
-							         // needed for
-							         // rendering
-							         // large mips
-							         // next to hfs
+							    2; // crap hack,
+							       // needed for
+							       // rendering
+							       // large mips
+							       // next to hfs
 						if (o[i]->type == CHF)
-							ch +=
-							    o[i]->vdelta / 4 +
+							ch += o[i]->vdelta / 4 +
 							    2; // FIXME: needs
 							       // to somehow
 							       // take into
@@ -155,7 +154,7 @@ remip(block &b, int level)
 						        // from the side
 					if (ch > ceil)
 						ceil = ch;
-				};
+				}
 				r->floor = floor;
 				r->ceil = ceil;
 			};
@@ -172,7 +171,7 @@ remip(block &b, int level)
 						        // to be equal for a
 						        // perfect mip is the
 						        // wall texture
-				};
+				}
 			} else {
 				loopi(3)
 				{
@@ -186,13 +185,13 @@ remip(block &b, int level)
 					                 // light is not exactly
 					                 // equal
 					    || abs(o[i + 1]->g - o[0]->g) >
-					           lighterr ||
+					        lighterr ||
 					    abs(o[i + 1]->b - o[0]->b) >
 					        lighterr ||
 					    o[i]->utex != o[3]->utex ||
 					    o[i]->wtex != o[3]->wtex)
 						goto c;
-				};
+				}
 				if (r->type == CHF ||
 				    r->type ==
 				        FHF) // can make a perfect mip out of a
@@ -234,7 +233,7 @@ remip(block &b, int level)
 	s.xs /= 2;
 	s.ys /= 2;
 	remip(s, level + 1);
-};
+}
 
 void
 remipmore(block &b, int level)
@@ -249,7 +248,7 @@ remipmore(block &b, int level)
 	if (bb.ys < ssize - 3)
 		bb.ys++;
 	remip(bb, level);
-};
+}
 
 int
 closestent() // used for delent and edit mode ent display
@@ -269,9 +268,9 @@ closestent() // used for delent and edit mode ent display
 			best = i;
 			bdist = dist;
 		};
-	};
+	}
 	return bdist == 99999 ? -1 : best;
-};
+}
 
 void
 entproperty(int prop, int amount)
@@ -293,7 +292,7 @@ entproperty(int prop, int amount)
 		ents[e].attr4 += amount;
 		break;
 	};
-};
+}
 
 void
 delent()
@@ -355,7 +354,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	if (type == LIGHT)
 		calclight();
 	return &ents.last();
-};
+}
 
 void
 clearents(OFString *name)
@@ -368,7 +367,7 @@ clearents(OFString *name)
 		entity &e = ents[i];
 		if (e.type == type)
 			e.type = NOTUSED;
-	};
+	}
 	if (type == LIGHT)
 		calclight();
 }
@@ -381,7 +380,7 @@ scalecomp(uchar &c, int intens)
 	if (n > 255)
 		n = 255;
 	c = n;
-};
+}
 
 void
 scalelights(int f, int intens)
@@ -401,7 +400,7 @@ scalelights(int f, int intens)
 			scalecomp(e.attr3, intens);
 			scalecomp(e.attr4, intens);
 		};
-	};
+	}
 	calclight();
 }
 COMMAND(scalelights, ARG_2INT)
@@ -414,7 +413,7 @@ findentity(int type, int index)
 			return i;
 	loopj(index) if (ents[j].type == type) return j;
 	return -1;
-};
+}
 
 sqr *wmip[LARGEST_FACTOR * 2];
 
@@ -429,8 +428,8 @@ setupworld(int factor)
 	{
 		wmip[i] = w;
 		w += cubicsize >> (i * 2);
-	};
-};
+	}
+}
 
 void
 empty_world(

@@ -23,7 +23,7 @@ newparticle(OFVector3D &o, OFVector3D &d, int fade, int type)
 		{
 			particles[i].next = parempty;
 			parempty = &particles[i];
-		};
+		}
 		parinit = true;
 	};
 	if (parempty) {
@@ -37,7 +37,7 @@ newparticle(OFVector3D &o, OFVector3D &d, int fade, int type)
 		p->next = parlist;
 		parlist = p;
 	};
-};
+}
 
 VAR(demotracking, 0, 0, 1);
 VARP(particlesize, 20, 100, 500);
@@ -117,7 +117,7 @@ render_particles(int time)
 		} else {
 			if (pt->gr)
 				p->o.z -= ((lastmillis - p->millis) / 3.0f) *
-				          curtime / (pt->gr * 10000);
+				    curtime / (pt->gr * 10000);
 			OFVector3D a = p->d;
 			vmul(a, time);
 			vdiv(a, 20000.0f);
@@ -129,7 +129,7 @@ render_particles(int time)
 	glEnable(GL_FOG);
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
-};
+}
 
 void
 particle_splash(int type, int num, int fade, OFVector3D &p)

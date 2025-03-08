@@ -215,7 +215,7 @@ loadgamerest()
 		ents[i].spawned = gzgetc(f) != 0;
 		if (ents[i].type == CARROT && !ents[i].spawned)
 			trigger(ents[i].attr1, ents[i].attr2, true);
-	};
+	}
 	restoreserverstate(ents);
 
 	gzread(f, player1, sizeof(dynent));
@@ -230,12 +230,11 @@ loadgamerest()
 		gzread(f, monsters[i], sizeof(dynent));
 		monsters[i]->enemy =
 		    player1; // lazy, could save id of enemy instead
-		monsters[i]->lastaction = monsters[i]->trigger =
-		    lastmillis +
+		monsters[i]->lastaction = monsters[i]->trigger = lastmillis +
 		    500; // also lazy, but no real noticable effect on game
 		if (monsters[i]->state == CS_DEAD)
 			monsters[i]->lastaction = 0;
-	};
+	}
 	restoremonsterstate();
 
 	int nplayers = gzgeti();
@@ -244,7 +243,7 @@ loadgamerest()
 		dynent *d = getclient(i);
 		assert(d);
 		gzread(f, d, sizeof(dynent));
-	};
+	}
 
 	conoutf(@"savegame restored");
 	if (demoloading)
@@ -292,12 +291,12 @@ demodamage(int damage, OFVector3D &o)
 {
 	ddamage = damage;
 	dorig = o;
-};
+}
 void
 demoblend(int damage)
 {
 	bdamage = damage;
-};
+}
 
 void
 incomingdemodata(uchar *buf, int len, bool extras)
@@ -409,7 +408,7 @@ catmulrom(OFVector3D &z, OFVector3D &a, OFVector3D &b, OFVector3D &c, float s,
 	vadd(dest, t1);
 	vmul(t2, s3 - s2);
 	vadd(dest, t2);
-};
+}
 
 void
 fixwrap(dynent *a, dynent *b)
@@ -418,7 +417,7 @@ fixwrap(dynent *a, dynent *b)
 		a->yaw += 360;
 	while (b->yaw - a->yaw < -180)
 		a->yaw -= 360;
-};
+}
 
 void
 demoplaybackstep()
@@ -481,9 +480,9 @@ demoplaybackstep()
 	if (demoplayback) {
 		int itime = lastmillis - demodelaymsec;
 		loopvrev(playerhistory) if (playerhistory[i]->lastupdate <
-		                            itime) // find 2 positions in
-		                                   // history that surround
-		                                   // interpolation time point
+		    itime) // find 2 positions in
+		           // history that surround
+		           // interpolation time point
 		{
 			dynent *a = playerhistory[i];
 			dynent *b = a;
@@ -500,8 +499,7 @@ demoplaybackstep()
 					z = playerhistory[i - 1];
 				// if(a==z || b==c) printf("* %d\n",
 				// lastmillis);
-				float bf =
-				    (itime - a->lastupdate) /
+				float bf = (itime - a->lastupdate) /
 				    (float)(b->lastupdate - a->lastupdate);
 				fixwrap(a, player1);
 				fixwrap(c, player1);

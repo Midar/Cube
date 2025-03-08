@@ -61,7 +61,7 @@ skip: {
 	render_square(o->utex, f1, f2, c1, c2, x1 << mip, y1 << mip, x2 << mip,
 	    y2 << mip, 1 << mip, d1, d2, topleft);
 };
-};
+}
 
 const int MAX_MIP = 5; // 32x32 unit blocks
 const int MIN_LOD = 2;
@@ -106,7 +106,7 @@ issemi(int mip, int x, int y, int x1, int y1, int x2, int y2)
 		return true;
 	};
 	return false;
-};
+}
 
 bool render_floor, render_ceil;
 
@@ -158,19 +158,19 @@ render_seg_new(
 	// and are also deferred, and render them recursively. Anything left
 	// (perfect mips and higher lods) we render here.
 
-#define LOOPH                                                                  \
-	{                                                                      \
-		for (int xx = x; xx < xs; xx++)                                \
-			for (int yy = y; yy < ys; yy++) {                      \
-				sqr *s = SWS(w, xx, yy, sz);                   \
-				if (s->occluded == 1)                          \
-					continue;                              \
-				if (s->defer && !s->occluded && mip &&         \
-				    xx >= lx && xx < rx && yy >= ly &&         \
+#define LOOPH                                                          \
+	{                                                              \
+		for (int xx = x; xx < xs; xx++)                        \
+			for (int yy = y; yy < ys; yy++) {              \
+				sqr *s = SWS(w, xx, yy, sz);           \
+				if (s->occluded == 1)                  \
+					continue;                      \
+				if (s->defer && !s->occluded && mip && \
+				    xx >= lx && xx < rx && yy >= ly && \
 				    yy < ry)
-#define LOOPD                                                                  \
-	sqr *t = SWS(s, 1, 0, sz);                                             \
-	sqr *u = SWS(s, 1, 1, sz);                                             \
+#define LOOPD                      \
+	sqr *t = SWS(s, 1, 0, sz); \
+	sqr *u = SWS(s, 1, 1, sz); \
 	sqr *v = SWS(s, 0, 1, sz);
 
 	LOOPH // ceils
@@ -178,12 +178,12 @@ render_seg_new(
 		int start = yy;
 		sqr *next;
 		while (yy < ys - 1 && (next = SWS(w, xx, yy + 1, sz))->defer &&
-		       !next->occluded)
+		    !next->occluded)
 			yy++; // collect 2xN rect of lower mip
 		render_seg_new(vx, vy, vh, mip - 1, xx * 2, start * 2,
 		    xx * 2 + 2, yy * 2 + 2);
 		continue;
-	};
+	}
 	stats[mip]++;
 	LOOPD
 	if ((s->type == SPACE || s->type == FHF) && s->ceil >= vh &&
@@ -311,7 +311,7 @@ distlod(int &low, int &high, int angle, float widef)
 		low = min_lod;
 	if (high < min_lod)
 		high = min_lod;
-};
+}
 
 // does some out of date view frustrum optimisation that doesn't contribute much
 // anymore
@@ -328,8 +328,9 @@ render_world(
 	if (cdist < 7) // hack to avoid popup at high fovs at 45 yaw
 	{
 		min_lod = max(min_lod,
-		    (int)(MIN_LOD + (10 - cdist) / 1.0f *
-		                        widef)); // less if lod worked better
+		    (int)(MIN_LOD +
+		        (10 - cdist) / 1.0f *
+		            widef)); // less if lod worked better
 		widef = 1.0f;
 	};
 	lod = MAX_LOD;
@@ -355,4 +356,4 @@ render_world(
 	render_seg_new(
 	    vx, vy, vh, MAX_MIP, 0, 0, ssize >> MAX_MIP, ssize >> MAX_MIP);
 	mipstats(stats[0], stats[1], stats[2]);
-};
+}

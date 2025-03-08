@@ -78,13 +78,14 @@ renderconsole() // render buffer taking into account time & scrolling
 {
 	int nd = 0;
 	char *refs[ndraw];
-	loopv(conlines) if (conskip ? i >= conskip - 1 ||
-	                                  i >= conlines.length() - ndraw
-	                            : lastmillis - conlines[i].outtime < 20000)
+	loopv(conlines)
 	{
-		refs[nd++] = conlines[i].cref;
-		if (nd == ndraw)
-			break;
+		if (conskip ? i >= conskip - 1 || i >= conlines.length() - ndraw
+		            : lastmillis - conlines[i].outtime < 20000) {
+			refs[nd++] = conlines[i].cref;
+			if (nd == ndraw)
+				break;
+		}
 	}
 	@autoreleasepool {
 		loopj(nd)

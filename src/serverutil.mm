@@ -21,7 +21,7 @@ putint(uchar *&p, int n)
 		*p++ = n >> 16;
 		*p++ = n >> 24;
 	};
-};
+}
 
 int
 getint(uchar *&p)
@@ -93,7 +93,7 @@ msgsizelookup(int msg)
 		if (*p == msg)
 			return p[1];
 	return -1;
-};
+}
 
 // sending of maps between clients
 

@@ -38,9 +38,9 @@ typedef unsigned int uint;
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define rnd(max) (rand() % (max))
 #define rndreset() (srand(1))
-#define rndtime()                                                              \
-	{                                                                      \
-		loopi(lastmillis & 0xF) rnd(i + 1);                            \
+#define rndtime()                                   \
+	{                                           \
+		loopi(lastmillis & 0xF) rnd(i + 1); \
 	}
 #define loop(v, m) for (int v = 0; v < (m); v++)
 #define loopi(m) loop(i, m)
@@ -102,16 +102,16 @@ struct sprintf_s_f {
 };
 
 #define sprintf_s(d) sprintf_s_f((char *)d)
-#define sprintf_sd(d)                                                          \
-	string d;                                                              \
+#define sprintf_sd(d) \
+	string d;     \
 	sprintf_s(d)
-#define sprintf_sdlv(d, last, fmt)                                             \
-	string d;                                                              \
-	{                                                                      \
-		va_list ap;                                                    \
-		va_start(ap, last);                                            \
-		formatstring(d, fmt, ap);                                      \
-		va_end(ap);                                                    \
+#define sprintf_sdlv(d, last, fmt)        \
+	string d;                         \
+	{                                 \
+		va_list ap;               \
+		va_start(ap, last);       \
+		formatstring(d, fmt, ap); \
+		va_end(ap);               \
 	}
 #define sprintf_sdv(d, fmt) sprintf_sdlv(d, fmt, fmt)
 
@@ -236,13 +236,13 @@ template <class T> struct vector {
 	}
 };
 
-#define loopv(v)                                                               \
-	if (false) {                                                           \
-	} else                                                                 \
+#define loopv(v)     \
+	if (false) { \
+	} else       \
 		for (int i = 0; i < (v).length(); i++)
-#define loopvrev(v)                                                            \
-	if (false) {                                                           \
-	} else                                                                 \
+#define loopvrev(v)  \
+	if (false) { \
+	} else       \
 		for (int i = (v).length() - 1; i >= 0; i--)
 
 #endif

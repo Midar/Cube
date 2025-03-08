@@ -2,7 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-@interface Identifier : OFObject
+@interface Identifier: OFObject
 @property (readonly, copy, nonatomic) OFString *name;
 
 - (instancetype)init OF_UNAVAILABLE;

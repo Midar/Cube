@@ -2,7 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-@interface MapModelInfo : OFObject
+@interface MapModelInfo: OFObject
 @property (nonatomic) int rad, h, zoff, snap;
 @property (copy, nonatomic) OFString *name;
 

@@ -2,7 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-@interface Alias : Identifier
+@interface Alias: Identifier
 @property (copy, nonatomic) OFString *action;
 @property (readonly, nonatomic) bool persisted;
 

@@ -19,7 +19,7 @@ lightray(float bx, float by,
 		return;
 	int reach = light.attr1;
 	int steps = (int)(reach * reach * 1.6f /
-	                  dist); // can change this for speedup/quality?
+	    dist); // can change this for speedup/quality?
 	const int PRECBITS = 12;
 	const float PRECF = 4096.0f;
 	int x = (int)(lx * PRECF);
@@ -77,7 +77,7 @@ lightray(float bx, float by,
 				stepl -= 25;
 				stepg -= 25;
 				stepb -= 25;
-			};
+			}
 		} else // white light, special optimized version
 		{
 			int dimness = rnd((255 - light.attr2) / 16 + 1);
@@ -98,7 +98,7 @@ lightray(float bx, float by,
 				y += stepy;
 				l -= stepl;
 				stepl -= 25;
-			};
+			}
 		};
 	} else // the old (white) light code, here for the few people with old
 	       // video cards that don't support overbright
@@ -114,9 +114,9 @@ lightray(float bx, float by,
 			x += stepx;
 			y += stepy;
 			l -= stepl;
-		};
+		}
 	};
-};
+}
 
 void
 calclightsource(persistent_entity &l)
@@ -141,7 +141,7 @@ calclightsource(persistent_entity &l)
 	};
 
 	rndtime();
-};
+}
 
 void
 postlightarea(block &a) // median filter, smooths out random noise in light and
@@ -150,19 +150,19 @@ postlightarea(block &a) // median filter, smooths out random noise in light and
 	loop(x, a.xs) loop(y, a.ys) // assumes area not on edge of world
 	{
 		sqr *s = S(x + a.x, y + a.y);
-#define median(m)                                                              \
-	s->m =                                                                 \
-	    (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +              \
-	        SW(s, -1, 0)->m * 2 + SW(s, 0, -1)->m * 2 + SW(s, 1, 1)->m +   \
-	        SW(s, 1, -1)->m + SW(s, -1, 1)->m + SW(s, -1, -1)->m) /        \
+#define median(m)                                                            \
+	s->m =                                                               \
+	    (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +            \
+	        SW(s, -1, 0)->m * 2 + SW(s, 0, -1)->m * 2 + SW(s, 1, 1)->m + \
+	        SW(s, 1, -1)->m + SW(s, -1, 1)->m + SW(s, -1, -1)->m) /      \
 	    14; // median is 4/2/1 instead
 		median(r);
 		median(g);
 		median(b);
-	};
+	}
 
 	remip(a);
-};
+}
 
 void
 calclight()

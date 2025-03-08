@@ -17,5 +17,5 @@ endianswap(
 		uchar t = p[i];
 		p[i] = p[stride - i - 1];
 		p[stride - i - 1] = t;
-	};
+	}
 }

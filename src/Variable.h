@@ -2,7 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-@interface Variable : Identifier
+@interface Variable: Identifier
 @property (readonly, nonatomic) int min, max;
 @property (readonly, nonatomic) int *storage;
 @property (readonly, nonatomic) void (*__cdecl function)();

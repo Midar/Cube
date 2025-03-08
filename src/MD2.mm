@@ -30,7 +30,8 @@ snap(int sn, float f)
 	return sn ? (float)(((int)(f + sn * 0.5f)) & (~(sn - 1))) : f;
 }
 
-@implementation MD2 {
+@implementation MD2
+{
 	int _numGlCommands;
 	int *_glCommands;
 	int _numTriangles;

@@ -29,29 +29,29 @@ reallocv()
 // the leaves of all these functions, and are part of the cpu bottleneck on
 // really slow machines, hence the macros.
 
-#define vertcheck()                                                            \
-	{                                                                      \
-		if (curvert >= curmaxverts)                                    \
-			reallocv();                                            \
+#define vertcheck()                         \
+	{                                   \
+		if (curvert >= curmaxverts) \
+			reallocv();         \
 	}
 
-#define vertf(v1, v2, v3, ls, t1, t2)                                          \
-	{                                                                      \
-		vertex &v = verts[curvert++];                                  \
-		v.u = t1;                                                      \
-		v.v = t2;                                                      \
-		v.x = v1;                                                      \
-		v.y = v2;                                                      \
-		v.z = v3;                                                      \
-		v.r = ls->r;                                                   \
-		v.g = ls->g;                                                   \
-		v.b = ls->b;                                                   \
-		v.a = 255;                                                     \
+#define vertf(v1, v2, v3, ls, t1, t2)         \
+	{                                     \
+		vertex &v = verts[curvert++]; \
+		v.u = t1;                     \
+		v.v = t2;                     \
+		v.x = v1;                     \
+		v.y = v2;                     \
+		v.z = v3;                     \
+		v.r = ls->r;                  \
+		v.g = ls->g;                  \
+		v.b = ls->b;                  \
+		v.a = 255;                    \
 	};
 
-#define vert(v1, v2, v3, ls, t1, t2)                                           \
-	{                                                                      \
-		vertf((float)(v1), (float)(v2), (float)(v3), ls, t1, t2);      \
+#define vert(v1, v2, v3, ls, t1, t2)                                      \
+	{                                                                 \
+		vertf((float)(v1), (float)(v2), (float)(v3), ls, t1, t2); \
 	}
 
 int nquads;
@@ -76,18 +76,18 @@ mipstats(int a, int b, int c)
 		conoutf(@"1x1/2x2/4x4: %d / %d / %d", a, b, c);
 }
 
-#define stripend()                                                             \
-	{                                                                      \
-		if (floorstrip || deltastrip) {                                \
-			addstrip(ogltex, firstindex, curvert - firstindex);    \
-			floorstrip = deltastrip = false;                       \
-		};                                                             \
+#define stripend()                                                          \
+	{                                                                   \
+		if (floorstrip || deltastrip) {                             \
+			addstrip(ogltex, firstindex, curvert - firstindex); \
+			floorstrip = deltastrip = false;                    \
+		};                                                          \
 	};
 void
 finishstrips()
 {
 	stripend();
-};
+}
 
 sqr sbright, sdark;
 VAR(lighterror, 1, 8, 100);
@@ -112,7 +112,7 @@ render_flat(int wtex, int x, int y, int size, int h, sqr *l1, sqr *l2, sqr *l3,
 	float yo = yf * y;
 
 	bool first = !floorstrip || y != oy + size || ogltex != gltex ||
-	             h != oh || x != ox;
+	    h != oh || x != ox;
 
 	if (first) // start strip here
 	{
@@ -170,7 +170,7 @@ render_flat(int wtex, int x, int y, int size, int h, sqr *l1, sqr *l2, sqr *l3,
 
 	oy = y;
 	nquads++;
-};
+}
 
 void
 render_flatdelta(int wtex, int x, int y, int size, float h1, float h2, float h3,
@@ -228,7 +228,7 @@ render_flatdelta(int wtex, int x, int y, int size, float h1, float h2, float h3,
 
 	oy = y;
 	nquads++;
-};
+}
 
 void
 render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
@@ -256,7 +256,7 @@ render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
 	vertf((float)x1, h->ceil, (float)y1, l1, xf * x1, yf * y1);
 	addstrip(gltex, curvert - 3, 3);
 	nquads++;
-};
+}
 
 void
 render_tris(int x, int y, int size, bool topleft, sqr *h1, sqr *h2, sqr *s,
@@ -277,7 +277,7 @@ render_tris(int x, int y, int size, bool topleft, sqr *h1, sqr *h2, sqr *s,
 			render_2tris(h2, s, x + size, y, x + size, y + size, x,
 			    y + size, t, u, v);
 	};
-};
+}
 
 void
 render_square(int wtex, float floor1, float floor2, float ceil1, float ceil2,
@@ -312,7 +312,7 @@ render_square(int wtex, float floor1, float floor2, float ceil1, float ceil2,
 
 	nquads++;
 	addstrip(gltex, curvert - 4, 4);
-};
+}
 
 int wx1, wy1, wx2, wy2;
 
@@ -326,18 +326,18 @@ vertw(int v1, float v2, int v3, sqr *c, float t1, float t2, float t)
 	vertcheck();
 	vertf((float)v1, v2 - (float)sin(v1 * v3 * 0.1 + t) * 0.2f, (float)v3,
 	    c, t1, t2);
-};
+}
 
 inline float
 dx(float x)
 {
 	return x + (float)sin(x * 2 + lastmillis / 1000.0f) * 0.04f;
-};
+}
 inline float
 dy(float x)
 {
 	return x + (float)sin(x * 2 + lastmillis / 900.0f + PI / 5) * 0.05f;
-};
+}
 
 // renders water for bounding rect area that contains water... simple but very
 // inefficient
@@ -391,7 +391,7 @@ renderwater(float hf)
 	glDepthMask(GL_TRUE);
 
 	return nquads;
-};
+}
 
 void
 addwaterquad(int x, int y, int size) // update bounding rect that contains water
@@ -413,7 +413,7 @@ addwaterquad(int x, int y, int size) // update bounding rect that contains water
 		if (y2 > wy2)
 			wy2 = y2;
 	};
-};
+}
 
 void
 resetcubes()
@@ -425,4 +425,4 @@ resetcubes()
 	nquads = 0;
 	sbright.r = sbright.g = sbright.b = 255;
 	sdark.r = sdark.g = sdark.b = 0;
-};
+}

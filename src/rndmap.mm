@@ -9,8 +9,8 @@ noise(int x, int y, int seed)
 	int n = x + y * 57;
 	n = (n << 13) ^ n;
 	return 1.0f -
-	       ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) /
-	           1073741824.0f;
+	    ((n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) /
+	    1073741824.0f;
 }
 
 float
@@ -22,7 +22,7 @@ smoothednoise(int x, int y, int seed)
 	    16;
 	float sides = (noise(x - 1, y, seed) + noise(x + 1, y, seed) +
 	                  noise(x, y - 1, seed) + noise(x, y + 1, seed)) /
-	              8;
+	    8;
 	float center = noise(x, y, seed) / 4;
 	return corners + sides + center;
 }
@@ -60,7 +60,7 @@ perlinnoise_2D(float x, float y, int seedstep, float pers)
 		float frequency = (float)(2 ^ i);
 		float amplitude = (float)pow(pers, i);
 		total += interpolatednoise(x * frequency, y * frequency, seed) *
-		         amplitude;
+		    amplitude;
 		seed += seedstep;
 	}
 	return total;
@@ -81,9 +81,9 @@ perlinarea(block &b, int scale, int seed, int psize)
 			s->vdelta =
 			    (int)(perlinnoise_2D(x / ((float)scale) + seed,
 			              y / ((float)scale) + seed, 1000, 0.01f) *
-			              50 +
-			          25);
+			            50 +
+			        25);
 			if (s->vdelta > 128)
 				s->vdelta = 0;
 		};
-};
+}

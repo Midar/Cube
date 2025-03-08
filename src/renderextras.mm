@@ -12,14 +12,14 @@ line(int x1, int y1, float z1, int x2, int y2, float z2)
 	glVertex3f((float)x2, z2, (float)y2);
 	glEnd();
 	xtraverts += 4;
-};
+}
 
 void
 linestyle(float width, int r, int g, int b)
 {
 	glLineWidth(width);
 	glColor3ub(r, g, b);
-};
+}
 
 void
 box(block &b, float z1, float z2, float z3, float z4)
@@ -31,7 +31,7 @@ box(block &b, float z1, float z2, float z3, float z4)
 	glVertex3f((float)b.x, z4, (float)b.y + b.ys);
 	glEnd();
 	xtraverts += 4;
-};
+}
 
 void
 dot(int x, int y, float z)
@@ -44,7 +44,7 @@ dot(int x, int y, float z)
 	glVertex3f(x - DOF, (float)z, y + DOF);
 	glEnd();
 	xtraverts += 4;
-};
+}
 
 void
 blendbox(int x1, int y1, int x2, int y2, bool border)
@@ -76,7 +76,7 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glEnable(GL_BLEND);
 	glEnable(GL_TEXTURE_2D);
 	glDepthMask(GL_TRUE);
-};
+}
 
 const int MAXSPHERES = 50;
 struct sphere {
@@ -96,7 +96,7 @@ newsphere(OFVector3D &o, float max, int type)
 		{
 			spheres[i].next = sempty;
 			sempty = &spheres[i];
-		};
+		}
 		sinit = true;
 	};
 	if (sempty) {
@@ -109,7 +109,7 @@ newsphere(OFVector3D &o, float max, int type)
 		p->next = slist;
 		slist = p;
 	};
-};
+}
 
 void
 renderspheres(int time)
@@ -144,7 +144,7 @@ renderspheres(int time)
 
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
-};
+}
 
 string closeent;
 OFString *entnames[] = {
@@ -243,7 +243,7 @@ readmatrices()
 	glGetIntegerv(GL_VIEWPORT, viewport);
 	glGetDoublev(GL_MODELVIEW_MATRIX, mm);
 	glGetDoublev(GL_PROJECTION_MATRIX, pm);
-};
+}
 
 // stupid function to cater for stupid ATI linux drivers that return incorrect
 // depth values
@@ -252,7 +252,7 @@ float
 depthcorrect(float d)
 {
 	return (d <= 1 / 256.0f) ? d * 256 : d;
-};
+}
 
 // find out the 3d target of the crosshair in the world easily and very
 // acurately. sadly many very old cards and drivers appear to fuck up on
@@ -274,7 +274,7 @@ readdepth(int w, int h)
 	OFVector3D r = OFMakeVector3D(mm[0], mm[4], mm[8]);
 	OFVector3D u = OFMakeVector3D(mm[1], mm[5], mm[9]);
 	setorient(r, u);
-};
+}
 
 void
 drawicon(float tx, float ty, int x, int y)
@@ -295,7 +295,7 @@ drawicon(float tx, float ty, int x, int y)
 	glVertex2i(x, y + s);
 	glEnd();
 	xtraverts += 4;
-};
+}
 
 void
 invertperspective()
@@ -312,7 +312,7 @@ invertperspective()
 	inv[3 * 4 + 3] = pm[2 * 4 + 2] / pm[3 * 4 + 2];
 
 	glLoadMatrixd(inv);
-};
+}
 
 VARP(crosshairsize, 0, 15, 50);
 
@@ -321,7 +321,7 @@ void
 damageblend(int n)
 {
 	dblend += n;
-};
+}
 
 VAR(hidestats, 0, 0, 1);
 VARP(crosshairfx, 0, 1, 1);

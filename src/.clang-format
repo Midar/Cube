@@ -1,9 +1,26 @@
 IndentWidth: 8
 TabWidth: 8
 UseTab: ForIndentation
-BreakBeforeBraces: Linux
+ColumnLimit: 80
+BreakBeforeBinaryOperators: None
+BreakBeforeBraces: Custom
+BreakBeforeTernaryOperators: true
+BraceWrapping:
+  AfterClass: false
+  AfterControlStatement: false
+  AfterEnum: false
+  AfterFunction: true
+  AfterNamespace: false
+  AfterObjCDeclaration: true
+  AfterStruct: false
+  AfterUnion: false
+  AfterExternBlock: false
+  BeforeCatch: false
+  BeforeElse: false
 AlwaysBreakAfterReturnType: AllDefinitions
 AlignAfterOpenBracket: DontAlign
+AlignEscapedNewlines: Left
+AlignOperands: DontAlign
 ObjCBlockIndentWidth: 8
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: true
@@ -15,5 +32,11 @@ ObjCPropertyAttributeOrder: [
     atomic, nonatomic,
     getter, setter
 ]
+SpaceBeforeInheritanceColon: false
+QualifierAlignment: Left
+#RemoveEmptyLinesInUnwrappedLines: true
+RemoveSemicolon: true
+CompactNamespaces: true
+SortIncludes: CaseSensitive
 IndentPPDirectives: AfterHash
 PPIndentWidth: 1

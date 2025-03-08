@@ -7,7 +7,8 @@ OF_APPLICATION_DELEGATE(Cube)
 VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
 VARP(minmillis, 0, 5, 1000);
 
-@implementation Cube {
+@implementation Cube
+{
 	int _width, _height;
 }
 

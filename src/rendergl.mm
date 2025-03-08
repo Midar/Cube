@@ -63,7 +63,7 @@ gl_init(int w, int h)
 	glNewList(1, GL_COMPILE);
 	gluSphere(qsphere, 1, 12, 6);
 	glEndList();
-};
+}
 
 void
 cleangl()
@@ -174,7 +174,7 @@ void
 purgetextures()
 {
 	loopi(256) loop(j, MAXFRAMES) mapping[i][j] = 0;
-};
+}
 
 int curtexnum = 0;
 
@@ -265,7 +265,7 @@ setupworld()
 		glTexEnvi(
 		    GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PRIMARY_COLOR_EXT);
 	};
-};
+}
 
 int skyoglid;
 
@@ -339,7 +339,7 @@ transplayer()
 	    (player1->state == CS_DEAD ? player1->eyeheight - 0.2f : 0) -
 	        player1->o.z,
 	    -player1->o.y);
-};
+}
 
 VARP(fov, 10, 105, 120);
 
@@ -390,7 +390,7 @@ drawhudgun(float fovy, float aspect, int farplane)
 	glMatrixMode(GL_MODELVIEW);
 
 	glDisable(GL_CULL_FACE);
-};
+}
 
 void
 gl_drawframe(int w, int h, float curfps)
@@ -416,7 +416,7 @@ gl_drawframe(int w, int h, float curfps)
 	};
 
 	glClear((player1->outsidemap ? GL_COLOR_BUFFER_BIT : 0) |
-	        GL_DEPTH_BUFFER_BIT);
+	    GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -490,4 +490,4 @@ gl_drawframe(int w, int h, float curfps)
 
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_FOG);
-};
+}

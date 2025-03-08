@@ -51,7 +51,7 @@ httpgetrecieve(ENetBuffer &buf)
 		((char *)buf.data)[0] = 0;
 		buf.dataLength -= len;
 	};
-};
+}
 
 uchar *
 stripheader(uchar *b)
@@ -60,7 +60,7 @@ stripheader(uchar *b)
 	if (!s)
 		s = strstr((char *)b, "\n\n");
 	return s ? (uchar *)s : b;
-};
+}
 
 ENetAddress masterserver = {ENET_HOST_ANY, 80};
 int updmaster = 0;
@@ -83,7 +83,7 @@ updatemasterserver(int seconds)
 		masterb.dataLength = MAXTRANS - 1;
 		updmaster = seconds + 60 * 60;
 	};
-};
+}
 
 void
 checkmasterreply()
@@ -92,7 +92,7 @@ checkmasterreply()
 	httpgetrecieve(masterb);
 	if (busy && mssock == ENET_SOCKET_NULL)
 		printf("masterserver reply: %s\n", stripheader(masterrep));
-};
+}
 
 uchar *
 retrieveservers(uchar *buf, int buflen)
@@ -107,7 +107,7 @@ retrieveservers(uchar *buf, int buflen)
 	while (mssock != ENET_SOCKET_NULL)
 		httpgetrecieve(eb);
 	return stripheader(buf);
-};
+}
 
 ENetSocket pongsock = ENET_SOCKET_NULL;
 static OFString *serverdesc;

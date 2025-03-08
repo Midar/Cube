@@ -8,7 +8,7 @@
 
 #include "tools.h"
 
-@interface Cube : OFObject <OFApplicationDelegate>
+@interface Cube: OFObject <OFApplicationDelegate>
 @property (class, readonly, nonatomic) Cube *sharedInstance;
 @property (readonly, nonatomic) SDL_Window *window;
 @property (readonly, nonatomic) OFIRI *gameDataIRI, *userDataIRI;
@@ -80,7 +80,7 @@ struct persistent_entity // map entity
 	uchar attr2, attr3, attr4;
 };
 
-struct entity : public persistent_entity {
+struct entity: public persistent_entity {
 	bool spawned; // the only dynamic state of a map entity
 };
 
@@ -107,8 +107,8 @@ struct header // map file format header
 #define LARGEST_FACTOR 11 // 10 is already insane
 #define SOLID(x) ((x)->type == SOLID)
 #define MINBORD 2 // 2 cubes from the edge of the world are always solid
-#define OUTBORD(x, y)                                                          \
-	((x) < MINBORD || (y) < MINBORD || (x) >= ssize - MINBORD ||           \
+#define OUTBORD(x, y)                                                \
+	((x) < MINBORD || (y) < MINBORD || (x) >= ssize - MINBORD || \
 	    (y) >= ssize - MINBORD)
 
 struct block {
@@ -161,7 +161,7 @@ struct dynent // players & monsters
 	string name, team;
 };
 
-#define SAVEGAMEVERSION                                                        \
+#define SAVEGAMEVERSION \
 	4 // bump if dynent/netprotocol changes or any other savegame/demo data
 
 enum { A_BLUE, A_GREEN, A_YELLOW }; // armour types... take 20/40/60 % off
@@ -316,50 +316,50 @@ extern bool demoplayback;
 
 // simplistic vector ops
 #define dotprod(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
-#define vmul(u, f)                                                             \
-	{                                                                      \
-		(u).x *= (f);                                                  \
-		(u).y *= (f);                                                  \
-		(u).z *= (f);                                                  \
+#define vmul(u, f)            \
+	{                     \
+		(u).x *= (f); \
+		(u).y *= (f); \
+		(u).z *= (f); \
 	}
-#define vdiv(u, f)                                                             \
-	{                                                                      \
-		(u).x /= (f);                                                  \
-		(u).y /= (f);                                                  \
-		(u).z /= (f);                                                  \
+#define vdiv(u, f)            \
+	{                     \
+		(u).x /= (f); \
+		(u).y /= (f); \
+		(u).z /= (f); \
 	}
-#define vadd(u, v)                                                             \
-	{                                                                      \
-		(u).x += (v).x;                                                \
-		(u).y += (v).y;                                                \
-		(u).z += (v).z;                                                \
+#define vadd(u, v)              \
+	{                       \
+		(u).x += (v).x; \
+		(u).y += (v).y; \
+		(u).z += (v).z; \
 	};
-#define vsub(u, v)                                                             \
-	{                                                                      \
-		(u).x -= (v).x;                                                \
-		(u).y -= (v).y;                                                \
-		(u).z -= (v).z;                                                \
+#define vsub(u, v)              \
+	{                       \
+		(u).x -= (v).x; \
+		(u).y -= (v).y; \
+		(u).z -= (v).z; \
 	};
-#define vdist(d, v, e, s)                                                      \
-	OFVector3D v = s;                                                      \
-	vsub(v, e);                                                            \
+#define vdist(d, v, e, s) \
+	OFVector3D v = s; \
+	vsub(v, e);       \
 	float d = (float)sqrt(dotprod(v, v));
-#define vreject(v, u, max)                                                     \
-	((v).x > (u).x + (max) || (v).x < (u).x - (max) ||                     \
+#define vreject(v, u, max)                                 \
+	((v).x > (u).x + (max) || (v).x < (u).x - (max) || \
 	    (v).y > (u).y + (max) || (v).y < (u).y - (max))
-#define vlinterp(v, f, u, g)                                                   \
-	{                                                                      \
-		(v).x = (v).x * f + (u).x * g;                                 \
-		(v).y = (v).y * f + (u).y * g;                                 \
-		(v).z = (v).z * f + (u).z * g;                                 \
+#define vlinterp(v, f, u, g)                   \
+	{                                      \
+		(v).x = (v).x * f + (u).x * g; \
+		(v).y = (v).y * f + (u).y * g; \
+		(v).z = (v).z * f + (u).z * g; \
 	}
 
-#define sgetstr()                                                              \
-	{                                                                      \
-		char *t = text;                                                \
-		do {                                                           \
-			*t = getint(p);                                        \
-		} while (*t++);                                                \
+#define sgetstr()                       \
+	{                               \
+		char *t = text;         \
+		do {                    \
+			*t = getint(p); \
+		} while (*t++);         \
 	} // used by networking
 
 #define m_noitems (gamemode >= 4)
@@ -394,31 +394,31 @@ enum // function signatures for script functions, see command.cpp
 
 // nasty macros for registering script functions, abuses globals to avoid
 // excessive infrastructure
-#define COMMANDN(name, fun, nargs)                                             \
-	OF_CONSTRUCTOR()                                                       \
-	{                                                                      \
-		enqueueInit(^{                                                 \
-			addcommand(@ #name, (void (*)())fun, nargs);           \
-		});                                                            \
+#define COMMANDN(name, fun, nargs)                                   \
+	OF_CONSTRUCTOR()                                             \
+	{                                                            \
+		enqueueInit(^{                                       \
+			addcommand(@ #name, (void (*)())fun, nargs); \
+		});                                                  \
 	}
 #define COMMAND(name, nargs) COMMANDN(name, name, nargs)
-#define VARP(name, min, cur, max)                                              \
-	int name;                                                              \
-	OF_CONSTRUCTOR()                                                       \
-	{                                                                      \
-		enqueueInit(^{                                                 \
-			name = variable(                                       \
-			    @ #name, min, cur, max, &name, NULL, true);        \
-		});                                                            \
+#define VARP(name, min, cur, max)                                       \
+	int name;                                                       \
+	OF_CONSTRUCTOR()                                                \
+	{                                                               \
+		enqueueInit(^{                                          \
+			name = variable(                                \
+			    @ #name, min, cur, max, &name, NULL, true); \
+		});                                                     \
 	}
-#define VAR(name, min, cur, max)                                               \
-	int name;                                                              \
-	OF_CONSTRUCTOR()                                                       \
-	{                                                                      \
-		enqueueInit(^{                                                 \
-			name = variable(                                       \
-			    @ #name, min, cur, max, &name, NULL, false);       \
-		});                                                            \
+#define VAR(name, min, cur, max)                                         \
+	int name;                                                        \
+	OF_CONSTRUCTOR()                                                 \
+	{                                                                \
+		enqueueInit(^{                                           \
+			name = variable(                                 \
+			    @ #name, min, cur, max, &name, NULL, false); \
+		});                                                      \
 	}
 #define VARF(name, min, cur, max, body)                                        \
 	void var_##name();                                                     \
@@ -431,16 +431,16 @@ enum // function signatures for script functions, see command.cpp
 		});                                                            \
 	}                                                                      \
 	void var_##name() { body; }
-#define VARFP(name, min, cur, max, body)                                       \
-	void var_##name();                                                     \
-	static int name;                                                       \
-	OF_CONSTRUCTOR()                                                       \
-	{                                                                      \
-		enqueueInit(^{                                                 \
-			name = variable(                                       \
-			    @ #name, min, cur, max, &name, var_##name, true);  \
-		});                                                            \
-	}                                                                      \
+#define VARFP(name, min, cur, max, body)                                      \
+	void var_##name();                                                    \
+	static int name;                                                      \
+	OF_CONSTRUCTOR()                                                      \
+	{                                                                     \
+		enqueueInit(^{                                                \
+			name = variable(                                      \
+			    @ #name, min, cur, max, &name, var_##name, true); \
+		});                                                           \
+	}                                                                     \
 	void var_##name() { body; }
 
 #define ATOI(s) strtol(s, NULL, 0) // supports hexadecimal numbers

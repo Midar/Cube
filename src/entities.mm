@@ -27,7 +27,7 @@ renderent(entity &e, OFString *mdlname, float z, float yaw, int frame = 0,
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f, e.x, z + S(e.x, e.y)->floor,
 	    e.y, yaw, 0, false, 1.0f, speed, 0, basetime);
-};
+}
 
 void
 renderentities()
@@ -59,9 +59,9 @@ renderentities()
 				if (e.type < I_SHELLS || e.type > TELEPORT)
 					continue;
 				renderent(e, entmdlnames[e.type - I_SHELLS],
-				    (float)(1 + sin(lastmillis / 100.0 + e.x +
-				                    e.y) /
-				                    20),
+				    (float)(1 +
+				        sin(lastmillis / 100.0 + e.x + e.y) /
+				            20),
 				    lastmillis / 10.0f);
 			} else
 				switch (e.attr2) {
@@ -74,9 +74,10 @@ renderentities()
 					if (!e.spawned)
 						continue;
 					renderent(e, @"carrot",
-					    (float)(1 + sin(lastmillis / 100.0 +
-					                    e.x + e.y) /
-					                    20),
+					    (float)(1 +
+					        sin(lastmillis / 100.0 + e.x +
+					            e.y) /
+					            20),
 					    lastmillis /
 					        (e.attr2 ? 1.0f : 10.0f));
 					break;
@@ -100,8 +101,8 @@ renderentities()
 					break;
 				};
 		};
-	};
-};
+	}
+}
 
 struct itemstat {
 	int add, max, sound;
@@ -139,7 +140,7 @@ void
 baseammo(int gun)
 {
 	player1->ammo[gun] = itemstats[gun - 1].add * 2;
-};
+}
 
 // these two functions are called when the server acknowledges that you really
 // picked up the item (in multiplayer someone may grab it before you).
@@ -153,7 +154,7 @@ radditem(int i, int &v)
 	if (v > is.max)
 		v = is.max;
 	playsoundc(is.sound);
-};
+}
 
 void
 realpickup(int n, dynent *d)
@@ -234,7 +235,7 @@ teleport(int n, dynent *d) // also used by monsters
 			break;
 		};
 	};
-};
+}
 
 void
 pickup(int n, dynent *d)
@@ -346,7 +347,7 @@ void
 putitems(uchar *&p) // puts items in network stream and also spawns them locally
 {
 	loopv(ents) if ((ents[i].type >= I_SHELLS && ents[i].type <= I_QUAD) ||
-	                ents[i].type == CARROT)
+	    ents[i].type == CARROT)
 	{
 		putint(p, i);
 		ents[i].spawned = true;
@@ -357,10 +358,10 @@ void
 resetspawns()
 {
 	loopv(ents) ents[i].spawned = false;
-};
+}
 void
 setspawn(uint i, bool on)
 {
 	if (i < (uint)ents.length())
 		ents[i].spawned = on;
-};
+}

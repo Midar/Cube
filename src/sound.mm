@@ -52,7 +52,7 @@ stopsound()
 #endif
 		stream = NULL;
 	};
-};
+}
 
 VAR(soundbufferlen, 128, 1024, 4096);
 
@@ -162,7 +162,7 @@ cleansound()
 #else
 	FSOUND_Close();
 #endif
-};
+}
 
 VAR(stereo, 0, 1, 1);
 
@@ -173,15 +173,15 @@ updatechanvol(int chan, OFVector3D *loc)
 	if (loc) {
 		vdist(dist, v, *loc, player1->o);
 		vol -= (int)(dist * 3 * soundvol /
-		             255); // simple mono distance attenuation
+		    255); // simple mono distance attenuation
 		if (stereo && (v.x != 0 || v.y != 0)) {
 			float yaw = -atan2(v.x, v.y) -
-			            player1->yaw *
-			                (PI / 180.0f); // relative angle of
-			                               // sound along X-Y axis
-			pan = int(255.9f * (0.5 * sin(yaw) +
-			                       0.5f)); // range is from 0 (left)
-			                               // to 255 (right)
+			    player1->yaw *
+			        (PI / 180.0f); // relative angle of
+			                       // sound along X-Y axis
+			pan = int(255.9f *
+			    (0.5 * sin(yaw) + 0.5f)); // range is from 0 (left)
+			                              // to 255 (right)
 		};
 	};
 	vol = (vol * MAXVOL) / 255;
@@ -192,7 +192,7 @@ updatechanvol(int chan, OFVector3D *loc)
 	FSOUND_SetVolume(chan, vol);
 	FSOUND_SetPan(chan, pan);
 #endif
-};
+}
 
 void
 newsoundloc(int chan, OFVector3D *loc)
@@ -200,7 +200,7 @@ newsoundloc(int chan, OFVector3D *loc)
 	assert(chan >= 0 && chan < MAXCHAN);
 	soundlocs[chan].loc = *loc;
 	soundlocs[chan].inuse = true;
-};
+}
 
 void
 updatevol()
@@ -217,15 +217,15 @@ updatevol()
 			updatechanvol(i, &soundlocs[i].loc);
 		else
 			soundlocs[i].inuse = false;
-	};
-};
+	}
+}
 
 void
 playsoundc(int n)
 {
 	addmsg(0, 2, SV_SOUND, n);
 	playsound(n);
-};
+}
 
 int soundsatonce = 0, lastsoundmillis = 0;
 

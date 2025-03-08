@@ -52,7 +52,7 @@ updatepos(dynent *d)
 		d->plag = (d->plag * 5 + lagtime) / 6;
 		d->lastupdate = lastmillis;
 	};
-};
+}
 
 void
 localservertoclient(

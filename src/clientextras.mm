@@ -78,9 +78,8 @@ renderclients()
 {
 	dynent *d;
 	loopv(players) if ((d = players[i]) &&
-	                   (!demoplayback || i != democlientnum))
-	    renderclient(d, isteam(player1->team, d->team), @"monster/ogro",
-	        false, 1.0f);
+	    (!demoplayback || i != democlientnum)) renderclient(d,
+	    isteam(player1->team, d->team), @"monster/ogro", false, 1.0f);
 }
 
 // creation of scoreboard pseudo-menu

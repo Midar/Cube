@@ -295,10 +295,10 @@ c2sinfo(dynent *d) // send update to the server
 		} else {
 			putint(p, SV_POS);
 			putint(p, clientnum);
-			putint(
-			    p, (int)(d->o.x *
-			             DMF)); // quantize coordinates to 1/16th
-			                    // of a cube, between 1 and 3 bytes
+			putint(p,
+			    (int)(d->o.x *
+			        DMF)); // quantize coordinates to 1/16th
+			               // of a cube, between 1 and 3 bytes
 			putint(p, (int)(d->o.y * DMF));
 			putint(p, (int)(d->o.z * DMF));
 			putint(p, (int)(d->yaw * DAF));
@@ -311,10 +311,10 @@ c2sinfo(dynent *d) // send update to the server
 			putint(p, (int)(d->vel.z * DVF));
 			// pack rest in 1 byte: strafe:2, move:2, onfloor:1,
 			// state:3
-			putint(
-			    p, (d->strafe & 3) | ((d->move & 3) << 2) |
-			           (((int)d->onfloor) << 4) |
-			           ((editmode ? CS_EDITING : d->state) << 5));
+			putint(p,
+			    (d->strafe & 3) | ((d->move & 3) << 2) |
+			        (((int)d->onfloor) << 4) |
+			        ((editmode ? CS_EDITING : d->state) << 5));
 
 			if (senditemstoserver) {
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
@@ -412,4 +412,4 @@ gets2c() // get updates from the server
 				server_err();
 			return;
 		}
-};
+}

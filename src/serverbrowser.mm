@@ -47,7 +47,7 @@ resolverloop(void *data)
 		SDL_UnlockMutex(resolvermutex);
 	};
 	return 0;
-};
+}
 
 void
 resolverinit(int threads, int limit)
@@ -92,9 +92,9 @@ resolverclear()
 	{
 		resolverthread &rt = resolverthreads[i];
 		resolverstop(rt, true);
-	};
+	}
 	SDL_UnlockMutex(resolvermutex);
-};
+}
 
 void
 resolverquery(char *name)
@@ -103,7 +103,7 @@ resolverquery(char *name)
 	resolverqueries.add(name);
 	SDL_SemPost(resolversem);
 	SDL_UnlockMutex(resolvermutex);
-};
+}
 
 bool
 resolvercheck(char **name, ENetAddress *address)
@@ -127,10 +127,10 @@ resolvercheck(char **name, ENetAddress *address)
 				return true;
 			};
 		};
-	};
+	}
 	SDL_UnlockMutex(resolvermutex);
 	return false;
-};
+}
 
 struct serverinfo {
 	string name;
@@ -159,7 +159,7 @@ addserver(OFString *servername_)
 	@autoreleasepool {
 		const char *servername = servername_.UTF8String;
 		loopv(servers) if (strcmp(servers[i].name, servername) ==
-		                   0) return;
+		    0) return;
 		serverinfo &si = servers.insert(0, serverinfo());
 		strcpy_s(si.name, servername);
 		si.full[0] = 0;
@@ -191,9 +191,9 @@ pingservers()
 		buf.data = ping;
 		buf.dataLength = p - ping;
 		enet_socket_send(pingsock, &si.address, &buf, 1);
-	};
+	}
 	lastinfo = lastmillis;
-};
+}
 
 void
 checkresolver()
@@ -254,8 +254,8 @@ int
 sicompare(const serverinfo *a, const serverinfo *b)
 {
 	return a->ping > b->ping
-	           ? 1
-	           : (a->ping < b->ping ? -1 : strcmp(a->name, b->name));
+	    ? 1
+	    : (a->ping < b->ping ? -1 : strcmp(a->name, b->name));
 }
 
 void
@@ -285,8 +285,7 @@ refreshservers()
 				}
 			}
 		} else {
-			sprintf_s(si.full)(
-			    si.address.host != ENET_HOST_ANY
+			sprintf_s(si.full)(si.address.host != ENET_HOST_ANY
 			        ? "%s [waiting for server response]"
 			        : "%s [unknown host]\t",
 			    si.name);
@@ -311,7 +310,7 @@ servermenu()
 	loopv(servers) resolverquery(servers[i].name);
 	refreshservers();
 	menuset(1);
-};
+}
 
 void
 updatefrommaster()

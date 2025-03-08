@@ -69,15 +69,15 @@ computeraytable(float vx, float vy)
 				                   // function is on this line
 				{
 					rdist[i] = (float)(fabs(sx - vx) +
-					                   fabs(sy - vy));
+					    fabs(sy - vy));
 					break;
 				};
 			};
 		} else {
 			rdist[i] = 2;
 		};
-	};
-};
+	}
+}
 
 // test occlusion for a cube... one of the most computationally expensive
 // functions in the engine as its done for every cube and entity, but its effect
@@ -87,12 +87,12 @@ inline float
 ca(float x, float y)
 {
 	return x > y ? y / x : 2 - x / y;
-};
+}
 inline float
 ma(float x, float y)
 {
 	return x == 0 ? (y > 0 ? 2 : -2) : y / x;
-};
+}
 
 int
 isoccluded(float vx, float vy, float cx, float cy,
@@ -187,7 +187,7 @@ isoccluded(float vx, float vy, float cx, float cy,
 		}; // H
 	};
 	int si = fast_f2nat(h * (NUMRAYS / 8)) +
-	         NUMRAYS; // get indexes into occlusion map from angles
+	    NUMRAYS; // get indexes into occlusion map from angles
 	int ei = fast_f2nat(l * (NUMRAYS / 8)) + NUMRAYS + 1;
 	if (ei <= si)
 		ei += NUMRAYS;
@@ -200,4 +200,4 @@ isoccluded(float vx, float vy, float cx, float cy,
 	};
 
 	return 1; // cube is entirely occluded
-};
+}

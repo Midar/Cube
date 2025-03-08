@@ -2,7 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-@interface Command : Identifier
+@interface Command: Identifier
 @property (readonly, nonatomic) void (*function)();
 @property (readonly, nonatomic) int argumentsTypes;
 

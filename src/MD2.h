@@ -4,7 +4,7 @@ OF_ASSUME_NONNULL_BEGIN
 
 @class MapModelInfo;
 
-@interface MD2 : OFObject
+@interface MD2: OFObject
 @property (nonatomic) MapModelInfo *mmi;
 @property (copy, nonatomic) OFString *loadname;
 @property (nonatomic) int mdlnum;

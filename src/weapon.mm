@@ -107,8 +107,8 @@ intersect(dynent *d, OFVector3D &from,
 	}
 
 	return (p->x <= d->o.x + d->radius && p->x >= d->o.x - d->radius &&
-	        p->y <= d->o.y + d->radius && p->y >= d->o.y - d->radius &&
-	        p->z <= d->o.z + d->aboveeye && p->z >= d->o.z - d->eyeheight);
+	    p->y <= d->o.y + d->radius && p->y >= d->o.y - d->radius &&
+	    p->z <= d->o.z + d->aboveeye && p->z >= d->o.z - d->eyeheight);
 }
 
 OFString *
@@ -269,7 +269,7 @@ moveprojectiles(float time)
 				projdamage(player1, p, v, -1, -1, qdam);
 			dvector &mv = getmonsters();
 			loopv(mv) if (!vreject(mv[i]->o, v, 10.0f) &&
-			              mv[i] != p->owner)
+			    mv[i] != p->owner)
 			    projdamage(mv[i], p, v, -1, i, qdam);
 		}
 		if (p->inuse) {

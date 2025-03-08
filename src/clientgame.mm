@@ -41,7 +41,7 @@ resetmovement(dynent *d)
 	d->jumpnext = false;
 	d->strafe = 0;
 	d->move = 0;
-};
+}
 
 void
 spawnstate(dynent *d) // reset player state not persistent accross spawns
@@ -95,7 +95,7 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 	} else {
 		d->ammo[GUN_SG] = 5;
 	};
-};
+}
 
 dynent *
 newdynent() // create a new blank player or monster
@@ -125,14 +125,14 @@ newdynent() // create a new blank player or monster
 	d->state = CS_ALIVE;
 	spawnstate(d);
 	return d;
-};
+}
 
 void
 respawnself()
 {
 	spawnplayer(player1);
 	showscores(false);
-};
+}
 
 void
 arenacount(dynent *d, int &alive, int &dead, char *&lastteam, bool &oneteam)
@@ -145,7 +145,7 @@ arenacount(dynent *d, int &alive, int &dead, char *&lastteam, bool &oneteam)
 	} else {
 		dead++;
 	};
-};
+}
 
 int arenarespawnwait = 0;
 int arenadetectwait = 0;
@@ -180,7 +180,7 @@ arenarespawn()
 			player1->roll = 0;
 		};
 	};
-};
+}
 
 void
 zapdynent(dynent *&d)
@@ -188,7 +188,7 @@ zapdynent(dynent *&d)
 	if (d)
 		free(d);
 	d = NULL;
-};
+}
 
 extern int democlientnum;
 
@@ -207,8 +207,8 @@ otherplayers()
 			moveplayer(
 			    players[i], 2, false); // use physics to extrapolate
 			                           // player position
-	};
-};
+	}
+}
 
 void
 respawn()
@@ -268,8 +268,7 @@ updateworld(int millis) // main game update loop
 					player1->move = player1->strafe = 0;
 					moveplayer(player1, 10, false);
 				} else if (!m_arena && !m_sp &&
-				           lastmillis - player1->lastaction >
-				               10000)
+				    lastmillis - player1->lastaction > 10000)
 					respawn();
 			} else if (!intermission) {
 				moveplayer(player1, 20, true);
@@ -300,7 +299,7 @@ entinmap(dynent *
 	conoutf(@"can't find entity spawn spot! (%d, %d)", (int)d->o.x,
 	    (int)d->o.y);
 	// leave ent at original pos, possibly stuck
-};
+}
 
 int spawncycle = -1;
 int fixspawn = 2;
@@ -324,17 +323,17 @@ spawnplayer(dynent *d) // place at random spawn. also used by monsters!
 	entinmap(d);
 	spawnstate(d);
 	d->state = CS_ALIVE;
-};
+}
 
 // movement input code
 
-#define dir(name, v, d, s, os)                                                 \
-	void name(bool isdown)                                                 \
-	{                                                                      \
-		player1->s = isdown;                                           \
-		player1->v = isdown ? d : (player1->os ? -(d) : 0);            \
-		player1->lastmove = lastmillis;                                \
-	};
+#define dir(name, v, d, s, os)                                      \
+	void name(bool isdown)                                      \
+	{                                                           \
+		player1->s = isdown;                                \
+		player1->v = isdown ? d : (player1->os ? -(d) : 0); \
+		player1->lastmove = lastmillis;                     \
+	}
 
 dir(backward, move, -1, k_down, k_up);
 dir(forward, move, 1, k_up, k_down);
@@ -350,14 +349,14 @@ attack(bool on)
 		editdrag(on);
 	else if (player1->attacking = on)
 		respawn();
-};
+}
 
 void
 jumpn(bool on)
 {
 	if (!intermission && (player1->jumpnext = on))
 		respawn();
-};
+}
 
 COMMAND(backward, ARG_DOWN)
 COMMAND(forward, ARG_DOWN)
@@ -379,7 +378,7 @@ fixplayer1range()
 		player1->yaw += 360.0f;
 	while (player1->yaw >= 360.0f)
 		player1->yaw -= 360.0f;
-};
+}
 
 void
 mousemove(int dx, int dy)
@@ -389,10 +388,9 @@ mousemove(int dx, int dy)
 	const float SENSF = 33.0f; // try match quake sens
 	player1->yaw += (dx / SENSF) * (sensitivity / (float)sensitivityscale);
 	player1->pitch -= (dy / SENSF) *
-	                  (sensitivity / (float)sensitivityscale) *
-	                  (invmouse ? -1 : 1);
+	    (sensitivity / (float)sensitivityscale) * (invmouse ? -1 : 1);
 	fixplayer1range();
-};
+}
 
 // damage arriving from the network, monsters, yourself, all ends up here.
 
@@ -404,20 +402,19 @@ selfdamage(int damage, int actor, dynent *act)
 	damageblend(damage);
 	demoblend(damage);
 	int ad = damage * (player1->armourtype + 1) * 20 /
-	         100; // let armour absorb when possible
+	    100; // let armour absorb when possible
 	if (ad > player1->armour)
 		ad = player1->armour;
 	player1->armour -= ad;
 	damage -= ad;
 	float droll = damage / 0.5f;
-	player1->roll +=
-	    player1->roll > 0
-	        ? droll
-	        : (player1->roll < 0
-	                  ? -droll
-	                  : (rnd(2) ? droll
-	                            : -droll)); // give player a kick depending
-	                                        // on amount of damage
+	player1->roll += player1->roll > 0
+	    ? droll
+	    : (player1->roll < 0
+	              ? -droll
+	              : (rnd(2) ? droll
+	                        : -droll)); // give player a kick depending
+	                                    // on amount of damage
 	if ((player1->health -= damage) <= 0) {
 		if (actor == -2) {
 			conoutf(@"you got killed by %s!", act->name);

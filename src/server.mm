@@ -40,8 +40,8 @@ restoreserverstate(
 	{
 		sents[i].spawned = ents[i].spawned;
 		sents[i].spawnsecs = 0;
-	};
-};
+	}
+}
 
 int interm = 0, minremain = 0, mapend = 0;
 bool mapreload = false;
@@ -74,7 +74,7 @@ send(int n, ENetPacket *packet)
 		localservertoclient(packet->data, packet->dataLength);
 		break;
 	};
-};
+}
 
 void
 send2(bool rel, int cn, int a, int b)
@@ -93,7 +93,7 @@ send2(bool rel, int cn, int a, int b)
 		send(cn, packet);
 	if (packet->referenceCount == 0)
 		enet_packet_destroy(packet);
-};
+}
 
 void
 sendservmsg(OFString *msg)
@@ -118,14 +118,14 @@ disconnect_client(int n, char *reason)
 	enet_peer_disconnect(clients[n].peer);
 	clients[n].type = ST_EMPTY;
 	send2(true, -1, SV_CDIS, n);
-};
+}
 
 void
 resetitems()
 {
 	sents.setsize(0);
 	notgotitems = true;
-};
+}
 
 void
 pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
@@ -138,13 +138,13 @@ pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
 		sents[i].spawnsecs = sec;
 		send2(true, sender, SV_ITEMACC, i);
 	};
-};
+}
 
 void
 resetvotes()
 {
 	loopv(clients) clients[i].mapvote[0] = 0;
-};
+}
 
 bool
 vote(char *map, int reqmode, int sender)
@@ -162,7 +162,7 @@ vote(char *map, int reqmode, int sender)
 				no++;
 		} else
 			no++;
-	};
+	}
 	if (yes == 1 && no == 0)
 		return true; // single player
 	@autoreleasepool {
@@ -177,7 +177,7 @@ vote(char *map, int reqmode, int sender)
 	sendservmsg(@"vote passed");
 	resetvotes();
 	return true;
-};
+}
 
 // server side processing of updates: does very little and most state is tracked
 // client only could be extended to move more gameplay to server (at expense of
@@ -303,7 +303,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		return;
 	};
 	multicast(packet, sender);
-};
+}
 
 void
 send_welcome(int n)
@@ -341,8 +341,8 @@ multicast(ENetPacket *packet, int sender)
 		if (i == sender)
 			continue;
 		send(i, packet);
-	};
-};
+	}
+}
 
 void
 localclienttoserver(ENetPacket *packet)
@@ -350,14 +350,14 @@ localclienttoserver(ENetPacket *packet)
 	process(packet, 0);
 	if (!packet->referenceCount)
 		enet_packet_destroy(packet);
-};
+}
 
 client &
 addclient()
 {
 	loopv(clients) if (clients[i].type == ST_EMPTY) return clients[i];
 	return clients.add();
-};
+}
 
 void
 checkintermission()
@@ -367,14 +367,14 @@ checkintermission()
 		mapend = lastsec + 1000;
 	};
 	send2(true, -1, SV_TIMEUP, minremain--);
-};
+}
 
 void
 startintermission()
 {
 	minremain = 0;
 	checkintermission();
-};
+}
 
 void
 resetserverifempty()
@@ -407,7 +407,7 @@ serverslice(int seconds,
 			sents[i].spawned = true;
 			send2(true, -1, SV_ITEMSPAWN, i);
 		};
-	};
+	}
 
 	lastsec = seconds;
 
@@ -422,7 +422,7 @@ serverslice(int seconds,
 			    0); // ask a client to trigger map reload
 			mapreload = true;
 			break;
-		};
+		}
 	};
 
 	resetserverifempty();
@@ -459,11 +459,11 @@ serverslice(int seconds,
 			c.peer = event.peer;
 			c.peer->data = (void *)(&c - &clients[0]);
 			char hn[1024];
-			strcpy_s(
-			    c.hostname, (enet_address_get_host(&c.peer->address,
-			                     hn, sizeof(hn)) == 0)
-			                    ? hn
-			                    : "localhost");
+			strcpy_s(c.hostname,
+			    (enet_address_get_host(
+			         &c.peer->address, hn, sizeof(hn)) == 0)
+			        ? hn
+			        : "localhost");
 			printf("client connected (%s)\n", c.hostname);
 			send_welcome(lastconnect = &c - &clients[0]);
 			break;
@@ -493,21 +493,21 @@ serverslice(int seconds,
 #ifndef _WIN32
 	fflush(stdout);
 #endif
-};
+}
 
 void
 cleanupserver()
 {
 	if (serverhost)
 		enet_host_destroy(serverhost);
-};
+}
 
 void
 localdisconnect()
 {
 	loopv(clients) if (clients[i].type == ST_LOCAL) clients[i].type =
 	    ST_EMPTY;
-};
+}
 
 void
 localconnect()
@@ -516,7 +516,7 @@ localconnect()
 	c.type = ST_LOCAL;
 	strcpy_s(c.hostname, "local");
 	send_welcome(&c - &clients[0]);
-};
+}
 
 void
 initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
@@ -554,4 +554,4 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 		for (;;)
 			serverslice(/*enet_time_get_sec()*/ time(NULL), 5);
 	};
-};
+}
