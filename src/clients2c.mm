@@ -46,12 +46,12 @@ updatepos(dynent *d)
 			d->o.y += dy < 0 ? r - fy : -(r - fy); // push aside
 		else
 			d->o.x += dx < 0 ? r - fx : -(r - fx);
-	};
+	}
 	int lagtime = lastmillis - d->lastupdate;
 	if (lagtime) {
 		d->plag = (d->plag * 5 + lagtime) / 6;
 		d->lastupdate = lastmillis;
-	};
+	}
 }
 
 void
@@ -301,7 +301,7 @@ localservertoclient(
 			int xs = getint(p);
 			int ys = getint(p);
 			int v = getint(p);
-			block b = {x, y, xs, ys};
+			block b = { x, y, xs, ys };
 			switch (type) {
 			case SV_EDITH:
 				editheightxy(v != 0, getint(p), b);

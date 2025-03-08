@@ -46,11 +46,11 @@ httpgetrecieve(ENetBuffer &buf)
 			enet_socket_destroy(mssock);
 			mssock = ENET_SOCKET_NULL;
 			return;
-		};
+		}
 		buf.data = ((char *)buf.data) + len;
 		((char *)buf.data)[0] = 0;
 		buf.dataLength -= len;
-	};
+	}
 }
 
 uchar *
@@ -62,7 +62,7 @@ stripheader(uchar *b)
 	return s ? (uchar *)s : b;
 }
 
-ENetAddress masterserver = {ENET_HOST_ANY, 80};
+ENetAddress masterserver = { ENET_HOST_ANY, 80 };
 int updmaster = 0;
 string masterbase;
 string masterpath;
@@ -72,9 +72,8 @@ ENetBuffer masterb;
 void
 updatemasterserver(int seconds)
 {
-	if (seconds >
-	    updmaster) // send alive signal to masterserver every hour of uptime
-	{
+	// send alive signal to masterserver every hour of uptime
+	if (seconds > updmaster) {
 		sprintf_sd(path)("%sregister.do?action=add", masterpath);
 		httpgetsend(masterserver, masterbase, path, "cubeserver",
 		    "Cube Server");
@@ -82,7 +81,7 @@ updatemasterserver(int seconds)
 		masterb.data = masterrep;
 		masterb.dataLength = MAXTRANS - 1;
 		updmaster = seconds + 60 * 60;
-	};
+	}
 }
 
 void
@@ -159,8 +158,8 @@ servermsinit(OFString *master_, OFString *sdesc, bool listen)
 		serverdesc = sdesc;
 
 		if (listen) {
-			ENetAddress address = {
-			    ENET_HOST_ANY, CUBE_SERVINFO_PORT};
+			ENetAddress address = { ENET_HOST_ANY,
+				CUBE_SERVINFO_PORT };
 			pongsock = enet_socket_create(
 			    ENET_SOCKET_TYPE_DATAGRAM, &address);
 			if (pongsock == ENET_SOCKET_NULL)

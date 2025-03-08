@@ -7,16 +7,16 @@
 vector<entity> ents;
 
 static OFString *entmdlnames[] = {
-    @"shells",
-    @"bullets",
-    @"rockets",
-    @"rrounds",
-    @"health",
-    @"boost",
-    @"g_armour",
-    @"y_armour",
-    @"quad",
-    @"teleporter",
+	@"shells",
+	@"bullets",
+	@"rockets",
+	@"rrounds",
+	@"health",
+	@"boost",
+	@"g_armour",
+	@"y_armour",
+	@"quad",
+	@"teleporter",
 };
 
 int triggertime = 0;
@@ -63,7 +63,7 @@ renderentities()
 				        sin(lastmillis / 100.0 + e.x + e.y) /
 				            20),
 				    lastmillis / 10.0f);
-			} else
+			} else {
 				switch (e.attr2) {
 				case 1:
 				case 3:
@@ -99,41 +99,24 @@ renderentities()
 					                                : 30,
 					    triggertime, 35.0f);
 					break;
-				};
-		};
+				}
+			}
+		}
 	}
 }
 
 struct itemstat {
 	int add, max, sound;
 } itemstats[] = {
-    10,
-    50,
-    S_ITEMAMMO,
-    20,
-    100,
-    S_ITEMAMMO,
-    5,
-    25,
-    S_ITEMAMMO,
-    5,
-    25,
-    S_ITEMAMMO,
-    25,
-    100,
-    S_ITEMHEALTH,
-    50,
-    200,
-    S_ITEMHEALTH,
-    100,
-    100,
-    S_ITEMARMOUR,
-    150,
-    150,
-    S_ITEMARMOUR,
-    20000,
-    30000,
-    S_ITEMPUP,
+	{ 10, 50, S_ITEMAMMO },
+	{ 20, 100, S_ITEMAMMO },
+	{ 5, 25, S_ITEMAMMO },
+	{ 5, 25, S_ITEMAMMO },
+	{ 25, 100, S_ITEMHEALTH },
+	{ 50, 200, S_ITEMHEALTH },
+	{ 100, 100, S_ITEMARMOUR },
+	{ 150, 150, S_ITEMARMOUR },
+	{ 20000, 30000, S_ITEMPUP },
 };
 
 void
@@ -233,8 +216,8 @@ teleport(int n, dynent *d) // also used by monsters
 			entinmap(d);
 			playsoundc(S_TELEPORT);
 			break;
-		};
-	};
+		}
+	}
 }
 
 void
@@ -294,7 +277,7 @@ pickup(int n, dynent *d)
 		lastteleport = lastmillis;
 		teleport(n, d);
 		break;
-	};
+	}
 
 	case JUMPPAD: {
 		static int lastjumppad = 0;

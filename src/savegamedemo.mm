@@ -71,7 +71,7 @@ stop()
 		if (demorecording)
 			gzputi(-1);
 		gzclose(f);
-	};
+	}
 	f = NULL;
 	demorecording = false;
 	demoplayback = false;

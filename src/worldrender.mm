@@ -14,18 +14,18 @@ render_wall(sqr *o, sqr *s, int x1, int y1, int x2, int y2, int mip, sqr *d1,
 		if (s->type == FHF) {
 			c1 -= d1->vdelta / 4.0f;
 			c2 -= d2->vdelta / 4.0f;
-		};
+		}
 		float f1 = s->ceil;
 		float f2 = s->ceil;
 		if (s->type == CHF) {
 			f1 += d1->vdelta / 4.0f;
 			f2 += d2->vdelta / 4.0f;
-		};
+		}
 		// if(f1-c1<=0 && f2-c2<=0) return;
 		render_square(o->wtex, c1, c2, f1, f2, x1 << mip, y1 << mip,
 		    x2 << mip, y2 << mip, 1 << mip, d1, d2, topleft);
 		return;
-	};
+	}
 	{
 		float f1 = s->floor;
 		float f2 = s->floor;
@@ -43,7 +43,7 @@ render_wall(sqr *o, sqr *s, int x1, int y1, int x2, int y2, int mip, sqr *d1,
 			goto skip;
 		render_square(o->wtex, f1, f2, c1, c2, x1 << mip, y1 << mip,
 		    x2 << mip, y2 << mip, 1 << mip, d1, d2, topleft);
-	};
+	}
 skip: {
 	float f1 = o->ceil;
 	float f2 = o->ceil;
@@ -60,7 +60,7 @@ skip: {
 		return;
 	render_square(o->utex, f1, f2, c1, c2, x1 << mip, y1 << mip, x2 << mip,
 	    y2 << mip, 1 << mip, d1, d2, topleft);
-};
+}
 }
 
 const int MAX_MIP = 5; // 32x32 unit blocks
@@ -94,7 +94,7 @@ issemi(int mip, int x, int y, int x1, int y1, int x2, int y2)
 		break;
 	default:
 		return true;
-	};
+	}
 	switch (SWS(w, x + x2, y + y2, msize)->type) {
 	case SEMISOLID:
 		if (issemi(mip, x + x2, y + y2, x1, y1, x2, y2))
@@ -104,7 +104,7 @@ issemi(int mip, int x, int y, int x1, int y1, int x2, int y2)
 		break;
 	default:
 		return true;
-	};
+	}
 	return false;
 }
 
@@ -131,14 +131,14 @@ render_seg_new(
 	int ry = vyy + lodbot;
 
 	float fsize = (float)(1 << mip);
-	for (int ox = x; ox < xs; ox++)
-		for (int oy = y; oy < ys;
-		     oy++) // first collect occlusion information for this block
-		{
+	for (int ox = x; ox < xs; ox++) {
+		// first collect occlusion information for this block
+		for (int oy = y; oy < ys; oy++) {
 			SWS(w, ox, oy, sz)->occluded =
 			    isoccluded(player1->o.x, player1->o.y,
 			        (float)(ox << mip), (float)(oy << mip), fsize);
-		};
+		}
+	}
 
 	int pvx = (int)vx >> mip;
 	int pvy = (int)vy >> mip;
@@ -146,7 +146,7 @@ render_seg_new(
 		// SWS(w,vxx,vyy,sz)->occluded = 0;
 		SWS(w, pvx, pvy, sz)->occluded =
 		    0; // player cell never occluded
-	};
+	}
 
 #define df(x) s->floor - (x->vdelta / 4.0f)
 #define dc(x) s->ceil + (x->vdelta / 4.0f)
@@ -195,7 +195,6 @@ render_seg_new(
 		    dc(t), dc(u), dc(v), s, t, u, v, true);
 }
 }
-;
 
 LOOPH continue; // floors
 LOOPD
@@ -204,16 +203,15 @@ if ((s->type == SPACE || s->type == CHF) && s->floor <= vh && render_floor) {
 	    v, false);
 	if (s->floor < hdr.waterlevel && !SOLID(s))
 		addwaterquad(xx << mip, yy << mip, 1 << mip);
-};
+}
 if (s->type == FHF) {
 	render_flatdelta(s->ftex, xx << mip, yy << mip, 1 << mip, df(s), df(t),
 	    df(u), df(v), s, t, u, v, false);
 	if (s->floor - s->vdelta / 4.0f < hdr.waterlevel && !SOLID(s))
 		addwaterquad(xx << mip, yy << mip, 1 << mip);
-};
 }
 }
-;
+}
 
 LOOPH continue; // walls
 LOOPD
@@ -238,7 +236,7 @@ if (s->type == CORNER) {
 		} else if (SOLID(v)) {
 			render_wall(v, h2 = s, xx, yy, xx + 1, yy + 1, mip, s,
 			    u, false);
-		};
+		}
 	} else if (SOLID(t)) {
 		if (SOLID(w)) {
 			render_wall(w, h1 = s, xx + 1, yy + 1, xx, yy, mip, u,
@@ -247,7 +245,7 @@ if (s->type == CORNER) {
 			render_wall(v, h1 = s, xx, yy + 1, xx + 1, yy, mip, v,
 			    t, false);
 			topleft = false;
-		};
+		}
 	} else {
 		normalwall = false;
 		bool wv = w->ceil - w->floor < v->ceil - v->floor;
@@ -259,7 +257,7 @@ if (s->type == CORNER) {
 			} else {
 				render_wall(h1 = s, h2 = w, xx, yy, xx + 1,
 				    yy + 1, mip, s, u, false);
-			};
+			}
 		} else {
 			if (wv) {
 				render_wall(h2 = s, h1 = v, xx + 1, yy + 1, xx,
@@ -268,9 +266,9 @@ if (s->type == CORNER) {
 				render_wall(h2 = s, h1 = w, xx, yy + 1, xx + 1,
 				    yy, mip, v, t, false);
 				topleft = false;
-			};
-		};
-	};
+			}
+		}
+	}
 	render_tris(
 	    xx << mip, yy << mip, 1 << mip, topleft, h1, h2, s, t, u, v);
 }
@@ -294,12 +292,10 @@ if (normalwall) {
 	    (!SOLID(s) || v->type != CORNER) &&
 	    (v->type != SEMISOLID || issemi(mip, xx, yy + 1, 0, 0, 1, 0)))
 		render_wall(s, v, xx, yy + 1, xx + 1, yy + 1, mip, v, u, true);
-};
 }
 }
-;
 }
-;
+}
 
 void
 distlod(int &low, int &high, int angle, float widef)
@@ -325,14 +321,13 @@ render_world(
 	yaw = 360 - yaw;
 	float widef = fov / 75.0f;
 	int cdist = abs(yaw % 90 - 45);
-	if (cdist < 7) // hack to avoid popup at high fovs at 45 yaw
-	{
-		min_lod = max(min_lod,
-		    (int)(MIN_LOD +
-		        (10 - cdist) / 1.0f *
-		            widef)); // less if lod worked better
+	// hack to avoid popup at high fovs at 45 yaw
+	if (cdist < 7) {
+		// less if lod worked better
+		min_lod =
+		    max(min_lod, (int)(MIN_LOD + (10 - cdist) / 1.0f * widef));
 		widef = 1.0f;
-	};
+	}
 	lod = MAX_LOD;
 	lodtop = lodbot = lodleft = lodright = min_lod;
 	if (yaw > 45 && yaw <= 135) {
@@ -348,7 +343,7 @@ render_world(
 		lodtop = lod;
 		distlod(
 		    lodright, lodleft, yaw <= 45 ? yaw + 45 : yaw - 315, widef);
-	};
+	}
 	float hyfov = fov * h / w / 2;
 	render_floor = pitch < hyfov;
 	render_ceil = -pitch < hyfov;

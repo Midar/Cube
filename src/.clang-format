@@ -21,6 +21,8 @@ AlwaysBreakAfterReturnType: AllDefinitions
 AlignAfterOpenBracket: DontAlign
 AlignEscapedNewlines: Left
 AlignOperands: DontAlign
+Cpp11BracedListStyle: false
+SpaceBeforeCpp11BracedList: true
 ObjCBlockIndentWidth: 8
 ObjCSpaceAfterProperty: true
 ObjCSpaceBeforeProtocolList: true
@@ -34,6 +36,7 @@ ObjCPropertyAttributeOrder: [
 ]
 SpaceBeforeInheritanceColon: false
 QualifierAlignment: Left
+MaxEmptyLinesToKeep: 1
 #RemoveEmptyLinesInUnwrappedLines: true
 RemoveSemicolon: true
 CompactNamespaces: true

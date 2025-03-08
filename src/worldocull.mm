@@ -57,25 +57,22 @@ computeraytable(float vx, float vy)
 			} else {
 				dx = 1;
 				dy = ray > 4 ? ray - 8 : ray;
-			};
+			}
 			float sx = vx;
 			float sy = vy;
 			for (;;) {
 				sx += dx;
 				sy += dy;
-				if (SOLID(S(fast_f2nat(sx),
-				        fast_f2nat(
-				            sy)))) // 90% of time spend in this
-				                   // function is on this line
-				{
+				// 90% of time spend in this function is on this
+				// line
+				if (SOLID(S(fast_f2nat(sx), fast_f2nat(sy)))) {
 					rdist[i] = (float)(fabs(sx - vx) +
 					    fabs(sy - vy));
 					break;
-				};
-			};
-		} else {
+				}
+			}
+		} else
 			rdist[i] = 2;
-		};
 	}
 }
 
@@ -152,9 +149,8 @@ isoccluded(float vx, float vy, float cx, float cy,
 			} else {
 				h = ca(cy + csize - vy, -(cx + csize - vx)) + 2;
 				l = ca(cy - vy, -(cx - vx)) + 2;
-			}; // F
-		} else // BG
-		{
+			} // F
+		} else { // BG
 			if (cy <= vy) {
 				if (cy + csize < vy) {
 					h = ma(-(cy + csize - vy), cx - vx) + 6;
@@ -167,8 +163,8 @@ isoccluded(float vx, float vy, float cx, float cy,
 			} else {
 				h = ma(cy - vy, -(cx + csize - vx)) + 2;
 				l = ma(cy - vy, -(cx - vx)) + 2;
-			}; // G
-		};
+			} // G
+		}
 	} else // CEH
 	{
 		if (cy <= vy) // CE
@@ -180,12 +176,12 @@ isoccluded(float vx, float vy, float cx, float cy,
 			else {
 				h = ma(cx - vx, cy - vy);
 				l = ma(cx - vx, cy + csize - vy);
-			}; // E
+			} // E
 		} else {
 			h = ca(cx + csize - vx, cy - vy);
 			l = ca(cx - vx, cy + csize - vy);
-		}; // H
-	};
+		} // H
+	}
 	int si = fast_f2nat(h * (NUMRAYS / 8)) +
 	    NUMRAYS; // get indexes into occlusion map from angles
 	int ei = fast_f2nat(l * (NUMRAYS / 8)) + NUMRAYS + 1;
@@ -194,10 +190,10 @@ isoccluded(float vx, float vy, float cx, float cy,
 
 	for (int i = si; i <= ei; i++) {
 		if (dist < rdist[i & (NUMRAYS - 1)])
-			return 0; // if any value in this segment of the
-			          // occlusion map is further away then cube is
-			          // not occluded
-	};
+			// if any value in this segment of the occlusion map is
+			// further away then cube is not occluded
+			return 0;
+	}
 
 	return 1; // cube is entirely occluded
 }

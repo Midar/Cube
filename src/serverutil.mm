@@ -20,7 +20,7 @@ putint(uchar *&p, int n)
 		*p++ = n >> 8;
 		*p++ = n >> 16;
 		*p++ = n >> 24;
-	};
+	}
 }
 
 int
@@ -54,20 +54,20 @@ sendstring(OFString *t_, uchar *&p)
 }
 
 static const OFString *modenames[] = {
-    @"SP",
-    @"DMSP",
-    @"ffa/default",
-    @"coopedit",
-    @"ffa/duel",
-    @"teamplay",
-    @"instagib",
-    @"instagib team",
-    @"efficiency",
-    @"efficiency team",
-    @"insta arena",
-    @"insta clan arena",
-    @"tactics arena",
-    @"tactics clan arena",
+	@"SP",
+	@"DMSP",
+	@"ffa/default",
+	@"coopedit",
+	@"ffa/duel",
+	@"teamplay",
+	@"instagib",
+	@"instagib team",
+	@"efficiency",
+	@"efficiency team",
+	@"insta arena",
+	@"insta clan arena",
+	@"tactics arena",
+	@"tactics clan arena",
 };
 
 OFString *
@@ -75,16 +75,15 @@ modestr(int n)
 {
 	return (n >= -2 && n < 12) ? modenames[n + 2] : @"unknown";
 }
-
-char msgsizesl[] = // size inclusive message token, 0 for variable or
-                   // not-checked sizes
-    {SV_INITS2C, 4, SV_INITC2S, 0, SV_POS, 12, SV_TEXT, 0, SV_SOUND, 2, SV_CDIS,
-        2, SV_EDITH, 7, SV_EDITT, 7, SV_EDITS, 6, SV_EDITD, 6, SV_EDITE, 6,
-        SV_DIED, 2, SV_DAMAGE, 4, SV_SHOT, 8, SV_FRAGS, 2, SV_MAPCHANGE, 0,
-        SV_ITEMSPAWN, 2, SV_ITEMPICKUP, 3, SV_DENIED, 2, SV_PING, 2, SV_PONG, 2,
-        SV_CLIENTPING, 2, SV_GAMEMODE, 2, SV_TIMEUP, 2, SV_EDITENT, 10,
-        SV_MAPRELOAD, 2, SV_ITEMACC, 2, SV_SENDMAP, 0, SV_RECVMAP, 1,
-        SV_SERVMSG, 0, SV_ITEMLIST, 0, SV_EXT, 0, -1};
+// size inclusive message token, 0 for variable or not-checked sizes
+char msgsizesl[] = { SV_INITS2C, 4, SV_INITC2S, 0, SV_POS, 12, SV_TEXT, 0,
+	SV_SOUND, 2, SV_CDIS, 2, SV_EDITH, 7, SV_EDITT, 7, SV_EDITS, 6,
+	SV_EDITD, 6, SV_EDITE, 6, SV_DIED, 2, SV_DAMAGE, 4, SV_SHOT, 8,
+	SV_FRAGS, 2, SV_MAPCHANGE, 0, SV_ITEMSPAWN, 2, SV_ITEMPICKUP, 3,
+	SV_DENIED, 2, SV_PING, 2, SV_PONG, 2, SV_CLIENTPING, 2, SV_GAMEMODE, 2,
+	SV_TIMEUP, 2, SV_EDITENT, 10, SV_MAPRELOAD, 2, SV_ITEMACC, 2,
+	SV_SENDMAP, 0, SV_RECVMAP, 1, SV_SERVMSG, 0, SV_ITEMLIST, 0, SV_EXT, 0,
+	-1 };
 
 char
 msgsizelookup(int msg)
@@ -187,8 +186,8 @@ main(int argc, char *argv[])
 				break;
 			default:
 				printf("WARNING: unknown commandline option\n");
-			};
-	};
+			}
+	}
 
 	if (enet_initialize() < 0)
 		fatal(@"Unable to initialise network module");

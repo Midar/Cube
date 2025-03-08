@@ -110,8 +110,13 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 			}
 		}
 
-		// loopi(s->w*s->h*3) { uchar *p = (uchar *)s->pixels+i; *p =
-		// 255-*p; };
+#if 0
+		loopi(s->w * s->h * 3)
+		{
+			uchar *p = (uchar *)s->pixels + i;
+			*p = 255 - *p;
+		}
+#endif
 		glBindTexture(GL_TEXTURE_2D, tnum);
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
@@ -264,7 +269,7 @@ setupworld()
 		glTexEnvi(GL_TEXTURE_ENV, GL_SOURCE0_RGB_EXT, GL_TEXTURE);
 		glTexEnvi(
 		    GL_TEXTURE_ENV, GL_SOURCE1_RGB_EXT, GL_PRIMARY_COLOR_EXT);
-	};
+	}
 }
 
 int skyoglid;
@@ -350,8 +355,8 @@ VAR(fogcolour, 0, 0x8099B3, 0xFFFFFF);
 
 VARP(hudgun, 0, 1, 1);
 
-OFString *hudgunnames[] = {@"hudguns/fist", @"hudguns/shotg", @"hudguns/chaing",
-    @"hudguns/rocket", @"hudguns/rifle"};
+OFString *hudgunnames[] = { @"hudguns/fist", @"hudguns/shotg",
+	@"hudguns/chaing", @"hudguns/rocket", @"hudguns/rifle" };
 
 void
 drawhudmodel(int start, int end, float speed, int base)
@@ -382,7 +387,7 @@ drawhudgun(float fovy, float aspect, int farplane)
 		drawhudmodel(7, 18, rtime / 18.0f, player1->lastaction);
 	} else {
 		drawhudmodel(6, 1, 100, 0);
-	};
+	}
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -402,9 +407,9 @@ gl_drawframe(int w, int h, float curfps)
 
 	glFogi(GL_FOG_START, (fog + 64) / 8);
 	glFogi(GL_FOG_END, fog);
-	float fogc[4] = {(fogcolour >> 16) / 256.0f,
-	    ((fogcolour >> 8) & 255) / 256.0f, (fogcolour & 255) / 256.0f,
-	    1.0f};
+	float fogc[4] = { (fogcolour >> 16) / 256.0f,
+		((fogcolour >> 8) & 255) / 256.0f, (fogcolour & 255) / 256.0f,
+		1.0f };
 	glFogfv(GL_FOG_COLOR, fogc);
 	glClearColor(fogc[0], fogc[1], fogc[2], 1.0f);
 
@@ -413,7 +418,7 @@ gl_drawframe(int w, int h, float curfps)
 		aspect += (float)sin(lastmillis / 1000.0 + PI) * 0.1f;
 		glFogi(GL_FOG_START, 0);
 		glFogi(GL_FOG_END, (fog + 96) / 8);
-	};
+	}
 
 	glClear((player1->outsidemap ? GL_COLOR_BUFFER_BIT : 0) |
 	    GL_DEPTH_BUFFER_BIT);

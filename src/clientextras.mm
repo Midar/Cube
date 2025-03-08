@@ -8,9 +8,10 @@
 
 //              D    D    D    D'   D    D    D    D'   A   A'  P   P'  I   I'
 //              R,  R'  E    L    J   J'
-int frame[] = {178, 184, 190, 137, 183, 189, 197, 164, 46, 51, 54, 32, 0, 0, 40,
-    1, 162, 162, 67, 168};
-int range[] = {6, 6, 8, 28, 1, 1, 1, 1, 8, 19, 4, 18, 40, 1, 6, 15, 1, 1, 1, 1};
+int frame[] = { 178, 184, 190, 137, 183, 189, 197, 164, 46, 51, 54, 32, 0, 0,
+	40, 1, 162, 162, 67, 168 };
+int range[] = { 6, 6, 8, 28, 1, 1, 1, 1, 8, 19, 4, 18, 40, 1, 6, 15, 1, 1, 1,
+	1 };
 
 void
 renderclient(dynent *d, bool team, OFString *mdlname, bool hellpig, float scale)
@@ -37,8 +38,8 @@ renderclient(dynent *d, bool team, OFString *mdlname, bool hellpig, float scale)
 			if (t > (r + 10) * 100) {
 				t -= (r + 10) * 100;
 				mz -= t * t / 10000000000.0f * t;
-			};
-		};
+			}
+		}
 		if (mz < -1000)
 			return;
 		// mdl = (((int)d>>6)&1)+1;

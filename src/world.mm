@@ -25,7 +25,7 @@ settag(int tag, int type) // set all cubes with "tag" to space, if tag is 0 then
 					continue;
 			} else {
 				s->type = type ? SOLID : SPACE;
-			};
+			}
 			if (x > maxx)
 				maxx = x;
 			if (y > maxy)
@@ -34,9 +34,9 @@ settag(int tag, int type) // set all cubes with "tag" to space, if tag is 0 then
 				minx = x;
 			if (y < miny)
 				miny = y;
-		};
+		}
 	}
-	block b = {minx, miny, maxx - minx + 1, maxy - miny + 1};
+	block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
 	if (maxx)
 		remip(b); // remip minimal area of changed geometry
 }
@@ -97,11 +97,11 @@ remip(block &b, int level)
 	if (s.x & 1) {
 		s.x--;
 		s.xs++;
-	};
+	}
 	if (s.y & 1) {
 		s.y--;
 		s.ys++;
-	};
+	}
 	s.xs = (s.xs + 1) & ~1;
 	s.ys = (s.ys + 1) & ~1;
 	for (int x = s.x; x < s.x + s.xs; x += 2)
@@ -144,7 +144,7 @@ remip(block &b, int level)
 							       // account middle
 							       // vertices on
 							       // higher mips
-					};
+					}
 					if (fh < floor)
 						floor =
 						    fh; // take lowest floor and
@@ -157,7 +157,7 @@ remip(block &b, int level)
 				}
 				r->floor = floor;
 				r->ceil = ceil;
-			};
+			}
 			if (r->type == CORNER)
 				goto mip; // special case: don't ever split even
 				          // if textures etc are different
@@ -218,16 +218,16 @@ remip(block &b, int level)
 					            SWS(w, x + 1, y + 2, ws)
 					                ->vdelta)
 						goto c;
-				};
-			};
+				}
+			}
 			{
 				loopi(4) if (o[i]->defer) goto c;
-			}; // if any of the constituents is not perfect, then
-			   // this one isn't either
+			} // if any of the constituents is not perfect, then
+			  // this one isn't either
 		mip:
 			r->defer = 0;
 		c:;
-		};
+		}
 	s.x /= 2;
 	s.y /= 2;
 	s.xs /= 2;
@@ -267,7 +267,7 @@ closestent() // used for delent and edit mode ent display
 		if (dist < bdist) {
 			best = i;
 			bdist = dist;
-		};
+		}
 	}
 	return bdist == 99999 ? -1 : best;
 }
@@ -291,7 +291,7 @@ entproperty(int prop, int amount)
 	case 3:
 		ents[e].attr4 += amount;
 		break;
-	};
+	}
 }
 
 void
@@ -326,8 +326,8 @@ entity *
 newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 {
 	int type = findtype(what);
-	persistent_entity e = {(short)x, (short)y, (short)z, (short)v1,
-	    (uchar)type, (uchar)v2, (uchar)v3, (uchar)v4};
+	persistent_entity e = { (short)x, (short)y, (short)z, (short)v1,
+		(uchar)type, (uchar)v2, (uchar)v3, (uchar)v4 };
 	switch (type) {
 	case LIGHT:
 		if (v1 > 32)
@@ -347,7 +347,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	case PLAYERSTART:
 		e.attr1 = (int)player1->yaw;
 		break;
-	};
+	}
 	addmsg(1, 10, SV_EDITENT, ents.length(), type, e.x, e.y, e.z, e.attr1,
 	    e.attr2, e.attr3, e.attr4);
 	ents.add(*((entity *)&e)); // unsafe!
@@ -399,7 +399,7 @@ scalelights(int f, int intens)
 			scalecomp(e.attr2, intens);
 			scalecomp(e.attr3, intens);
 			scalecomp(e.attr4, intens);
-		};
+		}
 	}
 	calclight();
 }
@@ -445,7 +445,7 @@ empty_world(
 	if (oldworld && factor < 0) {
 		factor = sfactor + 1;
 		copy = true;
-	};
+	}
 	if (factor < SMALLEST_FACTOR)
 		factor = SMALLEST_FACTOR;
 	if (factor > LARGEST_FACTOR)
@@ -488,7 +488,7 @@ empty_world(
 		loopi(15) hdr.reserved[i] = 0;
 		loopk(3) loopi(256) hdr.texlists[k][i] = i;
 		ents.setsize(0);
-		block b = {8, 8, ssize - 16, ssize - 16};
+		block b = { 8, 8, ssize - 16, ssize - 16 };
 		edittypexy(SPACE, b);
 	}
 

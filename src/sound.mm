@@ -45,13 +45,13 @@ stopsound()
 		FMUSIC_FreeSong(mod);
 #endif
 		mod = NULL;
-	};
+	}
 	if (stream) {
 #ifndef USE_MIXER
 		FSOUND_Stream_Close(stream);
 #endif
 		stream = NULL;
-	};
+	}
 }
 
 VAR(soundbufferlen, 128, 1024, 4096);
@@ -66,7 +66,7 @@ initsound()
 		conoutf(@"sound init failed (SDL_mixer): %s",
 		    (size_t)Mix_GetError());
 		nosound = true;
-	};
+	}
 	Mix_AllocateChannels(MAXCHAN);
 #else
 	if (FSOUND_GetVersion() < FMOD_VERSION)
@@ -182,8 +182,8 @@ updatechanvol(int chan, OFVector3D *loc)
 			pan = int(255.9f *
 			    (0.5 * sin(yaw) + 0.5f)); // range is from 0 (left)
 			                              // to 255 (right)
-		};
-	};
+		}
+	}
 	vol = (vol * MAXVOL) / 255;
 #ifdef USE_MIXER
 	Mix_Volume(chan, vol);

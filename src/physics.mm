@@ -29,7 +29,7 @@ plcollide(dynent *d, dynent *o, float &headspace, float &hi,
 		headspace = d->o.z - o->o.z - o->aboveeye - d->eyeheight;
 		if (headspace < 0)
 			headspace = 10;
-	};
+	}
 	return true;
 }
 
@@ -49,7 +49,7 @@ cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
 		by = y << mip;
 		bs = 1 << mip;
 		return cornertest(mip, x, y, dx, dy, bx, by, bs);
-	};
+	}
 	return stest;
 }
 
@@ -132,7 +132,7 @@ collide(dynent *d, bool spawn, float drop, float rise)
 				        fx2 - bx + fy2 - by >= bs)
 					return false;
 				break;
-			};
+			}
 
 			case FHF: // FIXME: too simplistic collision with
 			          // slopes, makes it feels like tiny stairs
@@ -147,14 +147,14 @@ collide(dynent *d, bool spawn, float drop, float rise)
 				            S(x, y + 1)->vdelta +
 				            S(x + 1, y + 1)->vdelta) /
 				    16.0f;
-			};
+			}
 			if (ceil < hi)
 				hi = ceil;
 			if (floor > lo)
 				lo = floor;
 			if (floor < minfloor)
 				return false;
-		};
+		}
 
 	if (hi - lo < d->eyeheight + d->aboveeye)
 		return false;
@@ -194,7 +194,7 @@ collide(dynent *d, bool spawn, float drop, float rise)
 				return false;
 		} else {
 			d->o.z -= min(min(drop, space), headspace); // gravity
-		};
+		}
 
 		const float space2 = hi - (d->o.z + d->aboveeye);
 		if (space2 < 0) {
@@ -202,10 +202,10 @@ collide(dynent *d, bool spawn, float drop, float rise)
 				return false;      // hack alert!
 			d->o.z = hi - d->aboveeye; // glue to ceiling
 			d->vel.z = 0; // cancel out jumping velocity
-		};
+		}
 
 		d->onfloor = d->o.z - d->eyeheight - lo < 0.001f;
-	};
+	}
 	return true;
 }
 
@@ -229,7 +229,7 @@ physicsframe() // optimally schedule physics frames inside the graphics frames
 		physicsfraction = faketime - physicsrepeat * MINFRAMETIME;
 	} else {
 		physicsrepeat = 1;
-	};
+	}
 }
 
 // main physics routine, moves a player/monster for a curtime step
@@ -252,7 +252,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 		d.x *= (float)cos(rad(pl->pitch));
 		d.y *= (float)cos(rad(pl->pitch));
 		d.z = (float)(pl->move * sin(rad(pl->pitch)));
-	};
+	}
 
 	d.x += (float)(pl->strafe * cos(rad(pl->yaw - 180)));
 	d.y += (float)(pl->strafe * sin(rad(pl->yaw - 180)));
@@ -287,37 +287,38 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 			if (pl->jumpnext) {
 				pl->jumpnext = false;
 				pl->vel.z = 1.7f; // physics impulse upwards
+				// dampen velocity change even harder, gives
+				// correct water feel
 				if (water) {
 					pl->vel.x /= 8;
 					pl->vel.y /= 8;
-				}; // dampen velocity change even harder, gives
-				   // correct water feel
+				}
 				if (local)
 					playsoundc(S_JUMP);
 				else if (pl->monsterstate)
 					playsound(S_JUMP, &pl->o);
-			} else if (pl->timeinair >
-			    800) // if we land after long time must have
-			         // been a high jump, make thud sound
-			{
+			} else if (pl->timeinair > 800) {
+				// if we land after long time must have been a
+				// high jump, make thud sound
 				if (local)
 					playsoundc(S_LAND);
 				else if (pl->monsterstate)
 					playsound(S_LAND, &pl->o);
-			};
+			}
 			pl->timeinair = 0;
 		} else {
 			pl->timeinair += curtime;
-		};
+		}
 
 		const float gravity = 20;
 		const float f = 1.0f / moveres;
-		float dropf = ((gravity - 1) +
-		    pl->timeinair / 15.0f); // incorrect, but works fine
+		// incorrect, but works fine
+		float dropf = ((gravity - 1) + pl->timeinair / 15.0f);
+		// float slowly down in water
 		if (water) {
 			dropf = 5;
 			pl->timeinair = 0;
-		}; // float slowly down in water
+		}
 		const float drop = dropf * curtime / gravity / 100 /
 		    moveres; // at high fps, gravity kicks in too fast
 		const float rise = speed / moveres /
@@ -337,14 +338,14 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 			if (collide(pl, false, drop, rise)) {
 				d.x = 0;
 				continue;
-			};
+			}
 			pl->o.x += f * d.x;
 			// still stuck, try x axis
 			pl->o.y -= f * d.y;
 			if (collide(pl, false, drop, rise)) {
 				d.y = 0;
 				continue;
-			};
+			}
 			pl->o.y += f * d.y;
 			// try just dropping down
 			pl->moving = false;
@@ -353,11 +354,11 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 			if (collide(pl, false, drop, rise)) {
 				d.y = d.x = 0;
 				continue;
-			};
+			}
 			pl->o.z -= f * d.z;
 			break;
 		}
-	};
+	}
 
 	// detect wether player is outside map, used for skipping zbuffer clear
 	// mostly
@@ -369,7 +370,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 		pl->outsidemap = SOLID(s) ||
 		    pl->o.z < s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
 		    pl->o.z > s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
-	};
+	}
 
 	// automatically apply smooth roll when strafing
 
@@ -381,7 +382,7 @@ moveplayer(dynent *pl, int moveres, bool local, int curtime)
 			pl->roll = (float)maxroll;
 		if (pl->roll < -maxroll)
 			pl->roll = (float)-maxroll;
-	};
+	}
 
 	// play sounds on water transitions
 

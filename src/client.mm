@@ -90,7 +90,7 @@ connects(OFString *servername)
 	addserver(servername);
 
 	conoutf(@"attempting to connect to %@", servername);
-	ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
+	ENetAddress address = { ENET_HOST_ANY, CUBE_SERVER_PORT };
 	@autoreleasepool {
 		if (enet_address_set_host(&address, servername.UTF8String) <
 		    0) {
@@ -120,14 +120,14 @@ disconnect(int onlyclean, int async)
 			enet_peer_disconnect(clienthost->peers);
 			enet_host_flush(clienthost);
 			disconnecting = lastmillis;
-		};
+		}
 		if (clienthost->peers->state != ENET_PEER_STATE_DISCONNECTED) {
 			if (async)
 				return;
 			enet_peer_reset(clienthost->peers);
-		};
+		}
 		enet_host_destroy(clienthost);
-	};
+	}
 
 	if (clienthost && !connecting)
 		conoutf(@"disconnected");
@@ -385,8 +385,8 @@ gets2c() // get updates from the server
 			conoutf(@"could not connect to server");
 			disconnect();
 			return;
-		};
-	};
+		}
+	}
 	while (
 	    clienthost != NULL && enet_host_service(clienthost, &event, 0) > 0)
 		switch (event.type) {

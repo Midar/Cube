@@ -14,11 +14,11 @@ block sel;
 OF_CONSTRUCTOR()
 {
 	enqueueInit(^{
-		sel = (block){
-		    variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
-		    variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
-		    variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),
-		    variable(@"selys", 0, 0, 4096, &sel.ys, NULL, false),
+		sel = (block) {
+			variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
+			variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
+			variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),
+			variable(@"selys", 0, 0, 4096, &sel.ys, NULL, false),
 		};
 	});
 }
@@ -39,7 +39,7 @@ bool selset = false;
 
 int cx, cy, ch;
 
-int curedittex[] = {-1, -1, -1};
+int curedittex[] = { -1, -1, -1 };
 
 bool dragging = false;
 int lastx, lasty, lasth;
@@ -118,7 +118,7 @@ noselection()
 void
 selectpos(int x, int y, int xs, int ys)
 {
-	block s = {x, y, xs, ys};
+	block s = { x, y, xs, ys };
 	sel = s;
 	selh = 0;
 	correctsel();
@@ -127,8 +127,8 @@ selectpos(int x, int y, int xs, int ys)
 void
 makesel()
 {
-	block s = {min(lastx, cx), min(lasty, cy), abs(lastx - cx) + 1,
-	    abs(lasty - cy) + 1};
+	block s = { min(lastx, cx), min(lasty, cy), abs(lastx - cx) + 1,
+		abs(lasty - cy) + 1 };
 	sel = s;
 	selh = max(lasth, ch);
 	correctsel();
@@ -164,8 +164,8 @@ cursorupdate() // called every frame from hud
 		return;
 	sqr *s = S(cx, cy);
 
-	if (fabs(sheight(s, s, z) - z) > 1) // selected wall
-	{
+	// selected wall
+	if (fabs(sheight(s, s, z) - z) > 1) {
 		x += x > player1->o.x ? 0.5f : -0.5f; // find right wall cube
 		y += y > player1->o.y ? 0.5f : -0.5f;
 
@@ -174,7 +174,7 @@ cursorupdate() // called every frame from hud
 
 		if (OUTBORD(cx, cy))
 			return;
-	};
+	}
 
 	if (dragging)
 		makesel();
@@ -187,7 +187,7 @@ cursorupdate() // called every frame from hud
 
 	// render editing grid
 
-	for (int ix = cx - GRIDSIZE; ix <= cx + GRIDSIZE; ix++)
+	for (int ix = cx - GRIDSIZE; ix <= cx + GRIDSIZE; ix++) {
 		for (int iy = cy - GRIDSIZE; iy <= cy + GRIDSIZE; iy++) {
 			if (OUTBORD(ix, iy))
 				continue;
@@ -204,7 +204,7 @@ cursorupdate() // called every frame from hud
 				linestyle(GRIDW, 0x80, 0xFF, 0x80);
 			else
 				linestyle(GRIDW, 0x80, 0x80, 0x80);
-			block b = {ix, iy, 1, 1};
+			block b = { ix, iy, 1, 1 };
 			box(b, h1, h2, h3, h4);
 			linestyle(GRID8, 0x40, 0x40, 0xFF);
 			if (!(ix & GRIDM))
@@ -215,24 +215,25 @@ cursorupdate() // called every frame from hud
 				line(ix, iy, h1, ix + 1, iy, h2);
 			if (!(iy + 1 & GRIDM))
 				line(ix, iy + 1, h4, ix + 1, iy + 1, h3);
-		};
+		}
+	}
 
 	if (!SOLID(s)) {
 		float ih = sheight(s, s, z);
 		linestyle(GRIDS, 0xFF, 0xFF, 0xFF);
-		block b = {cx, cy, 1, 1};
+		block b = { cx, cy, 1, 1 };
 		box(b, ih, sheight(s, SWS(s, 1, 0, ssize), z),
 		    sheight(s, SWS(s, 1, 1, ssize), z),
 		    sheight(s, SWS(s, 0, 1, ssize), z));
 		linestyle(GRIDS, 0xFF, 0x00, 0x00);
 		dot(cx, cy, ih);
 		ch = (int)ih;
-	};
+	}
 
 	if (selset) {
 		linestyle(GRIDS, 0xFF, 0x40, 0x40);
 		box(sel, (float)selh, (float)selh, (float)selh, (float)selh);
-	};
+	}
 }
 
 vector<block *> undos;    // unlimited undo
@@ -316,7 +317,7 @@ tofronttex() // maintain most recently used of the texture lists when applying
 				p[a + 1] = p[a];
 			p[0] = t;
 			curedittex[i] = -1;
-		};
+		}
 	}
 }
 
@@ -329,7 +330,7 @@ editdrag(bool isdown)
 		lasth = ch;
 		selset = false;
 		tofronttex();
-	};
+	}
 	makesel();
 }
 
@@ -390,7 +391,7 @@ edittex(int type, int dir)
 	if (type != lasttype) {
 		tofronttex();
 		lasttype = type;
-	};
+	}
 	int atype = type == 3 ? 1 : type;
 	int i = curedittex[atype];
 	i = i < 0 ? 0 : i + dir;
@@ -424,9 +425,9 @@ replace()
 			if (s->utex == rtex.utex)
 				s->utex = lasttex;
 			break;
-		};
+		}
 	}
-	block b = {0, 0, ssize, ssize};
+	block b = { 0, 0, ssize, ssize };
 	remip(b);
 }
 
@@ -526,7 +527,7 @@ archvertex(int span, int vert, int delta)
 	if (!archvinit) {
 		archvinit = true;
 		loop(s, MAXARCHVERT) loop(v, MAXARCHVERT) archverts[s][v] = 0;
-	};
+	}
 	if (span >= MAXARCHVERT || vert >= MAXARCHVERT || span < 0 || vert < 0)
 		return;
 	archverts[span][vert] = delta;
@@ -587,7 +588,7 @@ VARF(
 	    if (noteditmode())
 		    return;
 	    loopi(mipsize) world[i].r = world[i].g = world[i].b = 176;
-    };);
+    });
 
 void
 edittag(int tag)

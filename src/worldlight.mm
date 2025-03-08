@@ -99,7 +99,7 @@ lightray(float bx, float by,
 				l -= stepl;
 				stepl -= 25;
 			}
-		};
+		}
 	} else // the old (white) light code, here for the few people with old
 	       // video cards that don't support overbright
 	{
@@ -115,7 +115,7 @@ lightray(float bx, float by,
 			y += stepy;
 			l -= stepl;
 		}
-	};
+	}
 }
 
 void
@@ -134,11 +134,11 @@ calclightsource(persistent_entity &l)
 	for (float sx2 = (float)sx; sx2 <= ex; sx2 += s * 2) {
 		lightray(sx2, (float)sy, l);
 		lightray(sx2, (float)ey, l);
-	};
+	}
 	for (float sy2 = sy + s; sy2 <= ey - s; sy2 += s * 2) {
 		lightray((float)sx, sy2, l);
 		lightray((float)ex, sy2, l);
-	};
+	}
 
 	rndtime();
 }
@@ -180,7 +180,7 @@ calclight()
 			calclightsource(e);
 	}
 
-	block b = {1, 1, ssize - 2, ssize - 2};
+	block b = { 1, 1, ssize - 2, ssize - 2 };
 	postlightarea(b);
 	setvar(@"fullbright", 0);
 }
@@ -213,8 +213,8 @@ dodynlight(
 		return;
 
 	int creach = reach + 16; // dependant on lightray random offsets!
-	block b = {(int)v.x - creach, (int)v.y - creach, creach * 2 + 1,
-	    creach * 2 + 1};
+	block b = { (int)v.x - creach, (int)v.y - creach, creach * 2 + 1,
+		creach * 2 + 1 };
 
 	if (b.x < 1)
 		b.x = 1;
@@ -227,8 +227,8 @@ dodynlight(
 
 	dlights.add(blockcopy(b)); // backup area before rendering in dynlight
 
-	persistent_entity l = {(short)v.x, (short)v.y, (short)v.z, (short)reach,
-	    LIGHT, (uchar)strength, 0, 0};
+	persistent_entity l = { (short)v.x, (short)v.y, (short)v.z,
+		(short)reach, LIGHT, (uchar)strength, 0, 0 };
 	calclightsource(l);
 	postlightarea(b);
 }

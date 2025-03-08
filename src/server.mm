@@ -20,8 +20,8 @@ vector<client> clients;
 int maxclients = 8;
 static OFString *smapname;
 
-struct server_entity // server side version of "entity" type
-{
+// server side version of "entity" type
+struct server_entity {
 	bool spawned;
 	int spawnsecs;
 };
@@ -68,12 +68,12 @@ send(int n, ENetPacket *packet)
 		enet_peer_send(clients[n].peer, 0, packet);
 		bsend += packet->dataLength;
 		break;
-	};
+	}
 
 	case ST_LOCAL:
 		localservertoclient(packet->data, packet->dataLength);
 		break;
-	};
+	}
 }
 
 void
@@ -137,7 +137,7 @@ pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
 		sents[i].spawned = false;
 		sents[i].spawnsecs = sec;
 		send2(true, sender, SV_ITEMACC, i);
-	};
+	}
 }
 
 void
@@ -190,7 +190,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 	    packet->dataLength) {
 		disconnect_client(sender, "packet length");
 		return;
-	};
+	}
 
 	uchar *end = packet->data + packet->dataLength;
 	uchar *p = packet->data + 2;
@@ -235,11 +235,11 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			int n;
 			while ((n = getint(p)) != -1)
 				if (notgotitems) {
-					server_entity se = {false, 0};
+					server_entity se = { false, 0 };
 					while (sents.length() <= n)
 						sents.add(se);
 					sents[n].spawned = true;
-				};
+				}
 			notgotitems = false;
 			break;
 		}
@@ -260,7 +260,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			    clients[cn].type == ST_EMPTY) {
 				disconnect_client(sender, "client num");
 				return;
-			};
+			}
 			int size = msgsizelookup(type);
 			assert(size != -1);
 			loopi(size - 2) getint(p);
@@ -286,22 +286,22 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			for (int n = getint(p); n; n--)
 				getint(p);
 			break;
-		};
+		}
 
 		default: {
 			int size = msgsizelookup(type);
 			if (size == -1) {
 				disconnect_client(sender, "tag type");
 				return;
-			};
+			}
 			loopi(size - 1) getint(p);
-		};
-		};
+		}
+		}
 
 	if (p > end) {
 		disconnect_client(sender, "end of packet");
 		return;
-	};
+	}
 	multicast(packet, sender);
 }
 
@@ -365,7 +365,7 @@ checkintermission()
 	if (!minremain) {
 		interm = lastsec + 10;
 		mapend = lastsec + 1000;
-	};
+	}
 	send2(true, -1, SV_TIMEUP, minremain--);
 }
 
@@ -406,7 +406,7 @@ serverslice(int seconds,
 			sents[i].spawnsecs = 0;
 			sents[i].spawned = true;
 			send2(true, -1, SV_ITEMSPAWN, i);
-		};
+		}
 	}
 
 	lastsec = seconds;
@@ -423,7 +423,7 @@ serverslice(int seconds,
 			mapreload = true;
 			break;
 		}
-	};
+	}
 
 	resetserverifempty();
 
@@ -448,7 +448,7 @@ serverslice(int seconds,
 			    nonlocalclients, bsend / 60.0f / 1024,
 			    brec / 60.0f / 1024);
 		bsend = brec = 0;
-	};
+	}
 
 	ENetEvent event;
 	if (enet_host_service(serverhost, &event, timeout) > 0) {
@@ -484,12 +484,11 @@ serverslice(int seconds,
 			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);
 			event.peer->data = (void *)-1;
 			break;
-		};
+		}
 
-		if (numplayers > maxclients) {
+		if (numplayers > maxclients)
 			disconnect_client(lastconnect, "maxclients reached");
-		};
-	};
+	}
 #ifndef _WIN32
 	fflush(stdout);
 #endif
@@ -528,7 +527,7 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 	    sdesc, dedicated);
 
 	if (isdedicated = dedicated) {
-		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVER_PORT};
+		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVER_PORT };
 		@autoreleasepool {
 			if (ip.length > 0 &&
 			    enet_address_set_host(&address, ip.UTF8String) < 0)
@@ -542,8 +541,8 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 
 	resetserverifempty();
 
-	if (isdedicated) // do not return, this becomes main loop
-	{
+	// do not return, this becomes main loop
+	if (isdedicated) {
 #ifdef _WIN32
 		SetPriorityClass(GetCurrentProcess(), HIGH_PRIORITY_CLASS);
 #endif
@@ -553,5 +552,5 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 		atexit(enet_deinitialize);
 		for (;;)
 			serverslice(/*enet_time_get_sec()*/ time(NULL), 5);
-	};
+	}
 }

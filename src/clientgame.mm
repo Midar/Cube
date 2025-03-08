@@ -70,7 +70,7 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 			if (gamemode == 12) {
 				d->gunselect = GUN_FIST;
 				return;
-			}; // eihrul's secret "instafist" mode
+			} // eihrul's secret "instafist" mode
 			d->health = 256;
 			if (m_tarena) {
 				int gun1 = rnd(4) + 1;
@@ -80,8 +80,8 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 					if (gun1 != gun2) {
 						baseammo(gun2);
 						break;
-					};
-				};
+					}
+				}
 			} else if (m_arena) // insta arena
 			{
 				d->ammo[GUN_RIFLE] = 100;
@@ -89,12 +89,12 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 			{
 				loopi(4) baseammo(i + 1);
 				d->gunselect = GUN_CG;
-			};
+			}
 			d->ammo[GUN_CG] /= 2;
-		};
+		}
 	} else {
 		d->ammo[GUN_SG] = 5;
-	};
+	}
 }
 
 dynent *
@@ -144,7 +144,7 @@ arenacount(dynent *d, int &alive, int &dead, char *&lastteam, bool &oneteam)
 		lastteam = d->team;
 	} else {
 		dead++;
-	};
+	}
 }
 
 int arenarespawnwait = 0;
@@ -178,8 +178,8 @@ arenarespawn()
 			arenarespawnwait = lastmillis + 5000;
 			arenadetectwait = lastmillis + 10000;
 			player1->roll = 0;
-		};
-	};
+		}
+	}
 }
 
 void
@@ -201,7 +201,7 @@ otherplayers()
 		if (lagtime > 1000 && players[i]->state == CS_ALIVE) {
 			players[i]->state = CS_LAGGED;
 			continue;
-		};
+		}
 		if (lagtime && players[i]->state != CS_DEAD &&
 		    (!demoplayback || i != democlientnum))
 			moveplayer(
@@ -273,7 +273,7 @@ updateworld(int millis) // main game update loop
 			} else if (!intermission) {
 				moveplayer(player1, 20, true);
 				checkitems();
-			};
+			}
 			c2sinfo(player1); // do this last, to reduce the
 			                  // effective frame lag
 		}
@@ -319,7 +319,7 @@ spawnplayer(dynent *d) // place at random spawn. also used by monsters!
 	} else {
 		d->o.x = d->o.y = (float)ssize / 2;
 		d->o.z = 4;
-	};
+	}
 	entinmap(d);
 	spawnstate(d);
 	d->state = CS_ALIVE;

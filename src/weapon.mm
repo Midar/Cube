@@ -13,15 +13,15 @@ static const float SGSPREAD = 2;
 static OFVector3D sg[SGRAYS];
 
 static const guninfo guns[NUMGUNS] = {
-    {S_PUNCH1, 250, 50, 0, 0, 1, @"fist"},
-    {S_SG, 1400, 10, 0, 0, 20, @"shotgun"}, // *SGRAYS
-    {S_CG, 100, 30, 0, 0, 7, @"chaingun"},
-    {S_RLFIRE, 800, 120, 80, 0, 10, @"rocketlauncher"},
-    {S_RIFLE, 1500, 100, 0, 0, 30, @"rifle"},
-    {S_FLAUNCH, 200, 20, 50, 4, 1, @"fireball"},
-    {S_ICEBALL, 200, 40, 30, 6, 1, @"iceball"},
-    {S_SLIMEBALL, 200, 30, 160, 7, 1, @"slimeball"},
-    {S_PIGR1, 250, 50, 0, 0, 1, @"bite"},
+	{ S_PUNCH1, 250, 50, 0, 0, 1, @"fist" },
+	{ S_SG, 1400, 10, 0, 0, 20, @"shotgun" }, // *SGRAYS
+	{ S_CG, 100, 30, 0, 0, 7, @"chaingun" },
+	{ S_RLFIRE, 800, 120, 80, 0, 10, @"rocketlauncher" },
+	{ S_RIFLE, 1500, 100, 0, 0, 30, @"rifle" },
+	{ S_FLAUNCH, 200, 20, 50, 4, 1, @"fireball" },
+	{ S_ICEBALL, 200, 40, 30, 6, 1, @"iceball" },
+	{ S_SLIMEBALL, 200, 30, 160, 7, 1, @"slimeball" },
+	{ S_PIGR1, 250, 50, 0, 0, 1, @"bite" },
 };
 
 void
@@ -173,7 +173,7 @@ hit(int target, int damage, dynent *d, dynent *at)
 	else {
 		addmsg(1, 4, SV_DAMAGE, target, damage, d->lifesequence);
 		playsound(S_PAIN1 + rnd(5), &d->o);
-	};
+	}
 	particle_splash(3, damage, 1000, d->o);
 	demodamage(damage, d->o);
 }

@@ -98,7 +98,7 @@ newsphere(OFVector3D &o, float max, int type)
 			sempty = &spheres[i];
 		}
 		sinit = true;
-	};
+	}
 	if (sempty) {
 		sphere *p = sempty;
 		sempty = p->next;
@@ -108,7 +108,7 @@ newsphere(OFVector3D &o, float max, int type)
 		p->type = type;
 		p->next = slist;
 		slist = p;
-	};
+	}
 }
 
 void
@@ -139,8 +139,8 @@ renderspheres(int time)
 		} else {
 			p->size += time / 100.0f;
 			pp = &p->next;
-		};
-	};
+		}
+	}
 
 	glDisable(GL_BLEND);
 	glDepthMask(GL_TRUE);
@@ -148,29 +148,29 @@ renderspheres(int time)
 
 string closeent;
 OFString *entnames[] = {
-    @"none?",
-    @"light",
-    @"playerstart",
-    @"shells",
-    @"bullets",
-    @"rockets",
-    @"riflerounds",
-    @"health",
-    @"healthboost",
-    @"greenarmour",
-    @"yellowarmour",
-    @"quaddamage",
-    @"teleport",
-    @"teledest",
-    @"mapmodel",
-    @"monster",
-    @"trigger",
-    @"jumppad",
-    @"?",
-    @"?",
-    @"?",
-    @"?",
-    @"?",
+	@"none?",
+	@"light",
+	@"playerstart",
+	@"shells",
+	@"bullets",
+	@"rockets",
+	@"riflerounds",
+	@"health",
+	@"healthboost",
+	@"greenarmour",
+	@"yellowarmour",
+	@"quaddamage",
+	@"teleport",
+	@"teledest",
+	@"mapmodel",
+	@"monster",
+	@"trigger",
+	@"jumppad",
+	@"?",
+	@"?",
+	@"?",
+	@"?",
+	@"?",
 };
 
 void
@@ -210,8 +210,8 @@ loadsky(OFString *basename)
 		if ([lastsky isEqual:basename])
 			return;
 
-		static const OFString *side[] = {
-		    @"ft", @"bk", @"lf", @"rt", @"dn", @"up"};
+		static const OFString *side[] = { @"ft", @"bk", @"lf", @"rt",
+			@"dn", @"up" };
 		int texnum = 14;
 		loopi(6)
 		{
@@ -336,7 +336,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		cursorupdate();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	};
+	}
 
 	glDisable(GL_DEPTH_TEST);
 	invertperspective();
@@ -442,7 +442,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		if (g > 2) {
 			g -= 3;
 			r = 128;
-		};
+		}
 		drawicon((float)(g * 64), (float)r, 1220, 1650);
 		glPopMatrix();
 	}

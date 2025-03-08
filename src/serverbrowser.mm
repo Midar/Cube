@@ -36,7 +36,7 @@ resolverloop(void *data)
 		rt->query = resolverqueries.pop();
 		rt->starttime = lastmillis;
 		SDL_UnlockMutex(resolvermutex);
-		ENetAddress address = {ENET_HOST_ANY, CUBE_SERVINFO_PORT};
+		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
 		enet_address_set_host(&address, rt->query);
 		SDL_LockMutex(resolvermutex);
 		resolverresult &rr = resolverresults.add();
@@ -45,7 +45,7 @@ resolverloop(void *data)
 		rt->query = NULL;
 		rt->starttime = 0;
 		SDL_UnlockMutex(resolvermutex);
-	};
+	}
 	return 0;
 }
 
@@ -125,8 +125,8 @@ resolvercheck(char **name, ENetAddress *address)
 				*name = rt.query;
 				SDL_UnlockMutex(resolvermutex);
 				return true;
-			};
-		};
+			}
+		}
 	}
 	SDL_UnlockMutex(resolvermutex);
 	return false;
@@ -199,7 +199,7 @@ void
 checkresolver()
 {
 	char *name = NULL;
-	ENetAddress addr = {ENET_HOST_ANY, CUBE_SERVINFO_PORT};
+	ENetAddress addr = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
 	while (resolvercheck(&name, &addr)) {
 		if (addr.host == ENET_HOST_ANY)
 			continue;
@@ -305,7 +305,7 @@ servermenu()
 	if (pingsock == ENET_SOCKET_NULL) {
 		pingsock = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, NULL);
 		resolverinit(1, 1000);
-	};
+	}
 	resolverclear();
 	loopv(servers) resolverquery(servers[i].name);
 	refreshservers();
