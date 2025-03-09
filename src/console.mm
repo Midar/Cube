@@ -181,11 +181,11 @@ history(int n)
 COMMAND(history, ARG_1INT)
 
 void
-keypress(int code, bool isdown, int cooked)
+keypress(int code, bool isDown)
 {
-	if (saycommandon) // keystrokes go to commandline
-	{
-		if (isdown) {
+	// keystrokes go to commandline
+	if (saycommandon) {
+		if (isDown) {
 			switch (code) {
 			case SDLK_RETURN:
 				break;
@@ -226,8 +226,6 @@ keypress(int code, bool isdown, int cooked)
 
 			default:
 				resetcomplete();
-				if (cooked)
-					[commandbuf appendFormat:@"%c", cooked];
 			}
 		} else {
 			if (code == SDLK_RETURN) {
@@ -259,18 +257,25 @@ keypress(int code, bool isdown, int cooked)
 				saycommand(NULL);
 			}
 		}
-	} else if (!menukey(code, isdown)) {
+	} else if (!menukey(code, isDown)) {
 		// keystrokes go to menu
 
 		for (KeyMapping *mapping in keyMappings) {
 			if (mapping.code == code) {
 				// keystrokes go to game, lookup in keymap and
 				// execute
-				execute(mapping.action, isdown);
+				execute(mapping.action, isDown);
 				return;
 			}
 		}
 	}
+}
+
+void
+input(OFString *text)
+{
+	if (saycommandon)
+		[commandbuf appendString:text];
 }
 
 OFString *

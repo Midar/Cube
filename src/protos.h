@@ -17,7 +17,8 @@ extern OFString *getalias(OFString *name);
 extern void writecfg();
 
 // console
-extern void keypress(int code, bool isdown, int cooked);
+extern void keypress(int code, bool isDown);
+extern void input(OFString *text);
 extern void renderconsole();
 extern void conoutf(OFConstantString *format, ...);
 extern OFString *getcurcommand();

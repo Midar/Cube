@@ -239,8 +239,12 @@ VARP(minmillis, 0, 5, 1000);
 			case SDL_KEYUP:
 				if (_repeatsKeys || event.key.repeat == 0)
 					keypress(event.key.keysym.sym,
-					    event.key.state == SDL_PRESSED,
-					    event.key.keysym.sym);
+					    event.key.state == SDL_PRESSED);
+				break;
+			case SDL_TEXTINPUT:
+				@autoreleasepool {
+					input(@(event.text.text));
+				}
 				break;
 			case SDL_MOUSEMOTION:
 				if (ignore) {
@@ -257,7 +261,7 @@ VARP(minmillis, 0, 5, 1000);
 					break;
 
 				keypress(-event.button.button,
-				    event.button.state != 0, 0);
+				    event.button.state != 0);
 				lasttype = event.type;
 				lastbut = event.button.button;
 				break;
