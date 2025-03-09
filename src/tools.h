@@ -80,43 +80,6 @@ strcat_s(char *d, const char *s)
 	strn0cpy(d + n, s, _MAXDEFSTR - n);
 }
 
-inline void
-formatstring(char *d, const char *fmt, va_list v)
-{
-	_vsnprintf(d, _MAXDEFSTR, fmt, v);
-	d[_MAXDEFSTR - 1] = 0;
-}
-
-struct sprintf_s_f {
-	char *d;
-
-	sprintf_s_f(char *str) : d(str) {};
-
-	void
-	operator()(const char *fmt, ...)
-	{
-		va_list v;
-		va_start(v, fmt);
-		_vsnprintf(d, _MAXDEFSTR, fmt, v);
-		va_end(v);
-		d[_MAXDEFSTR - 1] = 0;
-	}
-};
-
-#define sprintf_s(d) sprintf_s_f((char *)d)
-#define sprintf_sd(d) \
-	string d;     \
-	sprintf_s(d)
-#define sprintf_sdlv(d, last, fmt)        \
-	string d;                         \
-	{                                 \
-		va_list ap;               \
-		va_start(ap, last);       \
-		formatstring(d, fmt, ap); \
-		va_end(ap);               \
-	}
-#define sprintf_sdv(d, fmt) sprintf_sdlv(d, fmt, fmt)
-
 #define fast_f2nat(val) ((int)(val))
 
 extern void endianswap(void *, int, int);
