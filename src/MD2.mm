@@ -63,7 +63,7 @@ snap(int sn, float f)
 			return false;
 		}
 
-		if (![stream isKindOfClass:[OFSeekableStream class]])
+		if (![stream isKindOfClass:OFSeekableStream.class])
 			return false;
 
 		md2_header header;

@@ -4,174 +4,229 @@
 #include "SDL_thread.h"
 #include "cube.h"
 
-struct resolverthread {
-	SDL_Thread *thread;
-	char *query;
-	int starttime;
-};
-
-struct resolverresult {
-	char *query;
-	ENetAddress address;
-};
-
-vector<resolverthread> resolverthreads;
-vector<char *> resolverqueries;
-vector<resolverresult> resolverresults;
-SDL_mutex *resolvermutex;
-SDL_sem *resolversem;
-int resolverlimit = 1000;
-
-int
-resolverloop(void *data)
+@interface ResolverThread: OFThread
 {
-	resolverthread *rt = (resolverthread *)data;
-	for (;;) {
-		SDL_SemWait(resolversem);
-		SDL_LockMutex(resolvermutex);
-		if (resolverqueries.empty()) {
-			SDL_UnlockMutex(resolvermutex);
-			continue;
-		}
-		rt->query = resolverqueries.pop();
-		rt->starttime = lastmillis;
-		SDL_UnlockMutex(resolvermutex);
-		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
-		enet_address_set_host(&address, rt->query);
-		SDL_LockMutex(resolvermutex);
-		resolverresult &rr = resolverresults.add();
-		rr.query = rt->query;
-		rr.address = address;
-		rt->query = NULL;
-		rt->starttime = 0;
-		SDL_UnlockMutex(resolvermutex);
-	}
-	return 0;
+	volatile bool _stop;
 }
+
+@property (copy, nonatomic) OFString *query;
+@property (nonatomic) int starttime;
+@end
+
+@interface ResolverResult: OFObject
+@property (readonly, nonatomic) OFString *query;
+@property (readonly, nonatomic) ENetAddress address;
+
+- (instancetype)init OF_UNAVAILABLE;
+- (instancetype)initWithQuery:(OFString *)query address:(ENetAddress)address;
+@end
+
+static OFMutableArray<ResolverThread *> *resolverthreads;
+static OFMutableArray<OFString *> *resolverqueries;
+static OFMutableArray<ResolverResult *> *resolverresults;
+static SDL_sem *resolversem;
+static int resolverlimit = 1000;
+
+@implementation ResolverThread
+- (id)main
+{
+	while (!_stop) {
+		SDL_SemWait(resolversem);
+
+		@synchronized(ResolverThread.class) {
+			if (resolverqueries.count == 0)
+				continue;
+
+			_query = resolverqueries.lastObject;
+			[resolverqueries
+			    removeObjectAtIndex:resolverqueries.count - 1];
+			_starttime = lastmillis;
+		}
+
+		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
+		enet_address_set_host(&address, _query.UTF8String);
+
+		@synchronized(ResolverThread.class) {
+			[resolverresults addObject:[[ResolverResult alloc]
+			                               initWithQuery:_query
+			                                     address:address]];
+
+			_query = NULL;
+			_starttime = 0;
+		}
+	}
+
+	return nil;
+}
+
+- (void)stop
+{
+	_stop = true;
+}
+@end
+
+@implementation ResolverResult
+- (instancetype)initWithQuery:(OFString *)query address:(ENetAddress)address
+{
+	self = [super init];
+
+	_query = query;
+	_address = address;
+
+	return self;
+}
+@end
 
 void
 resolverinit(int threads, int limit)
 {
+	resolverthreads = [[OFMutableArray alloc] init];
+	resolverqueries = [[OFMutableArray alloc] init];
+	resolverresults = [[OFMutableArray alloc] init];
 	resolverlimit = limit;
 	resolversem = SDL_CreateSemaphore(0);
-	resolvermutex = SDL_CreateMutex();
 
 	while (threads > 0) {
-		resolverthread &rt = resolverthreads.add();
-		rt.query = NULL;
-		rt.starttime = 0;
-		rt.thread =
-		    SDL_CreateThread(resolverloop, "resolverthread", &rt);
+		ResolverThread *rt = [[ResolverThread alloc] init];
+		rt.name = @"resolverthread";
+		[resolverthreads addObject:rt];
+		[rt start];
 		--threads;
 	}
 }
 
 void
-resolverstop(resolverthread &rt, bool restart)
+resolverstop(size_t i, bool restart)
 {
-	SDL_LockMutex(resolvermutex);
-	// SDL_KillThread(rt.thread);
-	rt.query = NULL;
-	rt.starttime = 0;
-	rt.thread = NULL;
-	if (restart)
-		rt.thread =
-		    SDL_CreateThread(resolverloop, "resolverthread", &rt);
-	SDL_UnlockMutex(resolvermutex);
+	@synchronized(ResolverThread.class) {
+		ResolverThread *rt = resolverthreads[i];
+		[rt stop];
+
+		if (restart) {
+			rt = [[ResolverThread alloc] init];
+			rt.name = @"resolverthread";
+
+			resolverthreads[i] = rt;
+
+			[rt start];
+		} else
+			[resolverthreads removeObjectAtIndex:i];
+	}
 }
 
 void
 resolverclear()
 {
-	SDL_LockMutex(resolvermutex);
-	resolverqueries.setsize(0);
-	resolverresults.setsize(0);
-	while (SDL_SemTryWait(resolversem) == 0)
-		;
-	loopv(resolverthreads)
-	{
-		resolverthread &rt = resolverthreads[i];
-		resolverstop(rt, true);
+	@synchronized(ResolverThread.class) {
+		[resolverqueries removeAllObjects];
+		[resolverresults removeAllObjects];
+
+		while (SDL_SemTryWait(resolversem) == 0)
+			;
+
+		for (size_t i = 0; i < resolverthreads.count; i++)
+			resolverstop(i, true);
 	}
-	SDL_UnlockMutex(resolvermutex);
 }
 
 void
-resolverquery(char *name)
+resolverquery(OFString *name)
 {
-	SDL_LockMutex(resolvermutex);
-	resolverqueries.add(name);
-	SDL_SemPost(resolversem);
-	SDL_UnlockMutex(resolvermutex);
+	@synchronized(ResolverThread.class) {
+		[resolverqueries addObject:name];
+		SDL_SemPost(resolversem);
+	}
 }
 
 bool
-resolvercheck(char **name, ENetAddress *address)
+resolvercheck(OFString **name, ENetAddress *address)
 {
-	SDL_LockMutex(resolvermutex);
-	if (!resolverresults.empty()) {
-		resolverresult &rr = resolverresults.pop();
-		*name = rr.query;
-		*address = rr.address;
-		SDL_UnlockMutex(resolvermutex);
-		return true;
-	}
-	loopv(resolverthreads)
-	{
-		resolverthread &rt = resolverthreads[i];
-		if (rt.query) {
-			if (lastmillis - rt.starttime > resolverlimit) {
-				resolverstop(rt, true);
-				*name = rt.query;
-				SDL_UnlockMutex(resolvermutex);
-				return true;
+	@synchronized(ResolverThread.class) {
+		if (resolverresults.count > 0) {
+			ResolverResult *rr = resolverresults.lastObject;
+			*name = rr.query;
+			*address = rr.address;
+			[resolverresults
+			    removeObjectAtIndex:resolverresults.count - 1];
+			return true;
+		}
+
+		for (size_t i = 0; i < resolverthreads.count; i++) {
+			ResolverThread *rt = resolverthreads[i];
+
+			if (rt.query) {
+				if (lastmillis - rt.starttime > resolverlimit) {
+					resolverstop(i, true);
+					*name = rt.query;
+					return true;
+				}
 			}
 		}
 	}
-	SDL_UnlockMutex(resolvermutex);
+
 	return false;
 }
 
-struct serverinfo {
-	string name;
-	string full;
-	string map;
-	string sdesc;
-	int mode, numplayers, ping, protocol, minremain;
-	ENetAddress address;
-};
+@interface ServerInfo: OFObject <OFComparing>
+@property (nonatomic) OFString *name;
+@property (nonatomic) OFString *full;
+@property (nonatomic) OFString *map;
+@property (nonatomic) OFString *sdesc;
+@property (nonatomic) int mode, numplayers, ping, protocol, minremain;
+@property (nonatomic) ENetAddress address;
+@end
 
-vector<serverinfo> servers;
-ENetSocket pingsock = ENET_SOCKET_NULL;
-int lastinfo = 0;
+@implementation ServerInfo
+- (OFComparisonResult)compare:(id)otherObject
+{
+	if (![otherObject isKindOfClass:ServerInfo.class])
+		@throw [OFInvalidArgumentException exception];
+
+	if (_ping > [otherObject ping])
+		return OFOrderedDescending;
+	if (_ping < [otherObject ping])
+		return OFOrderedAscending;
+
+	return [_name compare:[otherObject name]];
+}
+@end
+
+static OFMutableArray<ServerInfo *> *servers;
+static ENetSocket pingsock = ENET_SOCKET_NULL;
+static int lastinfo = 0;
 
 OFString *
 getservername(int n)
 {
-	@autoreleasepool {
-		return @(servers[n].name);
-	}
+	return servers[n].name;
 }
 
 void
-addserver(OFString *servername_)
+addserver(OFString *servername)
 {
 	@autoreleasepool {
-		const char *servername = servername_.UTF8String;
-		loopv(servers) if (strcmp(servers[i].name, servername) ==
-		    0) return;
-		serverinfo &si = servers.insert(0, serverinfo());
-		strcpy_s(si.name, servername);
-		si.full[0] = 0;
+		for (ServerInfo *si in servers)
+			if ([si.name isEqual:servername])
+				return;
+
+		ServerInfo *si = [[ServerInfo alloc] init];
+		si.name = servername;
+		si.full = @"";
 		si.mode = 0;
 		si.numplayers = 0;
 		si.ping = 9999;
 		si.protocol = 0;
 		si.minremain = 0;
-		si.map[0] = 0;
-		si.sdesc[0] = 0;
-		si.address.host = ENET_HOST_ANY;
-		si.address.port = CUBE_SERVINFO_PORT;
+		si.map = @"";
+		si.sdesc = @"";
+		ENetAddress address = { .host = ENET_HOST_ANY,
+			.port = CUBE_SERVINFO_PORT };
+		si.address = address;
+
+		if (servers == nil)
+			servers = [[OFMutableArray alloc] init];
+
+		[servers addObject:si];
 	}
 }
 
@@ -181,32 +236,33 @@ pingservers()
 	ENetBuffer buf;
 	uchar ping[MAXTRANS];
 	uchar *p;
-	loopv(servers)
-	{
-		serverinfo &si = servers[i];
+
+	for (ServerInfo *si in servers) {
 		if (si.address.host == ENET_HOST_ANY)
 			continue;
+
 		p = ping;
 		putint(p, lastmillis);
 		buf.data = ping;
 		buf.dataLength = p - ping;
-		enet_socket_send(pingsock, &si.address, &buf, 1);
+		ENetAddress address = si.address;
+		enet_socket_send(pingsock, &address, &buf, 1);
 	}
+
 	lastinfo = lastmillis;
 }
 
 void
 checkresolver()
 {
-	char *name = NULL;
+	OFString *name = nil;
 	ENetAddress addr = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
 	while (resolvercheck(&name, &addr)) {
 		if (addr.host == ENET_HOST_ANY)
 			continue;
-		loopv(servers)
-		{
-			serverinfo &si = servers[i];
-			if (name == si.name) {
+
+		for (ServerInfo *si in servers) {
+			if ([name isEqual:si.name]) {
 				si.address = addr;
 				addr.host = ENET_HOST_ANY;
 				break;
@@ -225,12 +281,12 @@ checkpings()
 	char text[MAXTRANS];
 	buf.data = ping;
 	buf.dataLength = sizeof(ping);
+
 	while (enet_socket_wait(pingsock, &events, 0) >= 0 && events) {
 		if (enet_socket_receive(pingsock, &addr, &buf, 1) <= 0)
 			return;
-		loopv(servers)
-		{
-			serverinfo &si = servers[i];
+
+		for (ServerInfo *si in servers) {
 			if (addr.host == si.address.host) {
 				p = ping;
 				si.ping = lastmillis - getint(p);
@@ -241,21 +297,17 @@ checkpings()
 				si.numplayers = getint(p);
 				si.minremain = getint(p);
 				sgetstr();
-				strcpy_s(si.map, text);
+				@autoreleasepool {
+					si.map = @(text);
+				}
 				sgetstr();
-				strcpy_s(si.sdesc, text);
+				@autoreleasepool {
+					si.sdesc = @(text);
+				}
 				break;
 			}
 		}
 	}
-}
-
-int
-sicompare(const serverinfo *a, const serverinfo *b)
-{
-	return a->ping > b->ping
-	    ? 1
-	    : (a->ping < b->ping ? -1 : strcmp(a->name, b->name));
 }
 
 void
@@ -265,37 +317,43 @@ refreshservers()
 	checkpings();
 	if (lastmillis - lastinfo >= 5000)
 		pingservers();
-	servers.sort((void *)sicompare);
+	[servers sort];
 	int maxmenu = 16;
-	loopv(servers)
-	{
-		serverinfo &si = servers[i];
+
+	size_t i = 0;
+	for (ServerInfo *si in servers) {
 		if (si.address.host != ENET_HOST_ANY && si.ping != 9999) {
 			if (si.protocol != PROTOCOL_VERSION)
-				sprintf_s(si.full)(
-				    "%s [different cube protocol]", si.name);
-			else {
-				@autoreleasepool {
-					sprintf_s(si.full)(
-					    "%d\t%d\t%s, %s: %s %s", si.ping,
-					    si.numplayers,
-					    si.map[0] ? si.map : "[unknown]",
-					    modestr(si.mode).UTF8String,
-					    si.name, si.sdesc);
-				}
-			}
-		} else {
-			sprintf_s(si.full)(si.address.host != ENET_HOST_ANY
-			        ? "%s [waiting for server response]"
-			        : "%s [unknown host]\t",
-			    si.name);
-		}
-		si.full[50] = 0; // cut off too long server descriptions
+				si.full = [[OFString alloc]
+				    initWithFormat:
+				        @"%@ [different cube protocol]",
+				    si.name];
+			else
+				si.full = [[OFString alloc]
+				    initWithFormat:@"%d\t%d\t%@, %@: %@ %@",
+				    si.ping, si.numplayers,
+				    si.map.length > 0 ? si.map : @"[unknown]",
+				    modestr(si.mode), si.name, si.sdesc];
+		} else
+			si.full = [[OFString alloc]
+			    initWithFormat:
+			        (si.address.host != ENET_HOST_ANY
+			                ? @"%@ [waiting for server response]"
+			                : @"%@ [unknown host]\t"),
+			    si.name];
+
+		// cut off too long server descriptions
 		@autoreleasepool {
-			menumanual(1, i, @(si.full));
+			if (si.full.length > 50)
+				si.full = [si.full substringToIndex:50];
 		}
+
+		menumanual(1, i, si.full);
+
 		if (!--maxmenu)
 			return;
+
+		i++;
 	}
 }
 
@@ -306,8 +364,12 @@ servermenu()
 		pingsock = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, NULL);
 		resolverinit(1, 1000);
 	}
+
 	resolverclear();
-	loopv(servers) resolverquery(servers[i].name);
+
+	for (ServerInfo *si in servers)
+		resolverquery(si.name);
+
 	refreshservers();
 	menuset(1);
 }
@@ -322,7 +384,7 @@ updatefrommaster()
 	    strstr((char *)reply, "<HTML>"))
 		conoutf(@"master server not replying");
 	else {
-		servers.setsize(0);
+		[servers removeAllObjects];
 		@autoreleasepool {
 			execute(@((char *)reply));
 		}
@@ -341,6 +403,9 @@ writeservercfg()
 	if (!f)
 		return;
 	fprintf(f, "// servers connected to are added here automatically\n\n");
-	loopvrev(servers) fprintf(f, "addserver %s\n", servers[i].name);
+	@autoreleasepool {
+		for (ServerInfo *si in servers.reversedArray)
+			fprintf(f, "addserver %s\n", si.name.UTF8String);
+	}
 	fclose(f);
 }

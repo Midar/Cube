@@ -28,7 +28,7 @@ alias(OFString *name, OFString *action)
 
 		identifiers[name] = alias;
 	} else {
-		if ([alias isKindOfClass:[Alias class]])
+		if ([alias isKindOfClass:Alias.class])
 			alias.action = action;
 		else
 			conoutf(
@@ -79,7 +79,7 @@ getalias(OFString *name)
 {
 	Alias *alias = identifiers[name];
 
-	if ([alias isKindOfClass:[Alias class]])
+	if ([alias isKindOfClass:Alias.class])
 		return alias.action;
 
 	return nil;
@@ -170,10 +170,10 @@ lookup(OFString *n) // find value of ident referenced with $ in exp
 		__kindof Identifier *identifier =
 		    identifiers[[n substringFromIndex:1]];
 
-		if ([identifier isKindOfClass:[Variable class]]) {
+		if ([identifier isKindOfClass:Variable.class]) {
 			return [OFString
 			    stringWithFormat:@"%d", *[identifier storage]];
-		} else if ([identifier isKindOfClass:[Alias class]])
+		} else if ([identifier isKindOfClass:Alias.class])
 			return [identifier action];
 	}
 
@@ -238,8 +238,7 @@ execute(OFString *string, bool isDown)
 					conoutf(@"unknown command: %@", c);
 				}
 			} else {
-				if ([identifier
-				        isKindOfClass:[Command class]]) {
+				if ([identifier isKindOfClass:Command.class]) {
 					// game defined commands use very
 					// ad-hoc function signature, and just
 					// call it
@@ -251,8 +250,7 @@ execute(OFString *string, bool isDown)
 					    callWithArguments:arguments
 					               isDown:isDown];
 				} else if ([identifier
-				               isKindOfClass:[Variable
-				                                 class]]) {
+				               isKindOfClass:Variable.class]) {
 					// game defined variables
 					if (isDown) {
 						if (w[1].length == 0)
@@ -265,7 +263,7 @@ execute(OFString *string, bool isDown)
 							                0]];
 					}
 				} else if ([identifier
-				               isKindOfClass:[Alias class]]) {
+				               isKindOfClass:Alias.class]) {
 					// alias, also used as functions and
 					// (global) variables
 					for (int i = 1; i < numargs; i++) {
@@ -392,7 +390,7 @@ writecfg()
 
 	[identifiers enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:[Variable class]] ||
+		if (![identifier isKindOfClass:Variable.class] ||
 		    ![identifier persisted])
 			return;
 
@@ -406,7 +404,7 @@ writecfg()
 
 	[identifiers enumerateKeysAndObjectsUsingBlock:^(
 	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:[Alias class]] ||
+		if (![identifier isKindOfClass:Alias.class] ||
 		    [identifier.name hasPrefix:@"nextmap_"])
 			return;
 

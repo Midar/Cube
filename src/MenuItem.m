@@ -15,7 +15,7 @@
 {
 	MenuItem *otherItem;
 
-	if (![otherObject isKindOfClass:[MenuItem class]])
+	if (![otherObject isKindOfClass:MenuItem.class])
 		@throw [OFInvalidArgumentException exception];
 
 	int x = (int)_text.longLongValue;
