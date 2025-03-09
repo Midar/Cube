@@ -4,6 +4,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 void
 render_wall(sqr *o, sqr *s, int x1, int y1, int x2, int y2, int mip, sqr *d1,
     sqr *d2, bool topleft)
@@ -135,7 +137,7 @@ render_seg_new(
 		// first collect occlusion information for this block
 		for (int oy = y; oy < ys; oy++) {
 			SWS(w, ox, oy, sz)->occluded =
-			    isoccluded(player1->o.x, player1->o.y,
+			    isoccluded(player1.o.x, player1.o.y,
 			        (float)(ox << mip), (float)(oy << mip), fsize);
 		}
 	}
@@ -144,8 +146,8 @@ render_seg_new(
 	int pvy = (int)vy >> mip;
 	if (pvx >= 0 && pvy >= 0 && pvx < sz && pvy < sz) {
 		// SWS(w,vxx,vyy,sz)->occluded = 0;
-		SWS(w, pvx, pvy, sz)->occluded =
-		    0; // player cell never occluded
+		// player cell never occluded
+		SWS(w, pvx, pvy, sz)->occluded = 0;
 	}
 
 #define df(x) s->floor - (x->vdelta / 4.0f)

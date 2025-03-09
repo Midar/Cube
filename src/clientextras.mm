@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 // render players & monsters
 // very messy ad-hoc handling of animation frames, should be made more
 // configurable
@@ -14,13 +16,14 @@ int range[] = { 6, 6, 8, 28, 1, 1, 1, 1, 8, 19, 4, 18, 40, 1, 6, 15, 1, 1, 1,
 	1 };
 
 void
-renderclient(dynent *d, bool team, OFString *mdlname, bool hellpig, float scale)
+renderclient(
+    DynamicEntity *d, bool team, OFString *mdlname, bool hellpig, float scale)
 {
 	int n = 3;
 	float speed = 100.0f;
-	float mz = d->o.z - d->eyeheight + 1.55f * scale;
+	float mz = d.o.z - d.eyeheight + 1.55f * scale;
 	int basetime = -((intptr_t)d & 0xFFF);
-	if (d->state == CS_DEAD) {
+	if (d.state == CS_DEAD) {
 		int r;
 		if (hellpig) {
 			n = 2;
@@ -29,8 +32,8 @@ renderclient(dynent *d, bool team, OFString *mdlname, bool hellpig, float scale)
 			n = (intptr_t)d % 3;
 			r = range[n];
 		}
-		basetime = d->lastaction;
-		int t = lastmillis - d->lastaction;
+		basetime = d.lastaction;
+		int t = lastmillis - d.lastaction;
 		if (t < 0 || t > 20000)
 			return;
 		if (t > (r - 1) * 100) {
@@ -43,33 +46,33 @@ renderclient(dynent *d, bool team, OFString *mdlname, bool hellpig, float scale)
 		if (mz < -1000)
 			return;
 		// mdl = (((int)d>>6)&1)+1;
-		// mz = d->o.z-d->eyeheight+0.2f;
+		// mz = d.o.z-d.eyeheight+0.2f;
 		// scale = 1.2f;
-	} else if (d->state == CS_EDITING) {
+	} else if (d.state == CS_EDITING) {
 		n = 16;
-	} else if (d->state == CS_LAGGED) {
+	} else if (d.state == CS_LAGGED) {
 		n = 17;
-	} else if (d->monsterstate == M_ATTACKING) {
+	} else if (d.monsterstate == M_ATTACKING) {
 		n = 8;
-	} else if (d->monsterstate == M_PAIN) {
+	} else if (d.monsterstate == M_PAIN) {
 		n = 10;
-	} else if ((!d->move && !d->strafe) || !d->moving) {
+	} else if ((!d.move && !d.strafe) || !d.moving) {
 		n = 12;
-	} else if (!d->onfloor && d->timeinair > 100) {
+	} else if (!d.onfloor && d.timeinair > 100) {
 		n = 18;
 	} else {
 		n = 14;
-		speed = 1200 / d->maxspeed * scale;
+		speed = 1200 / d.maxspeed * scale;
 		if (hellpig)
-			speed = 300 / d->maxspeed;
+			speed = 300 / d.maxspeed;
 	}
 	if (hellpig) {
 		n++;
 		scale *= 32;
 		mz -= 1.9f;
 	}
-	rendermodel(mdlname, frame[n], range[n], 0, 1.5f, d->o.x, mz, d->o.y,
-	    d->yaw + 90, d->pitch / 2, team, scale, speed, 0, basetime);
+	rendermodel(mdlname, frame[n], range[n], 0, 1.5f, d.o.x, mz, d.o.y,
+	    d.yaw + 90, d.pitch / 2, team, scale, speed, 0, basetime);
 }
 
 extern int democlientnum;
@@ -77,10 +80,15 @@ extern int democlientnum;
 void
 renderclients()
 {
-	dynent *d;
-	loopv(players) if ((d = players[i]) &&
-	    (!demoplayback || i != democlientnum)) renderclient(d,
-	    isteam(player1->team, d->team), @"monster/ogro", false, 1.0f);
+	size_t i = 0;
+	for (id player in players) {
+		if (player != [OFNull null] &&
+		    (!demoplayback || i != democlientnum))
+			renderclient(player,
+			    isteam(player1.team, [player team]),
+			    @"monster/ogro", false, 1.0f);
+		i++;
+	}
 }
 
 // creation of scoreboard pseudo-menu
@@ -97,15 +105,15 @@ showscores(bool on)
 static OFMutableArray<OFString *> *scoreLines;
 
 void
-renderscore(dynent *d)
+renderscore(DynamicEntity *d)
 {
 	@autoreleasepool {
-		OFString *lag = [OFString stringWithFormat:@"%d", d->plag];
-		OFString *name = [OFString stringWithFormat:@"(%s)", d->name];
-		OFString *line = [OFString
-		    stringWithFormat:@"%d\t%@\t%d\t%s\t%@", d->frags,
-		    (d->state == CS_LAGGED ? @"LAG" : lag), d->ping, d->team,
-		    (d->state == CS_DEAD ? name : @(d->name))];
+		OFString *lag = [OFString stringWithFormat:@"%d", d.plag];
+		OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
+		OFString *line =
+		    [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@", d.frags,
+		              (d.state == CS_LAGGED ? @"LAG" : lag), d.ping,
+		              d.team, (d.state == CS_DEAD ? name : d.name)];
 
 		if (scoreLines == nil)
 			scoreLines = [[OFMutableArray alloc] init];
@@ -118,21 +126,16 @@ renderscore(dynent *d)
 
 static const int maxTeams = 4;
 static OFString *teamName[maxTeams];
-static int teamScore[maxTeams], teamsUsed;
+static int teamScore[maxTeams];
+static size_t teamsUsed;
 
 void
-addteamscore(dynent *d)
+addteamscore(DynamicEntity *d)
 {
-	if (d == NULL)
-		return;
-
 	@autoreleasepool {
-		OFString *team = @(d->team);
-
-		loopi(teamsUsed)
-		{
-			if ([teamName[i] isEqual:team]) {
-				teamScore[i] += d->frags;
+		for (size_t i = 0; i < teamsUsed; i++) {
+			if ([teamName[i] isEqual:d.team]) {
+				teamScore[i] += d.frags;
 				return;
 			}
 		}
@@ -140,8 +143,8 @@ addteamscore(dynent *d)
 		if (teamsUsed == maxTeams)
 			return;
 
-		teamName[teamsUsed] = @(d->team);
-		teamScore[teamsUsed++] = d->frags;
+		teamName[teamsUsed] = d.team;
+		teamScore[teamsUsed++] = d.frags;
 	}
 }
 
@@ -153,19 +156,21 @@ renderscores()
 	[scoreLines removeAllObjects];
 	if (!demoplayback)
 		renderscore(player1);
-	loopv(players) if (players[i]) renderscore(players[i]);
+	for (id player in players)
+		if (player != [OFNull null])
+			renderscore(player);
 	sortmenu();
 	if (m_teammode) {
 		teamsUsed = 0;
-		loopv(players) addteamscore(players[i]);
+		for (id player in players)
+			if (player != [OFNull null])
+				addteamscore(player);
 		if (!demoplayback)
 			addteamscore(player1);
 		OFMutableString *teamScores = [[OFMutableString alloc] init];
-		loopj(teamsUsed)
-		{
+		for (size_t j = 0; j < teamsUsed; j++)
 			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
 			            teamScore[j]];
-		}
 		menumanual(0, scoreLines.count, @"");
 		@autoreleasepool {
 			menumanual(0, scoreLines.count + 1, teamScores);

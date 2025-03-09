@@ -2,12 +2,16 @@
 
 #include "cube.h"
 
-ENetHost *clienthost = NULL;
-int connecting = 0;
-int connattempts = 0;
-int disconnecting = 0;
-int clientnum = -1;   // our client id in the game
-bool c2sinit = false; // whether we need to tell the other clients our stats
+#import "DynamicEntity.h"
+
+static ENetHost *clienthost = NULL;
+static int connecting = 0;
+static int connattempts = 0;
+static int disconnecting = 0;
+// our client id in the game
+int clientnum = -1;
+// whether we need to tell the other clients our stats
+bool c2sinit = false;
 
 int
 getclientnum()
@@ -59,9 +63,13 @@ throttle()
 void
 newname(OFString *name)
 {
-	c2sinit = false;
 	@autoreleasepool {
-		strn0cpy(player1->name, name.UTF8String, 16);
+		c2sinit = false;
+
+		if (name.length > 16)
+			name = [name substringToIndex:16];
+
+		player1.name = name;
 	}
 }
 COMMANDN(name, newname, ARG_1STR)
@@ -69,9 +77,13 @@ COMMANDN(name, newname, ARG_1STR)
 void
 newteam(OFString *name)
 {
-	c2sinit = false;
 	@autoreleasepool {
-		strn0cpy(player1->team, name.UTF8String, 5);
+		c2sinit = false;
+
+		if (name.length > 5)
+			name = [name substringToIndex:5];
+
+		player1.team = name;
 	}
 }
 COMMANDN(team, newteam, ARG_1STR)
@@ -79,8 +91,8 @@ COMMANDN(team, newteam, ARG_1STR)
 void
 writeclientinfo(OFStream *stream)
 {
-	[stream writeFormat:@"name \"%s\"\nteam \"%s\"\n", player1->name,
-	        player1->team];
+	[stream writeFormat:@"name \"%@\"\nteam \"%@\"\n", player1.name,
+	        player1.team];
 }
 
 void
@@ -137,8 +149,8 @@ disconnect(int onlyclean, int async)
 	disconnecting = 0;
 	clientnum = -1;
 	c2sinit = false;
-	player1->lifesequence = 0;
-	loopv(players) zapdynent(players[i]);
+	player1.lifesequence = 0;
+	[players removeAllObjects];
 
 	localdisconnect();
 
@@ -168,7 +180,7 @@ static OFString *ctext;
 void
 toserver(OFString *text)
 {
-	conoutf(@"%s:\f %@", player1->name, text);
+	conoutf(@"%@:\f %@", player1.name, text);
 	ctext = text;
 }
 
@@ -271,8 +283,9 @@ sendpackettoserv(void *packet)
 		localclienttoserver((ENetPacket *)packet);
 }
 
+// send update to the server
 void
-c2sinfo(dynent *d) // send update to the server
+c2sinfo(DynamicEntity *d)
 {
 	@autoreleasepool {
 		if (clientnum < 0)
@@ -295,26 +308,24 @@ c2sinfo(dynent *d) // send update to the server
 		} else {
 			putint(p, SV_POS);
 			putint(p, clientnum);
-			putint(p,
-			    (int)(d->o.x *
-			        DMF)); // quantize coordinates to 1/16th
-			               // of a cube, between 1 and 3 bytes
-			putint(p, (int)(d->o.y * DMF));
-			putint(p, (int)(d->o.z * DMF));
-			putint(p, (int)(d->yaw * DAF));
-			putint(p, (int)(d->pitch * DAF));
-			putint(p, (int)(d->roll * DAF));
-			putint(
-			    p, (int)(d->vel.x * DVF)); // quantize to 1/100,
-			                               // almost always 1 byte
-			putint(p, (int)(d->vel.y * DVF));
-			putint(p, (int)(d->vel.z * DVF));
+			// quantize coordinates to 1/16th of a cube, between 1
+			// and 3 bytes
+			putint(p, (int)(d.o.x * DMF));
+			putint(p, (int)(d.o.y * DMF));
+			putint(p, (int)(d.o.z * DMF));
+			putint(p, (int)(d.yaw * DAF));
+			putint(p, (int)(d.pitch * DAF));
+			putint(p, (int)(d.roll * DAF));
+			// quantize to 1/100, almost always 1 byte
+			putint(p, (int)(d.vel.x * DVF));
+			putint(p, (int)(d.vel.y * DVF));
+			putint(p, (int)(d.vel.z * DVF));
 			// pack rest in 1 byte: strafe:2, move:2, onfloor:1,
 			// state:3
 			putint(p,
-			    (d->strafe & 3) | ((d->move & 3) << 2) |
-			        (((int)d->onfloor) << 4) |
-			        ((editmode ? CS_EDITING : d->state) << 5));
+			    (d.strafe & 3) | ((d.move & 3) << 2) |
+			        (((int)d.onfloor) << 4) |
+			        ((editmode ? CS_EDITING : d.state) << 5));
 
 			if (senditemstoserver) {
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
@@ -332,14 +343,14 @@ c2sinfo(dynent *d) // send update to the server
 				sendstring(ctext, p);
 				ctext = @"";
 			}
-			if (!c2sinit) // tell other clients who I am
-			{
+			// tell other clients who I am
+			if (!c2sinit) {
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
 				c2sinit = true;
 				putint(p, SV_INITC2S);
-				sendstring(@(player1->name), p);
-				sendstring(@(player1->team), p);
-				putint(p, player1->lifesequence);
+				sendstring(player1.name, p);
+				sendstring(player1.team, p);
+				putint(p, player1.lifesequence);
 			}
 			for (OFData *msg in messages) {
 				// send messages collected during the previous

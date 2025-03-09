@@ -3,6 +3,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 bool editmode = false;
 
 // the current selection, used by almost all editing commands
@@ -52,7 +54,7 @@ VAR(editing, 0, 0, 1);
 void
 toggleedit()
 {
-	if (player1->state == CS_DEAD)
+	if (player1.state == CS_DEAD)
 		return; // do not allow dead players to edit to avoid state
 		        // confusion
 	if (!editmode && !allowedittoggle())
@@ -63,7 +65,7 @@ toggleedit()
 	} else {
 		resettagareas(); // clear trigger areas to allow them to be
 		                 // edited
-		player1->health = 100;
+		player1.health = 100;
 		if (m_classicsp)
 			monsterclear(); // all monsters back at their spawns for
 			                // editing
@@ -150,7 +152,7 @@ sheight(
 void
 cursorupdate() // called every frame from hud
 {
-	flrceil = ((int)(player1->pitch >= 0)) * 2;
+	flrceil = ((int)(player1.pitch >= 0)) * 2;
 
 	volatile float x =
 	    worldpos.x; // volatile needed to prevent msvc7 optimizer bug?
@@ -166,8 +168,8 @@ cursorupdate() // called every frame from hud
 
 	// selected wall
 	if (fabs(sheight(s, s, z) - z) > 1) {
-		x += x > player1->o.x ? 0.5f : -0.5f; // find right wall cube
-		y += y > player1->o.y ? 0.5f : -0.5f;
+		x += x > player1.o.x ? 0.5f : -0.5f; // find right wall cube
+		y += y > player1.o.y ? 0.5f : -0.5f;
 
 		cx = (int)x;
 		cy = (int)y;
@@ -322,9 +324,9 @@ tofronttex() // maintain most recently used of the texture lists when applying
 }
 
 void
-editdrag(bool isdown)
+editdrag(bool isDown)
 {
-	if (dragging = isdown) {
+	if ((dragging = isDown)) {
 		lastx = cx;
 		lasty = cy;
 		lasth = ch;
@@ -602,7 +604,7 @@ newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 {
 	EDITSEL;
 	@autoreleasepool {
-		newentity(sel.x, sel.y, (int)player1->o.z, what,
+		newentity(sel.x, sel.y, (int)player1.o.z, what,
 		    (int)[a1 longLongValueWithBase:0],
 		    (int)[a2 longLongValueWithBase:0],
 		    (int)[a3 longLongValueWithBase:0],

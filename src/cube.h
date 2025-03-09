@@ -8,6 +8,8 @@
 
 #include "tools.h"
 
+@class DynamicEntity;
+
 @interface Cube: OFObject <OFApplicationDelegate>
 @property (class, readonly, nonatomic) Cube *sharedInstance;
 @property (readonly, nonatomic) SDL_Window *window;
@@ -128,41 +130,8 @@ enum {
 	NUMGUNS
 };
 
-struct dynent // players & monsters
-{
-	OFVector3D o, vel;      // origin, velocity
-	float yaw, pitch, roll; // used as OFVector3D in one place
-	float maxspeed;         // cubes per second, 24 for player
-	bool outsidemap;        // from his eyes
-	bool inwater;
-	bool onfloor, jumpnext;
-	int move, strafe;
-	bool k_left, k_right, k_up, k_down; // see input code
-	int timeinair;                      // used for fake gravity
-	float radius, eyeheight, aboveeye;  // bounding box size
-	int lastupdate, plag, ping;
-	int lifesequence; // sequence id for each respawn, used in damage test
-	int state;        // one of CS_* below
-	int frags;
-	int health, armour, armourtype, quadmillis;
-	int gunselect, gunwait;
-	int lastaction, lastattackgun, lastmove;
-	bool attacking;
-	int ammo[NUMGUNS];
-	int monsterstate;     // one of M_* below, M_NONE means human
-	int mtype;            // see monster.cpp
-	dynent *enemy;        // monster wants to kill this entity
-	float targetyaw;      // monster wants to look in this direction
-	bool blocked, moving; // used by physics to signal ai
-	int trigger; // millis at which transition to another monsterstate takes
-	             // place
-	OFVector3D attacktarget; // delayed attacks
-	int anger;               // how many times already hit by fellow monster
-	string name, team;
-};
-
-#define SAVEGAMEVERSION \
-	4 // bump if dynent/netprotocol changes or any other savegame/demo data
+// bump if dynent/netprotocol changes or any other savegame/demo data
+#define SAVEGAMEVERSION 4
 
 enum { A_BLUE, A_GREEN, A_YELLOW }; // armour types... take 20/40/60 % off
 enum {
@@ -281,8 +250,6 @@ struct vertex {
 	uchar r, g, b, a;
 };
 
-typedef vector<dynent *> dvector;
-
 // globals ooh naughty
 
 extern sqr *world,
@@ -290,9 +257,10 @@ extern sqr *world,
 extern header hdr; // current map header
 extern int sfactor, ssize;     // ssize = 2^sfactor
 extern int cubicsize, mipsize; // cubicsize = ssize^2
-extern dynent
-    *player1; // special client ent that receives input and acts as camera
-extern dvector players; // all the other clients (in multiplayer)
+// special client ent that receives input and acts as camera
+extern DynamicEntity *player1;
+// all the other clients (in multiplayer)
+extern OFMutableArray *players;
 extern bool editmode;
 extern vector<entity> ents; // map entities
 extern OFVector3D worldpos; // current target of the crosshair in the world
@@ -316,30 +284,32 @@ extern bool demoplayback;
 
 // simplistic vector ops
 #define dotprod(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
-#define vmul(u, f)            \
-	{                     \
-		(u).x *= (f); \
-		(u).y *= (f); \
-		(u).z *= (f); \
+#define vmul(u, f)                                                   \
+	{                                                            \
+		OFVector3D tmp_ = u;                                 \
+		float tmp2_ = f;                                     \
+		u = OFMakeVector3D(                                  \
+		    tmp_.x * tmp2_, tmp_.y * tmp2_, tmp_.z * tmp2_); \
 	}
-#define vdiv(u, f)            \
-	{                     \
-		(u).x /= (f); \
-		(u).y /= (f); \
-		(u).z /= (f); \
+#define vdiv(u, f)                                                   \
+	{                                                            \
+		OFVector3D tmp_ = u;                                 \
+		float tmp2_ = f;                                     \
+		u = OFMakeVector3D(                                  \
+		    tmp_.x / tmp2_, tmp_.y / tmp2_, tmp_.z / tmp2_); \
 	}
-#define vadd(u, v)              \
-	{                       \
-		(u).x += (v).x; \
-		(u).y += (v).y; \
-		(u).z += (v).z; \
-	};
-#define vsub(u, v)              \
-	{                       \
-		(u).x -= (v).x; \
-		(u).y -= (v).y; \
-		(u).z -= (v).z; \
-	};
+#define vadd(u, v)                                                   \
+	{                                                            \
+		OFVector3D tmp_ = u;                                 \
+		u = OFMakeVector3D(                                  \
+		    tmp_.x + (v).x, tmp_.y + (v).y, tmp_.z + (v).z); \
+	}
+#define vsub(u, v)                                                   \
+	{                                                            \
+		OFVector3D tmp_ = u;                                 \
+		u = OFMakeVector3D(                                  \
+		    tmp_.x - (v).x, tmp_.y - (v).y, tmp_.z - (v).z); \
+	}
 #define vdist(d, v, e, s) \
 	OFVector3D v = s; \
 	vsub(v, e);       \
@@ -370,7 +340,7 @@ extern bool demoplayback;
 #define m_sp (gamemode < 0)
 #define m_dmsp (gamemode == -1)
 #define m_classicsp (gamemode == -2)
-#define isteam(a, b) (m_teammode && strcmp(a, b) == 0)
+#define isteam(a, b) (m_teammode && [a isEqual:b])
 
 enum // function signatures for script functions, see command.cpp
 {

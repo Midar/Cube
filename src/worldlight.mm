@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 extern bool hasoverbright;
 
 VAR(lightscale, 1, 4, 100);
@@ -201,11 +203,11 @@ cleardlights()
 
 void
 dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
-    dynent *owner)
+    DynamicEntity *owner)
 {
 	if (!reach)
 		reach = dynlight;
-	if (owner->monsterstate)
+	if (owner.monsterstate)
 		reach = reach / 2;
 	if (!reach)
 		return;

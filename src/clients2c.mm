@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 extern int clientnum;
 extern bool c2sinit, senditemstoserver;
 extern OFString *toservermap;
@@ -32,31 +34,35 @@ changemap(OFString *name) // request map change, server may ignore
 // just don't overlap with our client
 
 void
-updatepos(dynent *d)
+updatepos(DynamicEntity *d)
 {
-	const float r = player1->radius + d->radius;
-	const float dx = player1->o.x - d->o.x;
-	const float dy = player1->o.y - d->o.y;
-	const float dz = player1->o.z - d->o.z;
-	const float rz = player1->aboveeye + d->eyeheight;
+	const float r = player1.radius + d.radius;
+	const float dx = player1.o.x - d.o.x;
+	const float dy = player1.o.y - d.o.y;
+	const float dz = player1.o.z - d.o.z;
+	const float rz = player1.aboveeye + d.eyeheight;
 	const float fx = (float)fabs(dx), fy = (float)fabs(dy),
 	            fz = (float)fabs(dz);
-	if (fx < r && fy < r && fz < rz && d->state != CS_DEAD) {
+	if (fx < r && fy < r && fz < rz && d.state != CS_DEAD) {
 		if (fx < fy)
-			d->o.y += dy < 0 ? r - fy : -(r - fy); // push aside
+			// push aside
+			d.o = OFMakeVector3D(d.o.x,
+			    d.o.y + (dy < 0 ? r - fy : -(r - fy)), d.o.z);
 		else
-			d->o.x += dx < 0 ? r - fx : -(r - fx);
+			d.o = OFMakeVector3D(
+			    d.o.x + (dx < 0 ? r - fx : -(r - fx)), d.o.y,
+			    d.o.z);
 	}
-	int lagtime = lastmillis - d->lastupdate;
+	int lagtime = lastmillis - d.lastupdate;
 	if (lagtime) {
-		d->plag = (d->plag * 5 + lagtime) / 6;
-		d->lastupdate = lastmillis;
+		d.plag = (d.plag * 5 + lagtime) / 6;
+		d.lastupdate = lastmillis;
 	}
 }
 
+// processes any updates from the server
 void
-localservertoclient(
-    uchar *buf, int len) // processes any updates from the server
+localservertoclient(uchar *buf, int len)
 {
 	if (ENET_NET_TO_HOST_16(*(ushort *)buf) != len)
 		neterr(@"packet length");
@@ -66,7 +72,7 @@ localservertoclient(
 	uchar *p = buf + 2;
 	char text[MAXTRANS];
 	int cn = -1, type;
-	dynent *d = NULL;
+	DynamicEntity *d = nil;
 	bool mapchanged = false;
 
 	while (p < end)
@@ -104,42 +110,42 @@ localservertoclient(
 			break;
 		}
 
-		case SV_POS: // position of another client
-		{
+		case SV_POS: {
+			// position of another client
 			cn = getint(p);
 			d = getclient(cn);
-			if (!d)
+			if (d == nil)
 				return;
-			d->o.x = getint(p) / DMF;
-			d->o.y = getint(p) / DMF;
-			d->o.z = getint(p) / DMF;
-			d->yaw = getint(p) / DAF;
-			d->pitch = getint(p) / DAF;
-			d->roll = getint(p) / DAF;
-			d->vel.x = getint(p) / DVF;
-			d->vel.y = getint(p) / DVF;
-			d->vel.z = getint(p) / DVF;
+			d.o = OFMakeVector3D(
+			    getint(p) / DMF, getint(p) / DMF, getint(p) / DMF);
+			d.yaw = getint(p) / DAF;
+			d.pitch = getint(p) / DAF;
+			d.roll = getint(p) / DAF;
+			d.vel = OFMakeVector3D(
+			    getint(p) / DVF, getint(p) / DVF, getint(p) / DVF);
 			int f = getint(p);
-			d->strafe = (f & 3) == 3 ? -1 : f & 3;
+			d.strafe = (f & 3) == 3 ? -1 : f & 3;
 			f >>= 2;
-			d->move = (f & 3) == 3 ? -1 : f & 3;
-			d->onfloor = (f >> 2) & 1;
+			d.move = (f & 3) == 3 ? -1 : f & 3;
+			d.onfloor = (f >> 2) & 1;
 			int state = f >> 3;
-			if (state == CS_DEAD && d->state != CS_DEAD)
-				d->lastaction = lastmillis;
-			d->state = state;
+			if (state == CS_DEAD && d.state != CS_DEAD)
+				d.lastaction = lastmillis;
+			d.state = state;
 			if (!demoplayback)
 				updatepos(d);
 			break;
 		}
 
-		case SV_SOUND:
-			playsound(getint(p), &d->o);
+		case SV_SOUND: {
+			OFVector3D loc = d.o;
+			playsound(getint(p), &loc);
 			break;
+		}
 
 		case SV_TEXT:
 			sgetstr();
-			conoutf(@"%s:\f %s", d->name, text);
+			conoutf(@"%@:\f %s", d.name, text);
 			break;
 
 		case SV_MAPCHANGE:
@@ -173,35 +179,35 @@ localservertoclient(
 			break;
 		}
 
-		case SV_INITC2S: // another client either connected or changed
-		                 // name/team
-		{
+		// another client either connected or changed name/team
+		case SV_INITC2S: {
 			sgetstr();
-			if (d->name[0]) {
+			if (d.name.length > 0) {
 				// already connected
-				if (strcmp(d->name, text))
-					conoutf(@"%s is now known as %s",
-					    d->name, text);
+				if (![d.name isEqual:@(text)])
+					conoutf(@"%@ is now known as %s",
+					    d.name, text);
 			} else {
 				// new client
-				c2sinit =
-				    false; // send new players my info again
+
+				// send new players my info again
+				c2sinit = false;
 				conoutf(@"connected: %s", text);
 			}
-			strcpy_s(d->name, text);
+			d.name = @(text);
 			sgetstr();
-			strcpy_s(d->team, text);
-			d->lifesequence = getint(p);
+			d.team = @(text);
+			d.lifesequence = getint(p);
 			break;
 		}
 
 		case SV_CDIS:
 			cn = getint(p);
-			if (!(d = getclient(cn)))
+			if ((d = getclient(cn)) == nil)
 				break;
-			conoutf(@"player %s disconnected",
-			    d->name[0] ? d->name : "[incompatible client]");
-			zapdynent(players[cn]);
+			conoutf(@"player %@ disconnected",
+			    d.name.length ? d.name : @"[incompatible client]");
+			players[cn] = [OFNull null];
 			break;
 
 		case SV_SHOT: {
@@ -224,49 +230,51 @@ localservertoclient(
 			int damage = getint(p);
 			int ls = getint(p);
 			if (target == clientnum) {
-				if (ls == player1->lifesequence)
+				if (ls == player1.lifesequence)
 					selfdamage(damage, cn, d);
-			} else
-				playsound(
-				    S_PAIN1 + rnd(5), &getclient(target)->o);
+			} else {
+				OFVector3D loc = getclient(target).o;
+				playsound(S_PAIN1 + rnd(5), &loc);
+			}
 			break;
 		}
 
 		case SV_DIED: {
 			int actor = getint(p);
 			if (actor == cn) {
-				conoutf(@"%s suicided", d->name);
+				conoutf(@"%@ suicided", d.name);
 			} else if (actor == clientnum) {
 				int frags;
-				if (isteam(player1->team, d->team)) {
+				if (isteam(player1.team, d.team)) {
 					frags = -1;
-					conoutf(@"you fragged a teammate (%s)",
-					    d->name);
+					conoutf(@"you fragged a teammate (%@)",
+					    d.name);
 				} else {
 					frags = 1;
-					conoutf(@"you fragged %s", d->name);
+					conoutf(@"you fragged %@", d.name);
 				}
-				addmsg(1, 2, SV_FRAGS, player1->frags += frags);
+				addmsg(
+				    1, 2, SV_FRAGS, (player1.frags += frags));
 			} else {
-				dynent *a = getclient(actor);
-				if (a) {
-					if (isteam(a->team, d->name)) {
-						conoutf(@"%s fragged his "
-						        @"teammate (%s)",
-						    a->name, d->name);
-					} else {
-						conoutf(@"%s fragged %s",
-						    a->name, d->name);
-					}
+				DynamicEntity *a = getclient(actor);
+				if (a != nil) {
+					if (isteam(a.team, d.name))
+						conoutf(@"%@ fragged his "
+						        @"teammate (%@)",
+						    a.name, d.name);
+					else
+						conoutf(@"%@ fragged %@",
+						    a.name, d.name);
 				}
 			}
-			playsound(S_DIE1 + rnd(2), &d->o);
-			d->lifesequence++;
+			OFVector3D loc = d.o;
+			playsound(S_DIE1 + rnd(2), &loc);
+			d.lifesequence++;
 			break;
 		}
 
 		case SV_FRAGS:
-			players[cn]->frags = getint(p);
+			[players[cn] setFrags:getint(p)];
 			break;
 
 		case SV_ITEMPICKUP:
@@ -348,13 +356,13 @@ localservertoclient(
 
 		case SV_PONG:
 			addmsg(0, 2, SV_CLIENTPING,
-			    player1->ping =
-			        (player1->ping * 5 + lastmillis - getint(p)) /
+			    player1.ping =
+			        (player1.ping * 5 + lastmillis - getint(p)) /
 			        6);
 			break;
 
 		case SV_CLIENTPING:
-			players[cn]->ping = getint(p);
+			[players[cn] setPing:getint(p)];
 			break;
 
 		case SV_GAMEMODE:

@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 OF_APPLICATION_DELEGATE(Cube)
 
 VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
@@ -87,6 +89,8 @@ VARP(minmillis, 0, 5, 1000);
 
 	if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 		fatal(@"Unable to initialize SDL");
+
+	initPlayers();
 
 	log(@"net");
 	if (enet_initialize() < 0)
@@ -212,7 +216,7 @@ VARP(minmillis, 0, 5, 1000);
 		static float fps = 30.0f;
 		fps = (1000.0f / curtime + fps * 50) / 51;
 
-		computeraytable(player1->o.x, player1->o.y);
+		computeraytable(player1.o.x, player1.o.y);
 		readdepth(_width, _height);
 		SDL_GL_SwapWindow(_window);
 		extern void updatevol();
@@ -221,9 +225,9 @@ VARP(minmillis, 0, 5, 1000);
 		// cheap hack to get rid of initial sparklies, even when triple
 		// buffering etc.
 		if (_framesInMap++ < 5) {
-			player1->yaw += 5;
+			player1.yaw += 5;
 			gl_drawframe(_width, _height, fps);
-			player1->yaw -= 5;
+			player1.yaw -= 5;
 		}
 
 		gl_drawframe(_width, _height, fps);

@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
 #import "MapModelInfo.h"
 
 vector<entity> ents;
@@ -122,14 +123,14 @@ struct itemstat {
 void
 baseammo(int gun)
 {
-	player1->ammo[gun] = itemstats[gun - 1].add * 2;
+	player1.ammo[gun] = itemstats[gun - 1].add * 2;
 }
 
 // these two functions are called when the server acknowledges that you really
 // picked up the item (in multiplayer someone may grab it before you).
 
-void
-radditem(int i, int &v)
+static int
+radditem(int i, int v)
 {
 	itemstat &is = itemstats[ents[i].type - I_SHELLS];
 	ents[i].spawned = false;
@@ -137,43 +138,44 @@ radditem(int i, int &v)
 	if (v > is.max)
 		v = is.max;
 	playsoundc(is.sound);
+	return v;
 }
 
 void
-realpickup(int n, dynent *d)
+realpickup(int n, DynamicEntity *d)
 {
 	switch (ents[n].type) {
 	case I_SHELLS:
-		radditem(n, d->ammo[1]);
+		d.ammo[1] = radditem(n, d.ammo[1]);
 		break;
 	case I_BULLETS:
-		radditem(n, d->ammo[2]);
+		d.ammo[2] = radditem(n, d.ammo[2]);
 		break;
 	case I_ROCKETS:
-		radditem(n, d->ammo[3]);
+		d.ammo[3] = radditem(n, d.ammo[3]);
 		break;
 	case I_ROUNDS:
-		radditem(n, d->ammo[4]);
+		d.ammo[4] = radditem(n, d.ammo[4]);
 		break;
 	case I_HEALTH:
-		radditem(n, d->health);
+		d.health = radditem(n, d.health);
 		break;
 	case I_BOOST:
-		radditem(n, d->health);
+		d.health = radditem(n, d.health);
 		break;
 
 	case I_GREENARMOUR:
-		radditem(n, d->armour);
-		d->armourtype = A_GREEN;
+		d.armour = radditem(n, d.armour);
+		d.armourtype = A_GREEN;
 		break;
 
 	case I_YELLOWARMOUR:
-		radditem(n, d->armour);
-		d->armourtype = A_YELLOW;
+		d.armour = radditem(n, d.armour);
+		d.armourtype = A_YELLOW;
 		break;
 
 	case I_QUAD:
-		radditem(n, d->quadmillis);
+		d.quadmillis = radditem(n, d.quadmillis);
 		conoutf(@"you got the quad!");
 		break;
 	}
@@ -182,20 +184,20 @@ realpickup(int n, dynent *d)
 // these functions are called when the client touches the item
 
 void
-additem(int i, int &v, int spawnsec)
+additem(int i, int v, int spawnsec)
 {
-	if (v < itemstats[ents[i].type - I_SHELLS]
-	            .max) // don't pick up if not needed
-	{
-		addmsg(1, 3, SV_ITEMPICKUP, i,
-		    m_classicsp ? 100000
-		                : spawnsec); // first ask the server for an ack
-		ents[i].spawned = false; // even if someone else gets it first
+	// don't pick up if not needed
+	if (v < itemstats[ents[i].type - I_SHELLS].max) {
+		// first ask the server for an ack even if someone else gets it
+		// first
+		addmsg(1, 3, SV_ITEMPICKUP, i, m_classicsp ? 100000 : spawnsec);
+		ents[i].spawned = false;
 	}
 }
 
+// also used by monsters
 void
-teleport(int n, dynent *d) // also used by monsters
+teleport(int n, DynamicEntity *d)
 {
 	int e = -1, tag = ents[n].attr1, beenhere = -1;
 	for (;;) {
@@ -207,12 +209,10 @@ teleport(int n, dynent *d) // also used by monsters
 		if (beenhere < 0)
 			beenhere = e;
 		if (ents[e].attr2 == tag) {
-			d->o.x = ents[e].x;
-			d->o.y = ents[e].y;
-			d->o.z = ents[e].z;
-			d->yaw = ents[e].attr1;
-			d->pitch = 0;
-			d->vel.x = d->vel.y = d->vel.z = 0;
+			d.o = OFMakeVector3D(ents[e].x, ents[e].y, ents[e].z);
+			d.yaw = ents[e].attr1;
+			d.pitch = 0;
+			d.vel = OFMakeVector3D(0, 0, 0);
 			entinmap(d);
 			playsoundc(S_TELEPORT);
 			break;
@@ -221,46 +221,48 @@ teleport(int n, dynent *d) // also used by monsters
 }
 
 void
-pickup(int n, dynent *d)
+pickup(int n, DynamicEntity *d)
 {
 	int np = 1;
-	loopv(players) if (players[i]) np++;
-	np = np < 3 ? 4 : (np > 4 ? 2 : 3); // spawn times are dependent on
-	                                    // number of players
+	for (id player in players)
+		if (player != [OFNull null])
+			np++;
+	// spawn times are dependent on number of players
+	np = np < 3 ? 4 : (np > 4 ? 2 : 3);
 	int ammo = np * 2;
 	switch (ents[n].type) {
 	case I_SHELLS:
-		additem(n, d->ammo[1], ammo);
+		additem(n, d.ammo[1], ammo);
 		break;
 	case I_BULLETS:
-		additem(n, d->ammo[2], ammo);
+		additem(n, d.ammo[2], ammo);
 		break;
 	case I_ROCKETS:
-		additem(n, d->ammo[3], ammo);
+		additem(n, d.ammo[3], ammo);
 		break;
 	case I_ROUNDS:
-		additem(n, d->ammo[4], ammo);
+		additem(n, d.ammo[4], ammo);
 		break;
 	case I_HEALTH:
-		additem(n, d->health, np * 5);
+		additem(n, d.health, np * 5);
 		break;
 	case I_BOOST:
-		additem(n, d->health, 60);
+		additem(n, d.health, 60);
 		break;
 
 	case I_GREENARMOUR:
 		// (100h/100g only absorbs 166 damage)
-		if (d->armourtype == A_YELLOW && d->armour > 66)
+		if (d.armourtype == A_YELLOW && d.armour > 66)
 			break;
-		additem(n, d->armour, 20);
+		additem(n, d.armour, 20);
 		break;
 
 	case I_YELLOWARMOUR:
-		additem(n, d->armour, 20);
+		additem(n, d.armour, 20);
 		break;
 
 	case I_QUAD:
-		additem(n, d->quadmillis, 60);
+		additem(n, d.quadmillis, 60);
 		break;
 
 	case CARROT:
@@ -286,8 +288,8 @@ pickup(int n, dynent *d)
 		lastjumppad = lastmillis;
 		OFVector3D v = OFMakeVector3D((int)(char)ents[n].attr3 / 10.0f,
 		    (int)(char)ents[n].attr2 / 10.0f, ents[n].attr1 / 10.0f);
-		player1->vel.z = 0;
-		vadd(player1->vel, v);
+		player1.vel = OFMakeVector3D(player1.vel.x, player1.vel.y, 0);
+		vadd(player1.vel, v);
 		playsoundc(S_JUMPPAD);
 		break;
 	}
@@ -309,8 +311,8 @@ checkitems()
 		if (OUTBORD(e.x, e.y))
 			continue;
 		OFVector3D v = OFMakeVector3D(
-		    e.x, e.y, (float)S(e.x, e.y)->floor + player1->eyeheight);
-		vdist(dist, t, player1->o, v);
+		    e.x, e.y, (float)S(e.x, e.y)->floor + player1.eyeheight);
+		vdist(dist, t, player1.o, v);
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);
 	}
@@ -319,8 +321,8 @@ checkitems()
 void
 checkquad(int time)
 {
-	if (player1->quadmillis && (player1->quadmillis -= time) < 0) {
-		player1->quadmillis = 0;
+	if (player1.quadmillis && (player1.quadmillis -= time) < 0) {
+		player1.quadmillis = 0;
 		playsoundc(S_PUPOUT);
 		conoutf(@"quad damage is over");
 	}

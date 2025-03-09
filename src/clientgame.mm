@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
@@ -14,8 +16,15 @@ COMMAND(mode, ARG_1INT)
 
 bool intermission = false;
 
-dynent *player1 = newdynent(); // our client
-dvector players;               // other clients
+DynamicEntity *player1;  // our client
+OFMutableArray *players; // other clients
+
+void
+initPlayers()
+{
+	player1 = newdynent();
+	players = [[OFMutableArray alloc] init];
+}
 
 VARP(sensitivity, 0, 10, 10000);
 VARP(sensitivityscale, 1, 1, 10000);
@@ -32,49 +41,51 @@ getclientmap()
 }
 
 void
-resetmovement(dynent *d)
+resetmovement(DynamicEntity *d)
 {
-	d->k_left = false;
-	d->k_right = false;
-	d->k_up = false;
-	d->k_down = false;
-	d->jumpnext = false;
-	d->strafe = 0;
-	d->move = 0;
+	d.k_left = false;
+	d.k_right = false;
+	d.k_up = false;
+	d.k_down = false;
+	d.jumpnext = false;
+	d.strafe = 0;
+	d.move = 0;
 }
 
+// reset player state not persistent accross spawns
 void
-spawnstate(dynent *d) // reset player state not persistent accross spawns
+spawnstate(DynamicEntity *d)
 {
 	resetmovement(d);
-	d->vel.x = d->vel.y = d->vel.z = 0;
-	d->onfloor = false;
-	d->timeinair = 0;
-	d->health = 100;
-	d->armour = 50;
-	d->armourtype = A_BLUE;
-	d->quadmillis = 0;
-	d->lastattackgun = d->gunselect = GUN_SG;
-	d->gunwait = 0;
-	d->attacking = false;
-	d->lastaction = 0;
-	loopi(NUMGUNS) d->ammo[i] = 0;
-	d->ammo[GUN_FIST] = 1;
+	d.vel = OFMakeVector3D(0, 0, 0);
+	d.onfloor = false;
+	d.timeinair = 0;
+	d.health = 100;
+	d.armour = 50;
+	d.armourtype = A_BLUE;
+	d.quadmillis = 0;
+	d.lastattackgun = d.gunselect = GUN_SG;
+	d.gunwait = 0;
+	d.attacking = false;
+	d.lastaction = 0;
+	loopi(NUMGUNS) d.ammo[i] = 0;
+	d.ammo[GUN_FIST] = 1;
 	if (m_noitems) {
-		d->gunselect = GUN_RIFLE;
-		d->armour = 0;
+		d.gunselect = GUN_RIFLE;
+		d.armour = 0;
 		if (m_noitemsrail) {
-			d->health = 1;
-			d->ammo[GUN_RIFLE] = 100;
+			d.health = 1;
+			d.ammo[GUN_RIFLE] = 100;
 		} else {
 			if (gamemode == 12) {
-				d->gunselect = GUN_FIST;
+				// eihrul's secret "instafist" mode
+				d.gunselect = GUN_FIST;
 				return;
-			} // eihrul's secret "instafist" mode
-			d->health = 256;
+			}
+			d.health = 256;
 			if (m_tarena) {
 				int gun1 = rnd(4) + 1;
-				baseammo(d->gunselect = gun1);
+				baseammo(d.gunselect = gun1);
 				for (;;) {
 					int gun2 = rnd(4) + 1;
 					if (gun1 != gun2) {
@@ -82,47 +93,44 @@ spawnstate(dynent *d) // reset player state not persistent accross spawns
 						break;
 					}
 				}
-			} else if (m_arena) // insta arena
-			{
-				d->ammo[GUN_RIFLE] = 100;
-			} else // efficiency
-			{
+			} else if (m_arena) {
+				// insta arena
+				d.ammo[GUN_RIFLE] = 100;
+			} else {
+				// efficiency
 				loopi(4) baseammo(i + 1);
-				d->gunselect = GUN_CG;
+				d.gunselect = GUN_CG;
 			}
-			d->ammo[GUN_CG] /= 2;
+			d.ammo[GUN_CG] /= 2;
 		}
-	} else {
-		d->ammo[GUN_SG] = 5;
-	}
+	} else
+		d.ammo[GUN_SG] = 5;
 }
 
-dynent *
+DynamicEntity *
 newdynent() // create a new blank player or monster
 {
-	dynent *d = (dynent *)OFAllocMemory(1, sizeof(dynent));
-	d->o.x = 0;
-	d->o.y = 0;
-	d->o.z = 0;
-	d->yaw = 270;
-	d->pitch = 0;
-	d->roll = 0;
-	d->maxspeed = 22;
-	d->outsidemap = false;
-	d->inwater = false;
-	d->radius = 1.1f;
-	d->eyeheight = 3.2f;
-	d->aboveeye = 0.7f;
-	d->frags = 0;
-	d->plag = 0;
-	d->ping = 0;
-	d->lastupdate = lastmillis;
-	d->enemy = NULL;
-	d->monsterstate = 0;
-	d->name[0] = d->team[0] = 0;
-	d->blocked = false;
-	d->lifesequence = 0;
-	d->state = CS_ALIVE;
+	DynamicEntity *d = [[DynamicEntity alloc] init];
+	d.o = OFMakeVector3D(0, 0, 0);
+	d.yaw = 270;
+	d.pitch = 0;
+	d.roll = 0;
+	d.maxspeed = 22;
+	d.outsidemap = false;
+	d.inwater = false;
+	d.radius = 1.1f;
+	d.eyeheight = 3.2f;
+	d.aboveeye = 0.7f;
+	d.frags = 0;
+	d.plag = 0;
+	d.ping = 0;
+	d.lastupdate = lastmillis;
+	d.enemy = NULL;
+	d.monsterstate = 0;
+	d.name = d.team = @"";
+	d.blocked = false;
+	d.lifesequence = 0;
+	d.state = CS_ALIVE;
 	spawnstate(d);
 	return d;
 }
@@ -135,16 +143,16 @@ respawnself()
 }
 
 void
-arenacount(dynent *d, int &alive, int &dead, char *&lastteam, bool &oneteam)
+arenacount(
+    DynamicEntity *d, int &alive, int &dead, OFString **lastteam, bool &oneteam)
 {
-	if (d->state != CS_DEAD) {
+	if (d.state != CS_DEAD) {
 		alive++;
-		if (lastteam && strcmp(lastteam, d->team))
+		if (![*lastteam isEqual:d.team])
 			oneteam = false;
-		lastteam = d->team;
-	} else {
+		*lastteam = d.team;
+	} else
 		dead++;
-	}
 }
 
 int arenarespawnwait = 0;
@@ -162,11 +170,13 @@ arenarespawn()
 	} else if (arenadetectwait == 0 || arenadetectwait < lastmillis) {
 		arenadetectwait = 0;
 		int alive = 0, dead = 0;
-		char *lastteam = NULL;
+		OFString *lastteam = nil;
 		bool oneteam = true;
-		loopv(players) if (players[i])
-		    arenacount(players[i], alive, dead, lastteam, oneteam);
-		arenacount(player1, alive, dead, lastteam, oneteam);
+		for (id player in players)
+			if (player != [OFNull null])
+				arenacount(
+				    player, alive, dead, &lastteam, oneteam);
+		arenacount(player1, alive, dead, &lastteam, oneteam);
 		if (dead > 0 && (alive <= 1 || (m_teammode && oneteam))) {
 			conoutf(
 			    @"arena round is over! next round in 5 seconds...");
@@ -177,16 +187,9 @@ arenarespawn()
 				conoutf(@"everyone died!");
 			arenarespawnwait = lastmillis + 5000;
 			arenadetectwait = lastmillis + 10000;
-			player1->roll = 0;
+			player1.roll = 0;
 		}
 	}
-}
-
-void
-zapdynent(dynent *&d)
-{
-	OFFreeMemory(d);
-	d = NULL;
 }
 
 extern int democlientnum;
@@ -194,26 +197,29 @@ extern int democlientnum;
 void
 otherplayers()
 {
-	loopv(players) if (players[i])
-	{
-		const int lagtime = lastmillis - players[i]->lastupdate;
-		if (lagtime > 1000 && players[i]->state == CS_ALIVE) {
-			players[i]->state = CS_LAGGED;
-			continue;
+	size_t i = 0;
+	for (id player in players) {
+		if (player != [OFNull null]) {
+			const int lagtime = lastmillis - [player lastupdate];
+			if (lagtime > 1000 && [player state] == CS_ALIVE) {
+				[player setState:CS_LAGGED];
+				i++;
+				continue;
+			}
+			if (lagtime && [player state] != CS_DEAD &&
+			    (!demoplayback || i != democlientnum))
+				// use physics to extrapolate player position
+				moveplayer(player, 2, false);
 		}
-		if (lagtime && players[i]->state != CS_DEAD &&
-		    (!demoplayback || i != democlientnum))
-			moveplayer(
-			    players[i], 2, false); // use physics to extrapolate
-			                           // player position
+		i++;
 	}
 }
 
 void
 respawn()
 {
-	if (player1->state == CS_DEAD) {
-		player1->attacking = false;
+	if (player1.state == CS_DEAD) {
+		player1.attacking = false;
 		if (m_arena) {
 			conoutf(@"waiting for new round to start...");
 			return;
@@ -262,19 +268,19 @@ updateworld(int millis) // main game update loop
 		otherplayers();
 		if (!demoplayback) {
 			monsterthink();
-			if (player1->state == CS_DEAD) {
-				if (lastmillis - player1->lastaction < 2000) {
-					player1->move = player1->strafe = 0;
+			if (player1.state == CS_DEAD) {
+				if (lastmillis - player1.lastaction < 2000) {
+					player1.move = player1.strafe = 0;
 					moveplayer(player1, 10, false);
 				} else if (!m_arena && !m_sp &&
-				    lastmillis - player1->lastaction > 10000)
+				    lastmillis - player1.lastaction > 10000)
 					respawn();
 			} else if (!intermission) {
 				moveplayer(player1, 20, true);
 				checkitems();
 			}
-			c2sinfo(player1); // do this last, to reduce the
-			                  // effective frame lag
+			// do this last, to reduce the effective frame lag
+			c2sinfo(player1);
 		}
 	}
 	lastmillis = millis;
@@ -282,56 +288,53 @@ updateworld(int millis) // main game update loop
 
 // brute force but effective way to find a free spawn spot in the map
 void
-entinmap(dynent *d)
+entinmap(DynamicEntity *d)
 {
 	loopi(100) // try max 100 times
 	{
 		float dx = (rnd(21) - 10) / 10.0f * i; // increasing distance
 		float dy = (rnd(21) - 10) / 10.0f * i;
-		d->o.x += dx;
-		d->o.y += dy;
+		OFVector3D old = d.o;
+		d.o = OFMakeVector3D(d.o.x + dx, d.o.y + dy, d.o.z);
 		if (collide(d, true, 0, 0))
 			return;
-		d->o.x -= dx;
-		d->o.y -= dy;
+		d.o = old;
 	}
-	conoutf(@"can't find entity spawn spot! (%d, %d)", (int)d->o.x,
-	    (int)d->o.y);
+	conoutf(
+	    @"can't find entity spawn spot! (%d, %d)", (int)d.o.x, (int)d.o.y);
 	// leave ent at original pos, possibly stuck
 }
 
 int spawncycle = -1;
 int fixspawn = 2;
 
+// place at random spawn. also used by monsters!
 void
-spawnplayer(dynent *d) // place at random spawn. also used by monsters!
+spawnplayer(DynamicEntity *d)
 {
 	int r = fixspawn-- > 0 ? 4 : rnd(10) + 1;
 	loopi(r) spawncycle = findentity(PLAYERSTART, spawncycle + 1);
 	if (spawncycle != -1) {
-		d->o.x = ents[spawncycle].x;
-		d->o.y = ents[spawncycle].y;
-		d->o.z = ents[spawncycle].z;
-		d->yaw = ents[spawncycle].attr1;
-		d->pitch = 0;
-		d->roll = 0;
-	} else {
-		d->o.x = d->o.y = (float)ssize / 2;
-		d->o.z = 4;
-	}
+		d.o = OFMakeVector3D(
+		    ents[spawncycle].x, ents[spawncycle].y, ents[spawncycle].z);
+		d.yaw = ents[spawncycle].attr1;
+		d.pitch = 0;
+		d.roll = 0;
+	} else
+		d.o = OFMakeVector3D((float)ssize / 2, (float)ssize / 2, 4);
 	entinmap(d);
 	spawnstate(d);
-	d->state = CS_ALIVE;
+	d.state = CS_ALIVE;
 }
 
 // movement input code
 
-#define dir(name, v, d, s, os)                                      \
-	void name(bool isdown)                                      \
-	{                                                           \
-		player1->s = isdown;                                \
-		player1->v = isdown ? d : (player1->os ? -(d) : 0); \
-		player1->lastmove = lastmillis;                     \
+#define dir(name, v, d, s, os)                                    \
+	void name(bool isdown)                                    \
+	{                                                         \
+		player1.s = isdown;                               \
+		player1.v = isdown ? d : (player1.os ? -(d) : 0); \
+		player1.lastmove = lastmillis;                    \
 	}
 
 dir(backward, move, -1, k_down, k_up);
@@ -346,14 +349,14 @@ attack(bool on)
 		return;
 	if (editmode)
 		editdrag(on);
-	else if (player1->attacking = on)
+	else if ((player1.attacking = on))
 		respawn();
 }
 
 void
 jumpn(bool on)
 {
-	if (!intermission && (player1->jumpnext = on))
+	if (!intermission && (player1.jumpnext = on))
 		respawn();
 }
 
@@ -369,24 +372,24 @@ void
 fixplayer1range()
 {
 	const float MAXPITCH = 90.0f;
-	if (player1->pitch > MAXPITCH)
-		player1->pitch = MAXPITCH;
-	if (player1->pitch < -MAXPITCH)
-		player1->pitch = -MAXPITCH;
-	while (player1->yaw < 0.0f)
-		player1->yaw += 360.0f;
-	while (player1->yaw >= 360.0f)
-		player1->yaw -= 360.0f;
+	if (player1.pitch > MAXPITCH)
+		player1.pitch = MAXPITCH;
+	if (player1.pitch < -MAXPITCH)
+		player1.pitch = -MAXPITCH;
+	while (player1.yaw < 0.0f)
+		player1.yaw += 360.0f;
+	while (player1.yaw >= 360.0f)
+		player1.yaw -= 360.0f;
 }
 
 void
 mousemove(int dx, int dy)
 {
-	if (player1->state == CS_DEAD || intermission)
+	if (player1.state == CS_DEAD || intermission)
 		return;
 	const float SENSF = 33.0f; // try match quake sens
-	player1->yaw += (dx / SENSF) * (sensitivity / (float)sensitivityscale);
-	player1->pitch -= (dy / SENSF) *
+	player1.yaw += (dx / SENSF) * (sensitivity / (float)sensitivityscale);
+	player1.pitch -= (dy / SENSF) *
 	    (sensitivity / (float)sensitivityscale) * (invmouse ? -1 : 1);
 	fixplayer1range();
 }
@@ -394,59 +397,57 @@ mousemove(int dx, int dy)
 // damage arriving from the network, monsters, yourself, all ends up here.
 
 void
-selfdamage(int damage, int actor, dynent *act)
+selfdamage(int damage, int actor, DynamicEntity *act)
 {
-	if (player1->state != CS_ALIVE || editmode || intermission)
+	if (player1.state != CS_ALIVE || editmode || intermission)
 		return;
 	damageblend(damage);
 	demoblend(damage);
-	int ad = damage * (player1->armourtype + 1) * 20 /
-	    100; // let armour absorb when possible
-	if (ad > player1->armour)
-		ad = player1->armour;
-	player1->armour -= ad;
+	// let armour absorb when possible
+	int ad = damage * (player1.armourtype + 1) * 20 / 100;
+	if (ad > player1.armour)
+		ad = player1.armour;
+	player1.armour -= ad;
 	damage -= ad;
 	float droll = damage / 0.5f;
-	player1->roll += player1->roll > 0
+	player1.roll += player1.roll > 0
 	    ? droll
-	    : (player1->roll < 0
+	    : (player1.roll < 0
 	              ? -droll
 	              : (rnd(2) ? droll
 	                        : -droll)); // give player a kick depending
 	                                    // on amount of damage
-	if ((player1->health -= damage) <= 0) {
+	if ((player1.health -= damage) <= 0) {
 		if (actor == -2) {
-			conoutf(@"you got killed by %s!", act->name);
+			conoutf(@"you got killed by %@!", act.name);
 		} else if (actor == -1) {
 			actor = getclientnum();
 			conoutf(@"you suicided!");
-			addmsg(1, 2, SV_FRAGS, --player1->frags);
+			addmsg(1, 2, SV_FRAGS, --player1.frags);
 		} else {
-			dynent *a = getclient(actor);
-			if (a) {
-				if (isteam(a->team, player1->team)) {
+			DynamicEntity *a = getclient(actor);
+			if (a != nil) {
+				if (isteam(a.team, player1.team))
 					conoutf(@"you got fragged by a "
-					        @"teammate (%s)",
-					    a->name);
-				} else {
+					        @"teammate (%@)",
+					    a.name);
+				else
 					conoutf(
-					    @"you got fragged by %s", a->name);
-				}
+					    @"you got fragged by %@", a.name);
 			}
 		}
 		showscores(true);
 		addmsg(1, 2, SV_DIED, actor);
-		player1->lifesequence++;
-		player1->attacking = false;
-		player1->state = CS_DEAD;
-		player1->pitch = 0;
-		player1->roll = 60;
+		player1.lifesequence++;
+		player1.attacking = false;
+		player1.state = CS_DEAD;
+		player1.pitch = 0;
+		player1.roll = 60;
 		playsound(S_DIE1 + rnd(2));
 		spawnstate(player1);
-		player1->lastaction = lastmillis;
-	} else {
+		player1.lastaction = lastmillis;
+	} else
 		playsound(S_PAIN6);
-	}
 }
 
 void
@@ -454,7 +455,7 @@ timeupdate(int timeremain)
 {
 	if (!timeremain) {
 		intermission = true;
-		player1->attacking = false;
+		player1.attacking = false;
 		conoutf(@"intermission:");
 		conoutf(@"game has ended!");
 		showscores(true);
@@ -463,16 +464,31 @@ timeupdate(int timeremain)
 	}
 }
 
-dynent *
+DynamicEntity *
 getclient(int cn) // ensure valid entity
 {
 	if (cn < 0 || cn >= MAXCLIENTS) {
 		neterr(@"clientnum");
-		return NULL;
+		return nil;
 	}
-	while (cn >= players.length())
-		players.add(NULL);
-	return players[cn] ? players[cn] : (players[cn] = newdynent());
+	if (players == nil)
+		players = [[OFMutableArray alloc] init];
+	while (cn >= players.count)
+		[players addObject:[OFNull null]];
+	return (players[cn] != [OFNull null] ? players[cn]
+	                                     : (players[cn] = newdynent()));
+}
+
+void
+setclient(int cn, id client)
+{
+	if (cn < 0 || cn >= MAXCLIENTS)
+		neterr(@"clientnum");
+	if (players == nil)
+		players = [[OFMutableArray alloc] init];
+	while (cn >= players.count)
+		[players addObject:[OFNull null]];
+	players[cn] = client;
 }
 
 void
@@ -494,8 +510,10 @@ startmap(OFString *name) // called just after a map load
 	projreset();
 	spawncycle = -1;
 	spawnplayer(player1);
-	player1->frags = 0;
-	loopv(players) if (players[i]) players[i]->frags = 0;
+	player1.frags = 0;
+	for (id player in players)
+		if (player != [OFNull null])
+			[player setFrags:0];
 	resetspawns();
 	clientmap = name;
 	if (editmode)

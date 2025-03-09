@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 extern OFString *entnames[]; // lookup from map entities above to strings
 
 sqr *world = NULL;
@@ -9,9 +11,10 @@ int sfactor, ssize, cubicsize, mipsize;
 
 header hdr;
 
+// set all cubes with "tag" to space, if tag is 0 then reset ALL tagged cubes
+// according to type
 void
-settag(int tag, int type) // set all cubes with "tag" to space, if tag is 0 then
-                          // reset ALL tagged cubes according to type
+settag(int tag, int type)
 {
 	int maxx = 0, maxy = 0, minx = ssize, miny = ssize;
 	loop(x, ssize) loop(y, ssize)
@@ -263,7 +266,7 @@ closestent() // used for delent and edit mode ent display
 		if (e.type == NOTUSED)
 			continue;
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
-		vdist(dist, t, player1->o, v);
+		vdist(dist, t, player1.o, v);
 		if (dist < bdist) {
 			best = i;
 			bdist = dist;
@@ -345,7 +348,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	case TELEDEST:
 		e.attr2 = (uchar)e.attr1;
 	case PLAYERSTART:
-		e.attr1 = (int)player1->yaw;
+		e.attr1 = (int)player1.yaw;
 		break;
 	}
 	addmsg(1, 10, SV_EDITENT, ents.length(), type, e.x, e.y, e.z, e.attr1,

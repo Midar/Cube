@@ -78,7 +78,7 @@ extern bool multiplayer();
 extern bool allowedittoggle();
 extern void sendpackettoserv(void *packet);
 extern void gets2c();
-extern void c2sinfo(dynent *d);
+extern void c2sinfo(DynamicEntity *d);
 extern void neterr(OFString *s);
 extern void initclientnet();
 extern bool netmapstart();
@@ -87,26 +87,27 @@ extern void changemapserv(OFString *name, int mode);
 extern void writeclientinfo(OFStream *stream);
 
 // clientgame
+extern void initPlayers();
 extern void mousemove(int dx, int dy);
 extern void updateworld(int millis);
 extern void startmap(OFString *name);
 extern void changemap(OFString *name);
 extern void initclient();
-extern void spawnplayer(dynent *d);
-extern void selfdamage(int damage, int actor, dynent *act);
-extern dynent *newdynent();
+extern void spawnplayer(DynamicEntity *d);
+extern void selfdamage(int damage, int actor, DynamicEntity *act);
+extern DynamicEntity *newdynent();
 extern OFString *getclientmap();
 extern OFString *modestr(int n);
-extern void zapdynent(dynent *&d);
-extern dynent *getclient(int cn);
+extern DynamicEntity *getclient(int cn);
+extern void setclient(int cn, id client);
 extern void timeupdate(int timeremain);
-extern void resetmovement(dynent *d);
+extern void resetmovement(DynamicEntity *d);
 extern void fixplayer1range();
 
 // clientextras
 extern void renderclients();
 extern void renderclient(
-    dynent *d, bool team, OFString *mdlname, bool hellpig, float scale);
+    DynamicEntity *d, bool team, OFString *mdlname, bool hellpig, float scale);
 void showscores(bool on);
 extern void renderscores();
 
@@ -126,7 +127,7 @@ extern entity *newentity(
 // worldlight
 extern void calclight();
 extern void dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach,
-    int strength, dynent *owner);
+    int strength, DynamicEntity *owner);
 extern void cleardlights();
 extern block *blockcopy(block &b);
 extern void blockpaste(block &b);
@@ -191,13 +192,13 @@ extern void incomingdemodata(uchar *buf, int len, bool extras = false);
 extern void demoplaybackstep();
 extern void stop();
 extern void stopifrecording();
-extern void demodamage(int damage, OFVector3D &o);
+extern void demodamage(int damage, const OFVector3D &o);
 extern void demoblend(int damage);
 
 // physics
-extern void moveplayer(dynent *pl, int moveres, bool local);
-extern bool collide(dynent *d, bool spawn, float drop, float rise);
-extern void entinmap(dynent *d);
+extern void moveplayer(DynamicEntity *pl, int moveres, bool local);
+extern bool collide(DynamicEntity *d, bool spawn, float drop, float rise);
+extern void entinmap(DynamicEntity *d);
 extern void setentphysics(int mml, int mmr);
 extern void physicsframe();
 
@@ -237,9 +238,9 @@ extern ENetPacket *recvmap(int n);
 
 // weapon
 extern void selectgun(int a = -1, int b = -1, int c = -1);
-extern void shoot(dynent *d, OFVector3D &to);
-extern void shootv(int gun, OFVector3D &from, OFVector3D &to, dynent *d = 0,
-    bool local = false);
+extern void shoot(DynamicEntity *d, const OFVector3D &to);
+extern void shootv(int gun, OFVector3D &from, OFVector3D &to,
+    DynamicEntity *d = 0, bool local = false);
 extern void createrays(OFVector3D &from, OFVector3D &to);
 extern void moveprojectiles(float time);
 extern void projreset();
@@ -251,8 +252,8 @@ extern void monsterclear();
 extern void restoremonsterstate();
 extern void monsterthink();
 extern void monsterrender();
-extern dvector &getmonsters();
-extern void monsterpain(dynent *m, int damage, dynent *d);
+extern OFArray<DynamicEntity *> *getmonsters();
+extern void monsterpain(DynamicEntity *m, int damage, DynamicEntity *d);
 extern void endsp(bool allkilled);
 
 // entities
@@ -260,11 +261,11 @@ extern void renderents();
 extern void putitems(uchar *&p);
 extern void checkquad(int time);
 extern void checkitems();
-extern void realpickup(int n, dynent *d);
+extern void realpickup(int n, DynamicEntity *d);
 extern void renderentities();
 extern void resetspawns();
 extern void setspawn(uint i, bool on);
-extern void teleport(int n, dynent *d);
+extern void teleport(int n, DynamicEntity *d);
 extern void baseammo(int gun);
 
 // rndmap

@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 const int MAXPARTICLES = 10500;
 const int NUMPARTCUTOFF = 20;
 struct particle {
@@ -56,7 +58,7 @@ render_particles(int time)
 {
 	if (demoplayback && demotracking) {
 		OFVector3D nom = OFMakeVector3D(0, 0, 0);
-		newparticle(player1->o, nom, 100000000, 8);
+		newparticle(player1.o, nom, 100000000, 8);
 	}
 
 	glDepthMask(GL_FALSE);

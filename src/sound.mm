@@ -3,6 +3,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 // #ifndef _WIN32    // NOTE: fmod not being supported for the moment as it does
 // not allow stereo pan/vol updating during playback
 #define USE_MIXER
@@ -173,17 +175,15 @@ updatechanvol(int chan, const OFVector3D *loc)
 {
 	int vol = soundvol, pan = 255 / 2;
 	if (loc) {
-		vdist(dist, v, *loc, player1->o);
+		vdist(dist, v, *loc, player1.o);
 		vol -= (int)(dist * 3 * soundvol /
 		    255); // simple mono distance attenuation
 		if (stereo && (v.x != 0 || v.y != 0)) {
-			float yaw = -atan2(v.x, v.y) -
-			    player1->yaw *
-			        (PI / 180.0f); // relative angle of
-			                       // sound along X-Y axis
-			pan = int(255.9f *
-			    (0.5 * sin(yaw) + 0.5f)); // range is from 0 (left)
-			                              // to 255 (right)
+			// relative angle of sound along X-Y axis
+			float yaw =
+			    -atan2(v.x, v.y) - player1.yaw * (PI / 180.0f);
+			// range is from 0 (left) to 255 (right)
+			pan = int(255.9f * (0.5 * sin(yaw) + 0.5f));
 		}
 	}
 	vol = (vol * MAXVOL) / 255;

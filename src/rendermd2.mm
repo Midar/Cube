@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
 #import "MD2.h"
 #import "MapModelInfo.h"
 
@@ -100,7 +101,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
 {
 	MD2 *m = loadmodel(mdl);
 
-	if (isoccluded(player1->o.x, player1->o.y, x - rad, z - rad, rad * 2))
+	if (isoccluded(player1.o.x, player1.o.y, x - rad, z - rad, rad * 2))
 		return;
 
 	delayedload(m);

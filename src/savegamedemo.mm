@@ -3,17 +3,19 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 #ifdef OF_BIG_ENDIAN
 static const int islittleendian = 0;
 #else
 static const int islittleendian = 1;
 #endif
 
-gzFile f = NULL;
+static gzFile f = NULL;
 bool demorecording = false;
 bool demoplayback = false;
 bool demoloading = false;
-dvector playerhistory;
+static OFMutableArray<DynamicEntity *> *playerhistory;
 int democlientnum = 0;
 
 void startdemo();
@@ -76,8 +78,7 @@ stop()
 	demorecording = false;
 	demoplayback = false;
 	demoloading = false;
-	loopv(playerhistory) zapdynent(playerhistory[i]);
-	playerhistory.setsize(0);
+	[playerhistory removeAllObjects];
 }
 
 void
@@ -102,20 +103,27 @@ savestate(OFIRI *IRI)
 		gzwrite(f, (void *)"CUBESAVE", 8);
 		gzputc(f, islittleendian);
 		gzputi(SAVEGAMEVERSION);
-		gzputi(sizeof(dynent));
-		gzwrite(f, getclientmap().UTF8String, _MAXDEFSTR);
+		OFData *data = [player1 dataBySerializing];
+		gzputi(data.count);
+		char map[260] = { 0 };
+		memcpy(map, getclientmap().UTF8String,
+		    min(getclientmap().UTF8StringLength, 259));
+		gzwrite(f, map, _MAXDEFSTR);
 		gzputi(gamemode);
 		gzputi(ents.length());
 		loopv(ents) gzputc(f, ents[i].spawned);
-		gzwrite(f, player1, sizeof(dynent));
-		dvector &monsters = getmonsters();
-		gzputi(monsters.length());
-		loopv(monsters) gzwrite(f, monsters[i], sizeof(dynent));
-		gzputi(players.length());
-		loopv(players)
-		{
-			gzput(players[i] == NULL);
-			gzwrite(f, players[i], sizeof(dynent));
+		gzwrite(f, data.items, data.count);
+		OFArray<DynamicEntity *> *monsters = getmonsters();
+		gzputi(monsters.count);
+		for (DynamicEntity *monster in monsters) {
+			data = [monster dataBySerializing];
+			gzwrite(f, data.items, data.count);
+		}
+		gzputi(players.count);
+		for (id player in players) {
+			gzput(player == [OFNull null]);
+			data = [player dataBySerializing];
+			gzwrite(f, data.items, data.count);
 		}
 	}
 }
@@ -163,7 +171,8 @@ loadstate(OFIRI *IRI)
 			goto out; // not supporting save->load accross
 			          // incompatible architectures simpifies things
 			          // a LOT
-		if (gzgeti() != SAVEGAMEVERSION || gzgeti() != sizeof(dynent))
+		if (gzgeti() != SAVEGAMEVERSION ||
+		    gzgeti() != DynamicEntity.serializedSize)
 			goto out;
 		string mapname;
 		gzread(f, mapname, _MAXDEFSTR);
@@ -218,31 +227,37 @@ loadgamerest()
 	}
 	restoreserverstate(ents);
 
-	gzread(f, player1, sizeof(dynent));
-	player1->lastaction = lastmillis;
+	OFMutableData *data =
+	    [OFMutableData dataWithCapacity:DynamicEntity.serializedSize];
+	[data increaseCountBy:DynamicEntity.serializedSize];
+	gzread(f, data.mutableItems, data.count);
+	[player1 setFromSerializedData:data];
+	player1.lastaction = lastmillis;
 
 	int nmonsters = gzgeti();
-	dvector &monsters = getmonsters();
-	if (nmonsters != monsters.length())
+	OFArray<DynamicEntity *> *monsters = getmonsters();
+	if (nmonsters != monsters.count)
 		return loadgameout();
-	loopv(monsters)
-	{
-		gzread(f, monsters[i], sizeof(dynent));
-		monsters[i]->enemy =
-		    player1; // lazy, could save id of enemy instead
-		monsters[i]->lastaction = monsters[i]->trigger = lastmillis +
-		    500; // also lazy, but no real noticable effect on game
-		if (monsters[i]->state == CS_DEAD)
-			monsters[i]->lastaction = 0;
+
+	for (DynamicEntity *monster in monsters) {
+		gzread(f, data.mutableItems, data.count);
+		[monster setFromSerializedData:data];
+		// lazy, could save id of enemy instead
+		monster.enemy = player1;
+		// also lazy, but no real noticable effect on game
+		monster.lastaction = monster.trigger = lastmillis + 500;
+		if (monster.state == CS_DEAD)
+			monster.lastaction = 0;
 	}
 	restoremonsterstate();
 
 	int nplayers = gzgeti();
 	loopi(nplayers) if (!gzget())
 	{
-		dynent *d = getclient(i);
+		DynamicEntity *d = getclient(i);
 		assert(d);
-		gzread(f, d, sizeof(dynent));
+		gzread(f, data.mutableItems, data.count);
+		[d setFromSerializedData:data];
 	}
 
 	conoutf(@"savegame restored");
@@ -287,11 +302,12 @@ record(OFString *name)
 COMMAND(record, ARG_1STR)
 
 void
-demodamage(int damage, OFVector3D &o)
+demodamage(int damage, const OFVector3D &o)
 {
 	ddamage = damage;
 	dorig = o;
 }
+
 void
 demoblend(int damage)
 {
@@ -308,15 +324,15 @@ incomingdemodata(uchar *buf, int len, bool extras)
 	gzwrite(f, buf, len);
 	gzput(extras);
 	if (extras) {
-		gzput(player1->gunselect);
-		gzput(player1->lastattackgun);
-		gzputi(player1->lastaction - starttime);
-		gzputi(player1->gunwait);
-		gzputi(player1->health);
-		gzputi(player1->armour);
-		gzput(player1->armourtype);
-		loopi(NUMGUNS) gzput(player1->ammo[i]);
-		gzput(player1->state);
+		gzput(player1.gunselect);
+		gzput(player1.lastattackgun);
+		gzputi(player1.lastaction - starttime);
+		gzputi(player1.gunwait);
+		gzputi(player1.health);
+		gzputi(player1.armour);
+		gzput(player1.armourtype);
+		loopi(NUMGUNS) gzput(player1.ammo[i]);
+		gzput(player1.state);
 		gzputi(bdamage);
 		bdamage = 0;
 		gzputi(ddamage);
@@ -348,7 +364,7 @@ stopreset()
 {
 	conoutf(@"demo stopped (%d msec elapsed)", lastmillis - starttime);
 	stop();
-	loopv(players) zapdynent(players[i]);
+	[players removeAllObjects];
 	disconnect(0, 0);
 }
 
@@ -376,47 +392,44 @@ startdemo()
 	demoplayback = true;
 	starttime = lastmillis;
 	conoutf(@"now playing demo");
-	dynent *d = getclient(democlientnum);
-	assert(d);
-	*d = *player1;
+	setclient(democlientnum, [player1 copy]);
 	readdemotime();
 }
 
 VAR(demodelaymsec, 0, 120, 500);
 
 // spline interpolation
+#define catmulrom(z, a, b, c, s, dest)           \
+	{                                        \
+		OFVector3D t1 = b, t2 = c;       \
+                                                 \
+		vsub(t1, z);                     \
+		vmul(t1, 0.5f);                  \
+		vsub(t2, a);                     \
+		vmul(t2, 0.5f);                  \
+                                                 \
+		float s2 = s * s;                \
+		float s3 = s * s2;               \
+                                                 \
+		dest = a;                        \
+		OFVector3D t = b;                \
+                                                 \
+		vmul(dest, 2 * s3 - 3 * s2 + 1); \
+		vmul(t, -2 * s3 + 3 * s2);       \
+		vadd(dest, t);                   \
+		vmul(t1, s3 - 2 * s2 + s);       \
+		vadd(dest, t1);                  \
+		vmul(t2, s3 - s2);               \
+		vadd(dest, t2);                  \
+	}
+
 void
-catmulrom(OFVector3D &z, OFVector3D &a, OFVector3D &b, OFVector3D &c, float s,
-    OFVector3D &dest)
+fixwrap(DynamicEntity *a, DynamicEntity *b)
 {
-	OFVector3D t1 = b, t2 = c;
-
-	vsub(t1, z);
-	vmul(t1, 0.5f) vsub(t2, a);
-	vmul(t2, 0.5f);
-
-	float s2 = s * s;
-	float s3 = s * s2;
-
-	dest = a;
-	OFVector3D t = b;
-
-	vmul(dest, 2 * s3 - 3 * s2 + 1);
-	vmul(t, -2 * s3 + 3 * s2);
-	vadd(dest, t);
-	vmul(t1, s3 - 2 * s2 + s);
-	vadd(dest, t1);
-	vmul(t2, s3 - s2);
-	vadd(dest, t2);
-}
-
-void
-fixwrap(dynent *a, dynent *b)
-{
-	while (b->yaw - a->yaw > 180)
-		a->yaw += 360;
-	while (b->yaw - a->yaw < -180)
-		a->yaw -= 360;
+	while (b.yaw - a.yaw > 180)
+		a.yaw += 360;
+	while (b.yaw - a.yaw < -180)
+		a.yaw -= 360;
 }
 
 void
@@ -434,23 +447,23 @@ demoplaybackstep()
 		gzread(f, buf, len);
 		localservertoclient(buf, len); // update game state
 
-		dynent *target = players[democlientnum];
+		DynamicEntity *target = players[democlientnum];
 		assert(target);
 
 		int extras;
-		if (extras = gzget()) // read additional client side state not
-		                      // present in normal network stream
-		{
-			target->gunselect = gzget();
-			target->lastattackgun = gzget();
-			target->lastaction = scaletime(gzgeti());
-			target->gunwait = gzgeti();
-			target->health = gzgeti();
-			target->armour = gzgeti();
-			target->armourtype = gzget();
-			loopi(NUMGUNS) target->ammo[i] = gzget();
-			target->state = gzget();
-			target->lastmove = playbacktime;
+		// read additional client side state not present in normal
+		// network stream
+		if (extras = gzget()) {
+			target.gunselect = gzget();
+			target.lastattackgun = gzget();
+			target.lastaction = scaletime(gzgeti());
+			target.gunwait = gzgeti();
+			target.health = gzgeti();
+			target.armour = gzgeti();
+			target.armourtype = gzget();
+			loopi(NUMGUNS) target.ammo[i] = gzget();
+			target.state = gzget();
+			target.lastmove = playbacktime;
 			if (bdamage = gzgeti())
 				damageblend(bdamage);
 			if (ddamage = gzgeti()) {
@@ -462,66 +475,87 @@ demoplaybackstep()
 
 		// insert latest copy of player into history
 		if (extras &&
-		    (playerhistory.empty() ||
-		        playerhistory.last()->lastupdate != playbacktime)) {
-			dynent *d = newdynent();
-			*d = *target;
-			d->lastupdate = playbacktime;
-			playerhistory.add(d);
-			if (playerhistory.length() > 20) {
-				zapdynent(playerhistory[0]);
-				playerhistory.remove(0);
-			}
+		    (playerhistory.count == 0 ||
+		        playerhistory.lastObject.lastupdate != playbacktime)) {
+			DynamicEntity *d = [target copy];
+			d.lastupdate = playbacktime;
+			[playerhistory addObject:d];
+			if (playerhistory.count > 20)
+				[playerhistory removeObjectAtIndex:0];
 		}
 
 		readdemotime();
 	}
 
-	if (demoplayback) {
-		int itime = lastmillis - demodelaymsec;
-		loopvrev(playerhistory) if (playerhistory[i]->lastupdate <
-		    itime) // find 2 positions in
-		           // history that surround
-		           // interpolation time point
-		{
-			dynent *a = playerhistory[i];
-			dynent *b = a;
-			if (i + 1 < playerhistory.length())
+	if (!demoplayback)
+		return;
+
+	int itime = lastmillis - demodelaymsec;
+	// find 2 positions in history that surround interpolation time point
+	size_t count = playerhistory.count;
+	for (ssize_t i = count - 1; i >= 0; i--) {
+		if (playerhistory[i].lastupdate < itime) {
+			DynamicEntity *a = playerhistory[i];
+			DynamicEntity *b = a;
+
+			if (i + 1 < playerhistory.count)
 				b = playerhistory[i + 1];
-			*player1 = *b;
-			if (a != b) // interpolate pos & angles
-			{
-				dynent *c = b;
-				if (i + 2 < playerhistory.length())
+
+			player1 = b;
+			// interpolate pos & angles
+			if (a != b) {
+				DynamicEntity *c = b;
+				if (i + 2 < playerhistory.count)
 					c = playerhistory[i + 2];
-				dynent *z = a;
+				DynamicEntity *z = a;
 				if (i - 1 >= 0)
 					z = playerhistory[i - 1];
-				// if(a==z || b==c) printf("* %d\n",
-				// lastmillis);
-				float bf = (itime - a->lastupdate) /
-				    (float)(b->lastupdate - a->lastupdate);
+				// if(a==z || b==c)
+				//	printf("* %d\n", lastmillis);
+				float bf = (itime - a.lastupdate) /
+				    (float)(b.lastupdate - a.lastupdate);
 				fixwrap(a, player1);
 				fixwrap(c, player1);
 				fixwrap(z, player1);
-				vdist(dist, v, z->o, c->o);
-				if (dist < 16) // if teleport or spawn, dont't
-				               // interpolate
-				{
-					catmulrom(z->o, a->o, b->o, c->o, bf,
-					    player1->o);
-					catmulrom(*(OFVector3D *)&z->yaw,
-					    *(OFVector3D *)&a->yaw,
-					    *(OFVector3D *)&b->yaw,
-					    *(OFVector3D *)&c->yaw, bf,
-					    *(OFVector3D *)&player1->yaw);
+				vdist(dist, v, z.o, c.o);
+				// if teleport or spawn, don't interpolate
+				if (dist < 16) {
+					catmulrom(
+					    z.o, a.o, b.o, c.o, bf, player1.o);
+					OFVector3D vz = OFMakeVector3D(
+					    z.yaw, z.pitch, z.roll);
+					OFVector3D va = OFMakeVector3D(
+					    a.yaw, a.pitch, a.roll);
+					OFVector3D vb = OFMakeVector3D(
+					    b.yaw, b.pitch, b.roll);
+					OFVector3D vc = OFMakeVector3D(
+					    c.yaw, c.pitch, c.roll);
+					OFVector3D vp1 =
+					    OFMakeVector3D(player1.yaw,
+					        player1.pitch, player1.roll);
+					catmulrom(vz, va, vb, vc, bf, vp1);
+					z.yaw = vz.x;
+					z.pitch = vz.y;
+					z.roll = vz.z;
+					a.yaw = va.x;
+					a.pitch = va.y;
+					a.roll = va.z;
+					b.yaw = vb.x;
+					b.pitch = vb.y;
+					b.roll = vb.z;
+					c.yaw = vc.x;
+					c.pitch = vc.y;
+					c.roll = vc.z;
+					player1.yaw = vp1.x;
+					player1.pitch = vp1.y;
+					player1.roll = vp1.z;
 				}
 				fixplayer1range();
 			}
 			break;
 		}
-		// if(player1->state!=CS_DEAD) showscores(false);
 	}
+	// if(player1->state!=CS_DEAD) showscores(false);
 }
 
 void

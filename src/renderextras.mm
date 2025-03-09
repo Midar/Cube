@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "DynamicEntity.h"
+
 void
 line(int x1, int y1, float z1, int x2, int y2, float z2)
 {
@@ -329,7 +331,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 	readmatrices();
 	if (editmode) {
 		if (cursordepth == 1.0f)
-			worldpos = player1->o;
+			worldpos = player1.o;
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		cursorupdate();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -381,11 +383,11 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBegin(GL_QUADS);
 		glColor3ub(255, 255, 255);
 		if (crosshairfx) {
-			if (player1->gunwait)
+			if (player1.gunwait)
 				glColor3ub(128, 128, 128);
-			else if (player1->health <= 25)
+			else if (player1.health <= 25)
 				glColor3ub(255, 0, 0);
-			else if (player1->health <= 50)
+			else if (player1.health <= 50)
 				glColor3ub(255, 128, 0);
 		}
 		float chsize = (float)crosshairsize;
@@ -418,23 +420,22 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 
 	glPopMatrix();
 
-	if (player1->state == CS_ALIVE) {
+	if (player1.state == CS_ALIVE) {
 		glPushMatrix();
 		glOrtho(0, VIRTW / 2, VIRTH / 2, 0, -1, 1);
-		draw_textf(@"%d", 90, 827, 2, player1->health);
-		if (player1->armour)
-			draw_textf(@"%d", 390, 827, 2, player1->armour);
-		draw_textf(
-		    @"%d", 690, 827, 2, player1->ammo[player1->gunselect]);
+		draw_textf(@"%d", 90, 827, 2, player1.health);
+		if (player1.armour)
+			draw_textf(@"%d", 390, 827, 2, player1.armour);
+		draw_textf(@"%d", 690, 827, 2, player1.ammo[player1.gunselect]);
 		glPopMatrix();
 		glPushMatrix();
 		glOrtho(0, VIRTW, VIRTH, 0, -1, 1);
 		glDisable(GL_BLEND);
 		drawicon(128, 128, 20, 1650);
-		if (player1->armour)
+		if (player1.armour)
 			drawicon(
-			    (float)(player1->armourtype * 64), 0, 620, 1650);
-		int g = player1->gunselect;
+			    (float)(player1.armourtype * 64), 0, 620, 1650);
+		int g = player1.gunselect;
 		int r = 64;
 		if (g > 2) {
 			g -= 3;
