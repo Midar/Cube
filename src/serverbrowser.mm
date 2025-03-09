@@ -4,6 +4,8 @@
 #include "SDL_thread.h"
 #include "cube.h"
 
+#import "ServerInfo.h"
+
 @interface ResolverThread: OFThread
 {
 	volatile bool _stop;
@@ -167,30 +169,6 @@ resolvercheck(OFString **name, ENetAddress *address)
 	return false;
 }
 
-@interface ServerInfo: OFObject <OFComparing>
-@property (nonatomic) OFString *name;
-@property (nonatomic) OFString *full;
-@property (nonatomic) OFString *map;
-@property (nonatomic) OFString *sdesc;
-@property (nonatomic) int mode, numplayers, ping, protocol, minremain;
-@property (nonatomic) ENetAddress address;
-@end
-
-@implementation ServerInfo
-- (OFComparisonResult)compare:(id)otherObject
-{
-	if (![otherObject isKindOfClass:ServerInfo.class])
-		@throw [OFInvalidArgumentException exception];
-
-	if (_ping > [otherObject ping])
-		return OFOrderedDescending;
-	if (_ping < [otherObject ping])
-		return OFOrderedAscending;
-
-	return [_name compare:[otherObject name]];
-}
-@end
-
 static OFMutableArray<ServerInfo *> *servers;
 static ENetSocket pingsock = ENET_SOCKET_NULL;
 static int lastinfo = 0;
@@ -209,24 +187,11 @@ addserver(OFString *servername)
 			if ([si.name isEqual:servername])
 				return;
 
-		ServerInfo *si = [[ServerInfo alloc] init];
-		si.name = servername;
-		si.full = @"";
-		si.mode = 0;
-		si.numplayers = 0;
-		si.ping = 9999;
-		si.protocol = 0;
-		si.minremain = 0;
-		si.map = @"";
-		si.sdesc = @"";
-		ENetAddress address = { .host = ENET_HOST_ANY,
-			.port = CUBE_SERVINFO_PORT };
-		si.address = address;
-
 		if (servers == nil)
 			servers = [[OFMutableArray alloc] init];
 
-		[servers addObject:si];
+		[servers
+		    addObject:[[ServerInfo alloc] initWithName:servername]];
 	}
 }
 
