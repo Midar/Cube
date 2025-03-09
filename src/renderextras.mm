@@ -89,7 +89,7 @@ sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
 bool sinit = false;
 
 void
-newsphere(OFVector3D &o, float max, int type)
+newsphere(const OFVector3D &o, float max, int type)
 {
 	if (!sinit) {
 		loopi(MAXSPHERES)

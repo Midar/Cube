@@ -15,8 +15,8 @@ bool parinit = false;
 
 VARP(maxparticles, 100, 2000, MAXPARTICLES - 500);
 
-void
-newparticle(OFVector3D &o, OFVector3D &d, int fade, int type)
+static void
+newparticle(const OFVector3D &o, const OFVector3D &d, int fade, int type)
 {
 	if (!parinit) {
 		loopi(MAXPARTICLES)
@@ -133,7 +133,7 @@ render_particles(int time)
 }
 
 void
-particle_splash(int type, int num, int fade, OFVector3D &p)
+particle_splash(int type, int num, int fade, const OFVector3D &p)
 {
 	loopi(num)
 	{
@@ -144,8 +144,7 @@ particle_splash(int type, int num, int fade, OFVector3D &p)
 			y = rnd(radius * 2) - radius;
 			z = rnd(radius * 2) - radius;
 		} while (x * x + y * y + z * z > radius * radius);
-		OFVector3D d = OFMakeVector3D(x, y, z);
-		newparticle(p, d, rnd(fade * 3), type);
+		newparticle(p, OFMakeVector3D(x, y, z), rnd(fade * 3), type);
 	}
 }
 

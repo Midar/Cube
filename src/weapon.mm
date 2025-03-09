@@ -2,17 +2,17 @@
 
 #include "cube.h"
 
-struct guninfo {
-	short sound, attackdelay, damage, projspeed, part, kickamount;
-	OFString *name;
-};
+#import "Projectile.h"
 
 static const int MONSTERDAMAGEFACTOR = 4;
 static const int SGRAYS = 20;
 static const float SGSPREAD = 2;
 static OFVector3D sg[SGRAYS];
 
-static const guninfo guns[NUMGUNS] = {
+static const struct {
+	short sound, attackdelay, damage, projspeed, part, kickamount;
+	OFString *name;
+} guns[NUMGUNS] = {
 	{ S_PUNCH1, 250, 50, 0, 0, 1, @"fist" },
 	{ S_SG, 1400, 10, 0, 0, 20, @"shotgun" }, // *SGRAYS
 	{ S_CG, 100, 30, 0, 0, 7, @"chaingun" },
@@ -83,11 +83,12 @@ createrays(OFVector3D &from,
 	}
 }
 
+// if lineseg hits entity bounding box
 bool
-intersect(dynent *d, OFVector3D &from,
-    OFVector3D &to) // if lineseg hits entity bounding box
+intersect(dynent *d, const OFVector3D &from, const OFVector3D &to)
 {
-	OFVector3D v = to, w = d->o, *p;
+	OFVector3D v = to, w = d->o;
+	const OFVector3D *p;
 	vsub(v, from);
 	vsub(w, from);
 	float c1 = dotprod(w, v);
@@ -128,37 +129,33 @@ playerincrosshair()
 	return nil;
 }
 
-const int MAXPROJ = 100;
-struct projectile {
-	OFVector3D o, to;
-	float speed;
-	dynent *owner;
-	int gun;
-	bool inuse, local;
-} projs[MAXPROJ];
+static const size_t MAXPROJ = 100;
+static Projectile *projs[MAXPROJ];
 
 void
 projreset()
 {
-	loopi(MAXPROJ) projs[i].inuse = false;
+	for (size_t i = 0; i < MAXPROJ; i++)
+		projs[i].inuse = false;
 }
 
 void
 newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
     dynent *owner, int gun)
 {
-	loopi(MAXPROJ)
-	{
-		projectile *p = &projs[i];
-		if (p->inuse)
+	for (size_t i = 0; i < MAXPROJ; i++) {
+		Projectile *p = projs[i];
+
+		if (p.inuse)
 			continue;
-		p->inuse = true;
-		p->o = from;
-		p->to = to;
-		p->speed = speed;
-		p->local = local;
-		p->owner = owner;
-		p->gun = gun;
+
+		p.inuse = true;
+		p.o = from;
+		p.to = to;
+		p.speed = speed;
+		p.local = local;
+		p.owner = owner;
+		p.gun = gun;
 		return;
 	}
 }
@@ -181,8 +178,8 @@ hit(int target, int damage, dynent *d, dynent *at)
 const float RL_RADIUS = 5;
 const float RL_DAMRAD = 7; // hack
 
-void
-radialeffect(dynent *o, OFVector3D &v, int cn, int qdam, dynent *at)
+static void
+radialeffect(dynent *o, const OFVector3D &v, int cn, int qdam, dynent *at)
 {
 	if (o->state != CS_ALIVE)
 		return;
@@ -199,21 +196,21 @@ radialeffect(dynent *o, OFVector3D &v, int cn, int qdam, dynent *at)
 }
 
 void
-splash(projectile *p, OFVector3D &v, OFVector3D &vold, int notthisplayer,
-    int notthismonster, int qdam)
+splash(Projectile *p, const OFVector3D &v, const OFVector3D &vold,
+    int notthisplayer, int notthismonster, int qdam)
 {
 	particle_splash(0, 50, 300, v);
-	p->inuse = false;
-	if (p->gun != GUN_RL) {
+	p.inuse = false;
+	if (p.gun != GUN_RL) {
 		playsound(S_FEXPLODE, &v);
 		// no push?
 	} else {
 		playsound(S_RLHIT, &v);
 		newsphere(v, RL_RADIUS, 0);
-		dodynlight(vold, v, 0, 0, p->owner);
-		if (!p->local)
+		dodynlight(vold, v, 0, 0, p.owner);
+		if (!p.local)
 			return;
-		radialeffect(player1, v, -1, qdam, p->owner);
+		radialeffect(player1, v, -1, qdam, p.owner);
 		loopv(players)
 		{
 			if (i == notthisplayer)
@@ -221,42 +218,43 @@ splash(projectile *p, OFVector3D &v, OFVector3D &vold, int notthisplayer,
 			dynent *o = players[i];
 			if (!o)
 				continue;
-			radialeffect(o, v, i, qdam, p->owner);
+			radialeffect(o, v, i, qdam, p.owner);
 		}
 		dvector &mv = getmonsters();
 		loopv(mv) if (i != notthismonster)
-		    radialeffect(mv[i], v, i, qdam, p->owner);
+		    radialeffect(mv[i], v, i, qdam, p.owner);
 	}
 }
 
 inline void
-projdamage(dynent *o, projectile *p, OFVector3D &v, int i, int im, int qdam)
+projdamage(dynent *o, Projectile *p, OFVector3D &v, int i, int im, int qdam)
 {
 	if (o->state != CS_ALIVE)
 		return;
-	if (intersect(o, p->o, v)) {
-		splash(p, v, p->o, i, im, qdam);
-		hit(i, qdam, o, p->owner);
+	if (intersect(o, p.o, v)) {
+		splash(p, v, p.o, i, im, qdam);
+		hit(i, qdam, o, p.owner);
 	}
 }
 
 void
 moveprojectiles(float time)
 {
-	loopi(MAXPROJ)
-	{
-		projectile *p = &projs[i];
-		if (!p->inuse)
+	for (size_t i = 0; i < MAXPROJ; i++) {
+		Projectile *p = projs[i];
+
+		if (!p.inuse)
 			continue;
-		int qdam = guns[p->gun].damage * (p->owner->quadmillis ? 4 : 1);
-		if (p->owner->monsterstate)
+
+		int qdam = guns[p.gun].damage * (p.owner->quadmillis ? 4 : 1);
+		if (p.owner->monsterstate)
 			qdam /= MONSTERDAMAGEFACTOR;
-		vdist(dist, v, p->o, p->to);
-		float dtime = dist * 1000 / p->speed;
+		vdist(dist, v, p.o, p.to);
+		float dtime = dist * 1000 / p.speed;
 		if (time > dtime)
 			dtime = time;
 		vmul(v, time / dtime);
-		vadd(v, p->o) if (p->local)
+		vadd(v, p.o) if (p.local)
 		{
 			loopv(players)
 			{
@@ -265,28 +263,28 @@ moveprojectiles(float time)
 					continue;
 				projdamage(o, p, v, i, -1, qdam);
 			}
-			if (p->owner != player1)
+			if (p.owner != player1)
 				projdamage(player1, p, v, -1, -1, qdam);
 			dvector &mv = getmonsters();
 			loopv(mv) if (!vreject(mv[i]->o, v, 10.0f) &&
-			    mv[i] != p->owner)
+			    mv[i] != p.owner)
 			    projdamage(mv[i], p, v, -1, i, qdam);
 		}
-		if (p->inuse) {
+		if (p.inuse) {
 			if (time == dtime)
-				splash(p, v, p->o, -1, -1, qdam);
+				splash(p, v, p.o, -1, -1, qdam);
 			else {
-				if (p->gun == GUN_RL) {
-					dodynlight(p->o, v, 0, 255, p->owner);
+				if (p.gun == GUN_RL) {
+					dodynlight(p.o, v, 0, 255, p.owner);
 					particle_splash(5, 2, 200, v);
 				} else {
 					particle_splash(1, 1, 200, v);
 					particle_splash(
-					    guns[p->gun].part, 1, 1, v);
+					    guns[p.gun].part, 1, 1, v);
 				}
 			}
 		}
-		p->o = v;
+		p.o = v;
 	}
 }
 

@@ -125,8 +125,8 @@ extern entity *newentity(
 
 // worldlight
 extern void calclight();
-extern void dodynlight(
-    OFVector3D &vold, OFVector3D &v, int reach, int strength, dynent *owner);
+extern void dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach,
+    int strength, dynent *owner);
 extern void cleardlights();
 extern block *blockcopy(block &b);
 extern void blockpaste(block &b);
@@ -166,7 +166,7 @@ extern void line(int x1, int y1, float z1, int x2, int y2, float z2);
 extern void box(block &b, float z1, float z2, float z3, float z4);
 extern void dot(int x, int y, float z);
 extern void linestyle(float width, int r, int g, int b);
-extern void newsphere(OFVector3D &o, float max, int type);
+extern void newsphere(const OFVector3D &o, float max, int type);
 extern void renderspheres(int time);
 extern void gl_drawhud(
     int w, int h, int curfps, int nquads, int curvert, bool underwater);
@@ -176,7 +176,7 @@ extern void damageblend(int n);
 
 // renderparticles
 extern void setorient(OFVector3D &r, OFVector3D &u);
-extern void particle_splash(int type, int num, int fade, OFVector3D &p);
+extern void particle_splash(int type, int num, int fade, const OFVector3D &p);
 extern void particle_trail(
     int type, int fade, OFVector3D &from, OFVector3D &to);
 extern void render_particles(int time);
@@ -202,7 +202,7 @@ extern void setentphysics(int mml, int mmr);
 extern void physicsframe();
 
 // sound
-extern void playsound(int n, OFVector3D *loc = 0);
+extern void playsound(int n, const OFVector3D *loc = NULL);
 extern void playsoundc(int n);
 extern void initsound();
 extern void cleansound();

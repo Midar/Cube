@@ -92,14 +92,16 @@ music(OFString *name)
 			    IRIByAppendingPathComponent:path];
 
 #ifdef USE_MIXER
-			if (mod = Mix_LoadMUS(
-			        IRI.fileSystemRepresentation.UTF8String)) {
+			if ((mod = Mix_LoadMUS(
+			         IRI.fileSystemRepresentation.UTF8String)) !=
+			    NULL) {
 				Mix_PlayMusic(mod, -1);
 				Mix_VolumeMusic((musicvol * MAXVOL) / 255);
 			}
 #else
-			if (mod = FMUSIC_LoadSong(
-			        IRI.fileSystemRepresentation.UTF8String)) {
+			if ((mod = FMUSIC_LoadSong(
+			         IRI.fileSystemRepresentation.UTF8String)) !=
+			    NULL) {
 				FMUSIC_PlaySong(mod);
 				FMUSIC_SetMasterVolume(mod, musicvol);
 			} else if (stream = FSOUND_Stream_Open(
@@ -166,8 +168,8 @@ cleansound()
 
 VAR(stereo, 0, 1, 1);
 
-void
-updatechanvol(int chan, OFVector3D *loc)
+static void
+updatechanvol(int chan, const OFVector3D *loc)
 {
 	int vol = soundvol, pan = 255 / 2;
 	if (loc) {
@@ -194,8 +196,8 @@ updatechanvol(int chan, OFVector3D *loc)
 #endif
 }
 
-void
-newsoundloc(int chan, OFVector3D *loc)
+static void
+newsoundloc(int chan, const OFVector3D *loc)
 {
 	assert(chan >= 0 && chan < MAXCHAN);
 	soundlocs[chan].loc = *loc;
@@ -230,7 +232,7 @@ playsoundc(int n)
 int soundsatonce = 0, lastsoundmillis = 0;
 
 void
-playsound(int n, OFVector3D *loc)
+playsound(int n, const OFVector3D *loc)
 {
 	if (nosound)
 		return;
