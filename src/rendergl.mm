@@ -163,17 +163,18 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 // each texture slot can have multople texture frames, of which currently only
 // the first is used additional frames can be used for various shaders
 
-const int MAXTEX = 1000;
-int texx[MAXTEX]; // ( loaded texture ) -> ( name, size )
-int texy[MAXTEX];
-string texname[MAXTEX];
-int curtex = 0;
-const int FIRSTTEX = 1000; // opengl id = loaded id + FIRSTTEX
+static const int MAXTEX = 1000;
+static int texx[MAXTEX]; // ( loaded texture ) -> ( name, size )
+static int texy[MAXTEX];
+static OFString *texname[MAXTEX];
+static int curtex = 0;
+static const int FIRSTTEX = 1000; // opengl id = loaded id + FIRSTTEX
 // std 1+, sky 14+, mdls 20+
 
-const int MAXFRAMES = 2;     // increase to allow more complex shader defs
-int mapping[256][MAXFRAMES]; // ( cube texture, frame ) -> ( opengl id, name )
-string mapname[256][MAXFRAMES];
+static const int MAXFRAMES = 2; // increase to allow more complex shader defs
+static int mapping[256]
+                  [MAXFRAMES]; // ( cube texture, frame ) -> ( opengl id, name )
+static OFString *mapname[256][MAXFRAMES];
 
 void
 purgetextures()
@@ -198,8 +199,7 @@ texture(OFString *aframe, OFString *name)
 		if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
 			return;
 		mapping[num][frame] = 1;
-		char *n = mapname[num][frame];
-		strcpy_s(n, name.UTF8String);
+		mapname[num][frame] = name;
 	}
 }
 COMMAND(texture, ARG_2STR)
@@ -222,7 +222,7 @@ lookuptexture(int tex, int *xs, int *ys)
 
 	loopi(curtex) // lazily happens once per "texture" command, basically
 	{
-		if (strcmp(mapname[tex][frame], texname[i]) == 0) {
+		if ([mapname[tex][frame] isEqual:texname[i]]) {
 			mapping[tex][frame] = tid = i + FIRSTTEX;
 			*xs = texx[i];
 			*ys = texy[i];
@@ -234,11 +234,11 @@ lookuptexture(int tex, int *xs, int *ys)
 		fatal(@"loaded too many textures");
 
 	int tnum = curtex + FIRSTTEX;
-	strcpy_s(texname[curtex], mapname[tex][frame]);
+	texname[curtex] = mapname[tex][frame];
 
 	@autoreleasepool {
 		OFString *path =
-		    [OFString stringWithFormat:@"packages/%s", texname[curtex]];
+		    [OFString stringWithFormat:@"packages/%@", texname[curtex]];
 
 		if (installtex(tnum,
 		        [Cube.sharedInstance.gameDataIRI

@@ -2,14 +2,17 @@
 
 #include "cube.h"
 
-ENetSocket mssock = ENET_SOCKET_NULL;
+static ENetSocket mssock = ENET_SOCKET_NULL;
 
-void
-httpgetsend(ENetAddress &ad, char *hostname, char *req, char *ref, char *agent)
+static void
+httpgetsend(ENetAddress &ad, OFString *hostname, OFString *req, OFString *ref,
+    OFString *agent)
 {
 	if (ad.host == ENET_HOST_ANY) {
-		printf("looking up %s...\n", hostname);
-		enet_address_set_host(&ad, hostname);
+		[OFStdOut writeFormat:@"looking up %@...\n", hostname];
+		@autoreleasepool {
+			enet_address_set_host(&ad, hostname.UTF8String);
+		}
 		if (ad.host == ENET_HOST_ANY)
 			return;
 	}
@@ -25,16 +28,18 @@ httpgetsend(ENetAddress &ad, char *hostname, char *req, char *ref, char *agent)
 		return;
 	}
 	ENetBuffer buf;
-	sprintf_sd(httpget)(
-	    "GET %s HTTP/1.0\nHost: %s\nReferer: %s\nUser-Agent: %s\n\n", req,
-	    hostname, ref, agent);
-	buf.data = httpget;
-	buf.dataLength = strlen((char *)buf.data);
-	printf("sending request to %s...\n", hostname);
+	OFString *httpget = [OFString stringWithFormat:@"GET %@ HTTP/1.0\n"
+	                                               @"Host: %@\n"
+	                                               @"Referer: %@\n"
+	                                               @"User-Agent: %@\n\n",
+	                              req, hostname, ref, agent];
+	buf.data = (void *)httpget.UTF8String;
+	buf.dataLength = httpget.UTF8StringLength;
+	[OFStdOut writeFormat:@"sending request to %@...\n", hostname];
 	enet_socket_send(mssock, NULL, &buf, 1);
 }
 
-void
+static void
 httpgetrecieve(ENetBuffer &buf)
 {
 	if (mssock == ENET_SOCKET_NULL)
@@ -53,7 +58,7 @@ httpgetrecieve(ENetBuffer &buf)
 	}
 }
 
-uchar *
+static uchar *
 stripheader(uchar *b)
 {
 	char *s = strstr((char *)b, "\n\r\n");
@@ -62,21 +67,25 @@ stripheader(uchar *b)
 	return s ? (uchar *)s : b;
 }
 
-ENetAddress masterserver = { ENET_HOST_ANY, 80 };
-int updmaster = 0;
-string masterbase;
-string masterpath;
-uchar masterrep[MAXTRANS];
-ENetBuffer masterb;
+static ENetAddress masterserver = { ENET_HOST_ANY, 80 };
+static int updmaster = 0;
+static OFString *masterbase;
+static OFString *masterpath;
+static uchar masterrep[MAXTRANS];
+static ENetBuffer masterb;
 
-void
+static void
 updatemasterserver(int seconds)
 {
 	// send alive signal to masterserver every hour of uptime
 	if (seconds > updmaster) {
-		sprintf_sd(path)("%sregister.do?action=add", masterpath);
-		httpgetsend(masterserver, masterbase, path, "cubeserver",
-		    "Cube Server");
+		@autoreleasepool {
+			OFString *path = [OFString
+			    stringWithFormat:@"%@register.do?action=add",
+			    masterpath];
+			httpgetsend(masterserver, masterbase, path,
+			    @"cubeserver", @"Cube Server");
+		}
 		masterrep[0] = 0;
 		masterb.data = masterrep;
 		masterb.dataLength = MAXTRANS - 1;
@@ -84,7 +93,7 @@ updatemasterserver(int seconds)
 	}
 }
 
-void
+static void
 checkmasterreply()
 {
 	bool busy = mssock != ENET_SOCKET_NULL;
@@ -96,9 +105,12 @@ checkmasterreply()
 uchar *
 retrieveservers(uchar *buf, int buflen)
 {
-	sprintf_sd(path)("%sretrieve.do?item=list", masterpath);
-	httpgetsend(
-	    masterserver, masterbase, path, "cubeserver", "Cube Server");
+	@autoreleasepool {
+		OFString *path = [OFString
+		    stringWithFormat:@"%@retrieve.do?item=list", masterpath];
+		httpgetsend(masterserver, masterbase, path, @"cubeserver",
+		    @"Cube Server");
+	}
 	ENetBuffer eb;
 	buf[0] = 0;
 	eb.data = buf;
@@ -108,7 +120,7 @@ retrieveservers(uchar *buf, int buflen)
 	return stripheader(buf);
 }
 
-ENetSocket pongsock = ENET_SOCKET_NULL;
+static ENetSocket pongsock = ENET_SOCKET_NULL;
 static OFString *serverdesc;
 
 void
@@ -153,8 +165,9 @@ servermsinit(OFString *master_, OFString *sdesc, bool listen)
 		const char *mid = strstr(master, "/");
 		if (!mid)
 			mid = master;
-		strcpy_s(masterpath, mid);
-		strn0cpy(masterbase, master, mid - master + 1);
+		masterpath = @(mid);
+		masterbase = [[OFString alloc] initWithUTF8String:master
+		                                           length:mid - master];
 		serverdesc = sdesc;
 
 		if (listen) {
