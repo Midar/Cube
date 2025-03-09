@@ -338,13 +338,15 @@ complete(OFString *s_)
 }
 
 bool
-execfile(OFString *cfgfile)
+execfile(OFIRI *cfgfile)
 {
 	@autoreleasepool {
 		OFString *command;
 		@try {
-			command = [OFString stringWithContentsOfFile:cfgfile];
-		} @catch (id e) {
+			command = [OFString stringWithContentsOfIRI:cfgfile];
+		} @catch (OFOpenItemFailedException *e) {
+			return false;
+		} @catch (OFReadFailedException *e) {
 			return false;
 		}
 
@@ -356,10 +358,12 @@ execfile(OFString *cfgfile)
 void
 exec(OFString *cfgfile)
 {
-	if (!execfile(cfgfile)) {
-		@autoreleasepool {
+	@autoreleasepool {
+		if (!execfile([Cube.sharedInstance.userDataIRI
+		        IRIByAppendingPathComponent:cfgfile]) &&
+		    !execfile([Cube.sharedInstance.gameDataIRI
+		        IRIByAppendingPathComponent:cfgfile]))
 			conoutf(@"could not read \"%@\"", cfgfile);
-		}
 	}
 }
 

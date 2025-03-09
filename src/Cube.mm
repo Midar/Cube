@@ -135,37 +135,37 @@ VARP(minmillis, 0, 5, 1000);
 	log(@"basetex");
 	int xs, ys;
 	if (!installtex(2,
-	        [_userDataIRI IRIByAppendingPathComponent:@"data/newchars.png"],
+	        [_gameDataIRI IRIByAppendingPathComponent:@"data/newchars.png"],
 	        &xs, &ys, false) ||
 	    !installtex(3,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/martin/base.png"],
 	        &xs, &ys, false) ||
 	    !installtex(6,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/martin/ball1.png"],
 	        &xs, &ys, false) ||
 	    !installtex(7,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/martin/smoke.png"],
 	        &xs, &ys, false) ||
 	    !installtex(8,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/martin/ball2.png"],
 	        &xs, &ys, false) ||
 	    !installtex(9,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/martin/ball3.png"],
 	        &xs, &ys, false) ||
 	    !installtex(4,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/explosion.jpg"],
 	        &xs, &ys, false) ||
 	    !installtex(5,
-	        [_userDataIRI IRIByAppendingPathComponent:@"data/items.png"],
+	        [_gameDataIRI IRIByAppendingPathComponent:@"data/items.png"],
 	        &xs, &ys, false) ||
 	    !installtex(1,
-	        [_userDataIRI
+	        [_gameDataIRI
 	            IRIByAppendingPathComponent:@"data/crosshair.png"],
 	        &xs, &ys, false))
 		fatal(@"could not find core textures (hint: run cube from the "
@@ -182,8 +182,9 @@ VARP(minmillis, 0, 5, 1000);
 	exec(@"data/prefabs.cfg");
 	exec(@"data/sounds.cfg");
 	exec(@"servers.cfg");
-	if (!execfile(@"config.cfg"))
-		execfile(@"data/defaults.cfg");
+	if (!execfile([_userDataIRI IRIByAppendingPathComponent:@"config.cfg"]))
+		execfile([_gameDataIRI
+		    IRIByAppendingPathComponent:@"data/defaults.cfg"]);
 	exec(@"autoexec.cfg");
 
 	log(@"localconnect");

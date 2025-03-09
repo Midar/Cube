@@ -9,7 +9,7 @@ extern bool identexists(OFString *name);
 extern bool addcommand(OFString *name, void (*fun)(), int narg);
 extern int execute(OFString *p, bool down = true);
 extern void exec(OFString *cfgfile);
-extern bool execfile(OFString *cfgfile);
+extern bool execfile(OFIRI *cfgfile);
 extern void resetcomplete();
 extern void complete(OFString *s);
 extern void alias(OFString *name, OFString *action);

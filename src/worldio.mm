@@ -384,8 +384,10 @@ load_world(OFString *mname) // still supports all map formats that have existed
 			if (identexists(aliasname))
 				alias(aliasname, @"");
 		}
-		execfile(@"data/default_map_settings.cfg");
-		execfile(pcfname);
-		execfile(mcfname);
+		OFIRI *gameDataIRI = Cube.sharedInstance.gameDataIRI;
+		execfile([gameDataIRI IRIByAppendingPathComponent:
+		                          @"data/default_map_settings.cfg"]);
+		execfile([gameDataIRI IRIByAppendingPathComponent:pcfname]);
+		execfile([gameDataIRI IRIByAppendingPathComponent:mcfname]);
 	}
 }
