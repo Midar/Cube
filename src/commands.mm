@@ -279,7 +279,6 @@ execute(OFString *string, bool isDown)
 					}
 					val = execute(
 					    [identifier action], isDown);
-					break;
 				}
 			}
 		}
