@@ -479,7 +479,12 @@ demoplaybackstep()
 		        playerhistory.lastObject.lastupdate != playbacktime)) {
 			DynamicEntity *d = [target copy];
 			d.lastupdate = playbacktime;
+
+			if (playerhistory == nil)
+				playerhistory = [[OFMutableArray alloc] init];
+
 			[playerhistory addObject:d];
+
 			if (playerhistory.count > 20)
 				[playerhistory removeObjectAtIndex:0];
 		}
