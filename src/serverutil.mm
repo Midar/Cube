@@ -160,7 +160,7 @@ int
 main(int argc, char *argv[])
 {
 	int uprate = 0, maxcl = 4;
-	char *sdesc = "", *ip = "", *master = NULL, *passwd = "";
+	const char *sdesc = "", *ip = "", *master = NULL, *passwd = "";
 
 	for (int i = 1; i < argc; i++) {
 		char *a = &argv[i][2];
@@ -191,7 +191,8 @@ main(int argc, char *argv[])
 
 	if (enet_initialize() < 0)
 		fatal(@"Unable to initialise network module");
-	initserver(true, uprate, @(sdesc), @(ip), @(master), @(passwd), maxcl);
+	initserver(true, uprate, @(sdesc), @(ip),
+	    (master != NULL ? @(master) : nil), @(passwd), maxcl);
 	return 0;
 }
 #endif
