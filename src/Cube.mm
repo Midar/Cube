@@ -49,16 +49,16 @@ VARP(minmillis, 0, 5, 1000);
 	while ((option = [optionsParser nextOption]) != '\0') {
 		switch (option) {
 		case 'w':
-			_width = (int)optionsParser.argument.longLongValue;
+			_width = optionsParser.argument.intValue;
 			break;
 		case 'h':
-			_height = (int)optionsParser.argument.longLongValue;
+			_height = optionsParser.argument.intValue;
 			break;
 		case 'u':
-			uprate = (int)optionsParser.argument.longLongValue;
+			uprate = optionsParser.argument.intValue;
 			break;
 		case 'c':
-			maxcl = (int)optionsParser.argument.longLongValue;
+			maxcl = optionsParser.argument.intValue;
 			break;
 		case ':':
 		case '=':

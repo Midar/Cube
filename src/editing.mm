@@ -605,10 +605,8 @@ newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 	EDITSEL;
 	@autoreleasepool {
 		newentity(sel.x, sel.y, (int)player1.o.z, what,
-		    (int)[a1 longLongValueWithBase:0],
-		    (int)[a2 longLongValueWithBase:0],
-		    (int)[a3 longLongValueWithBase:0],
-		    (int)[a4 longLongValueWithBase:0]);
+		    [a1 intValueWithBase:0], [a2 intValueWithBase:0],
+		    [a3 intValueWithBase:0], [a4 intValueWithBase:0]);
 	}
 }
 

@@ -197,7 +197,7 @@ void
 texture(OFString *aframe, OFString *name)
 {
 	@autoreleasepool {
-		int num = curtexnum++, frame = (int)aframe.longLongValue;
+		int num = curtexnum++, frame = aframe.intValue;
 		if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
 			return;
 		mapping[num][frame] = 1;

@@ -106,8 +106,8 @@ keymap(OFString *code, OFString *key, OFString *action)
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
-	KeyMapping *mapping =
-	    [[KeyMapping alloc] initWithCode:(int)code.longLongValue name:key];
+	KeyMapping *mapping = [[KeyMapping alloc] initWithCode:code.intValue
+	                                                  name:key];
 	mapping.action = action;
 	[keyMappings addObject:mapping];
 }

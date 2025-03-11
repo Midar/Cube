@@ -68,10 +68,10 @@ mapmodel(
     OFString *rad, OFString *h, OFString *zoff, OFString *snap, OFString *name)
 {
 	MD2 *m = loadmodel(name);
-	m.mmi = [[MapModelInfo alloc] initWithRad:(int)rad.longLongValue
-	                                        h:(int)h.longLongValue
-	                                     zoff:(int)zoff.longLongValue
-	                                     snap:(int)snap.longLongValue
+	m.mmi = [[MapModelInfo alloc] initWithRad:rad.intValue
+	                                        h:h.intValue
+	                                     zoff:zoff.intValue
+	                                     snap:snap.intValue
 	                                     name:m.loadname];
 
 	if (mapmodels == nil)

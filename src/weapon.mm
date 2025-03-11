@@ -63,9 +63,9 @@ reloadtime(int gun)
 void
 weapon(OFString *a1, OFString *a2, OFString *a3)
 {
-	selectgun((a1.length > 0 ? (int)a1.longLongValue : -1),
-	    (a2.length > 0 ? (int)a2.longLongValue : -1),
-	    (a3.length > 0 ? (int)a3.longLongValue : -1));
+	selectgun((a1.length > 0 ? a1.intValue : -1),
+	    (a2.length > 0 ? a2.intValue : -1),
+	    (a3.length > 0 ? a3.intValue : -1));
 }
 COMMAND(weapon, ARG_3STR)
 

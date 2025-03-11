@@ -233,7 +233,7 @@ execute(OFString *string, bool isDown)
 			__kindof Identifier *identifier = identifiers[c];
 			if (identifier == nil) {
 				@try {
-					val = (int)[c longLongValueWithBase:0];
+					val = [c intValueWithBase:0];
 				} @catch (OFInvalidFormatException *e) {
 					conoutf(@"unknown command: %@", c);
 				}
@@ -258,8 +258,8 @@ execute(OFString *string, bool isDown)
 						else
 							[identifier
 							    setValue:
-							        (int)[w[1]
-							            longLongValueWithBase:
+							        [w[1]
+							            intValueWithBase:
 							                0]];
 					}
 				} else if ([identifier
@@ -439,7 +439,7 @@ void
 loopa(OFString *times, OFString *body)
 {
 	@autoreleasepool {
-		int t = (int)times.longLongValue;
+		int t = times.intValue;
 
 		loopi(t)
 		{
@@ -497,7 +497,7 @@ void
 at(OFString *s_, OFString *pos)
 {
 	@autoreleasepool {
-		int n = (int)pos.longLongValue;
+		int n = pos.intValue;
 		std::unique_ptr<char> copy(strdup(s_.UTF8String));
 		char *s = copy.get();
 

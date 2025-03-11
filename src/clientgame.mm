@@ -238,7 +238,7 @@ static OFString *sleepcmd = nil;
 void
 sleepf(OFString *msec, OFString *cmd)
 {
-	sleepwait = (int)msec.longLongValue + lastmillis;
+	sleepwait = msec.intValue + lastmillis;
 	sleepcmd = cmd;
 }
 COMMANDN(sleep, sleepf, ARG_2STR)

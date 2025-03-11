@@ -20,12 +20,13 @@
 
 	int x, y;
 	@try {
-		x = (int)_text.longLongValue;
+		x = _text.intValue;
 	} @catch (OFInvalidFormatException *e) {
 		x = 0;
 	}
+
 	@try {
-		y = (int)otherItem.text.longLongValue;
+		y = otherItem.text.intValue;
 	} @catch (OFInvalidFormatException *e) {
 		y = 0;
 	}
