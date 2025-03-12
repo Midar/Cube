@@ -1,5 +1,8 @@
 project('Cube', ['c', 'objc', 'objcpp'],
-  meson_version: '>=1.5.0')
+  meson_version: '>=1.5.0',
+  default_options: {
+    'optimization': '2'
+  })
 
 foreach lang : ['objc', 'objcpp']
   add_global_arguments(
