@@ -11,7 +11,7 @@ extern int execute(OFString *p, bool down = true);
 extern void exec(OFString *cfgfile);
 extern bool execfile(OFIRI *cfgfile);
 extern void resetcomplete();
-extern void complete(OFString *s);
+extern void complete(OFMutableString *s);
 extern void alias(OFString *name, OFString *action);
 extern OFString *getalias(OFString *name);
 extern void writecfg();

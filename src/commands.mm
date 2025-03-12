@@ -298,36 +298,29 @@ resetcomplete()
 }
 
 void
-complete(OFString *s_)
+complete(OFMutableString *s)
 {
 	@autoreleasepool {
-		std::unique_ptr<char> copy(strdup(s_.UTF8String));
-		char *s = copy.get();
+		if (![s hasPrefix:@"/"])
+			[s insertString:@"/" atIndex:0];
 
-		if (*s != '/') {
-			string t;
-			strcpy_s(t, s);
-			strcpy_s(s, "/");
-			strcat_s(s, t);
-		}
-
-		if (!s[1])
+		if (s.length == 1)
 			return;
 
 		if (!completesize) {
-			completesize = strlen(s) - 1;
+			completesize = s.length - 1;
 			completeidx = 0;
 		}
 
 		__block int idx = 0;
 		[identifiers enumerateKeysAndObjectsUsingBlock:^(
 		    OFString *name, Identifier *identifier, bool *stop) {
-			if (strncmp(identifier.name.UTF8String, s + 1,
-			        completesize) == 0 &&
-			    idx++ == completeidx) {
-				strcpy_s(s, "/");
-				strcat_s(s, identifier.name.UTF8String);
-			}
+			if (strncmp(identifier.name.UTF8String,
+			        s.UTF8String + 1, completesize) == 0 &&
+			    idx++ == completeidx)
+				[s replaceCharactersInRange:OFMakeRange(
+				                                1, s.length - 1)
+				                 withString:identifier.name];
 		}];
 
 		completeidx++;
