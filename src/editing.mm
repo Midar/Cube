@@ -4,6 +4,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "OFString+Cube.h"
 
 bool editmode = false;
 
@@ -605,8 +606,8 @@ newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 	EDITSEL;
 	@autoreleasepool {
 		newentity(sel.x, sel.y, (int)player1.o.z, what,
-		    [a1 intValueWithBase:0], [a2 intValueWithBase:0],
-		    [a3 intValueWithBase:0], [a4 intValueWithBase:0]);
+		    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
+		    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
 	}
 }
 

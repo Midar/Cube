@@ -206,6 +206,9 @@ loadsky(OFString *basename)
 	@autoreleasepool {
 		static OFString *lastsky = @"";
 
+		basename = [basename stringByReplacingOccurrencesOfString:@"\\"
+		                                               withString:@"/"];
+
 		if ([lastsky isEqual:basename])
 			return;
 

@@ -8,6 +8,7 @@
 #import "Alias.h"
 #import "Command.h"
 #import "Identifier.h"
+#import "OFString+Cube.h"
 #import "Variable.h"
 
 // contains ALL vars/commands/aliases
@@ -181,6 +182,54 @@ lookup(OFString *n) // find value of ident referenced with $ in exp
 	return n;
 }
 
+int
+executeIdentifier(__kindof Identifier *identifier,
+    OFArray<OFString *> *arguments, bool isDown)
+{
+	if (identifier == nil) {
+		@try {
+			return [arguments[0] intValueWithBase:0];
+		} @catch (OFInvalidFormatException *e) {
+			conoutf(@"unknown command: %@", arguments[0]);
+			return 0;
+		} @catch (OFOutOfRangeException *e) {
+			conoutf(@"invalid value: %@", arguments[0]);
+			return 0;
+		}
+	}
+
+	if ([identifier isKindOfClass:Command.class])
+		// game defined commands use very ad-hoc function signature,
+		// and just call it
+		return [identifier callWithArguments:arguments isDown:isDown];
+
+	if ([identifier isKindOfClass:Variable.class]) {
+		if (!isDown)
+			return 0;
+
+		// game defined variables
+		if (arguments.count < 2 || arguments[1].length == 0)
+			[identifier printValue];
+		else
+			[identifier
+			    setValue:[arguments[1] cube_intValueWithBase:0]];
+	}
+
+	if ([identifier isKindOfClass:Alias.class]) {
+		// alias, also used as functions and (global) variables
+		for (int i = 1; i < arguments.count; i++) {
+			// set any arguments as (global) arg values so
+			// functions can access them
+			OFString *t = [OFString stringWithFormat:@"arg%d", i];
+			alias(t, arguments[i]);
+		}
+
+		return execute([identifier action], isDown);
+	}
+
+	return 0;
+}
+
 // all evaluation happens here, recursively
 int
 execute(OFString *string, bool isDown)
@@ -230,55 +279,8 @@ execute(OFString *string, bool isDown)
 			if (c.length == 0)
 				continue;
 
-			__kindof Identifier *identifier = identifiers[c];
-			if (identifier == nil) {
-				@try {
-					val = [c intValueWithBase:0];
-				} @catch (OFInvalidFormatException *e) {
-					conoutf(@"unknown command: %@", c);
-				}
-			} else {
-				if ([identifier isKindOfClass:Command.class]) {
-					// game defined commands use very
-					// ad-hoc function signature, and just
-					// call it
-					OFArray<OFString *> *arguments =
-					    [[OFArray alloc]
-					        initWithObjects:w
-					                  count:numargs];
-					val = [identifier
-					    callWithArguments:arguments
-					               isDown:isDown];
-				} else if ([identifier
-				               isKindOfClass:Variable.class]) {
-					// game defined variables
-					if (isDown) {
-						if (w[1].length == 0)
-							[identifier printValue];
-						else
-							[identifier
-							    setValue:
-							        [w[1]
-							            intValueWithBase:
-							                0]];
-					}
-				} else if ([identifier
-				               isKindOfClass:Alias.class]) {
-					// alias, also used as functions and
-					// (global) variables
-					for (int i = 1; i < numargs; i++) {
-						// set any arguments as
-						// (global) arg values so
-						// functions can access them
-						OFString *t = [OFString
-						    stringWithFormat:@"arg%d",
-						    i];
-						alias(t, w[i]);
-					}
-					val = execute(
-					    [identifier action], isDown);
-				}
-			}
+			val = executeIdentifier(identifiers[c],
+			    [OFArray arrayWithObjects:w count:numargs], isDown);
 		}
 
 		return val;
@@ -378,13 +380,12 @@ writecfg()
 		return;
 	}
 
-	[stream writeString:
-	            @"// automatically written on exit, do not modify\n"
-	            @"// delete this file to have defaults.cfg overwrite these "
-	            @"settings\n"
-	            @"// modify settings in game, or put settings in "
-	            @"autoexec.cfg to override anything\n"
-	            @"\n"];
+	[stream writeString:@"// automatically written on exit, do not modify\n"
+	                    @"// delete this file to have defaults.cfg "
+	                    @"overwrite these settings\n"
+	                    @"// modify settings in game, or put settings in "
+	                    @"autoexec.cfg to override anything\n"
+	                    @"\n"];
 	writeclientinfo(stream);
 	[stream writeString:@"\n"];
 
@@ -418,8 +419,8 @@ writecfg()
 COMMAND(writecfg, ARG_NONE)
 
 // below the commands that implement a small imperative language. thanks to the
-// semantics of
-// () and [] expressions, any control construct can be defined trivially.
+// semantics of () and [] expressions, any control construct can be defined
+// trivially.
 
 void
 intset(OFString *name, int v)
@@ -439,7 +440,7 @@ void
 loopa(OFString *times, OFString *body)
 {
 	@autoreleasepool {
-		int t = times.intValue;
+		int t = times.cube_intValue;
 
 		loopi(t)
 		{
@@ -497,10 +498,9 @@ void
 at(OFString *s_, OFString *pos)
 {
 	@autoreleasepool {
-		int n = pos.intValue;
+		int n = pos.cube_intValue;
 		std::unique_ptr<char> copy(strdup(s_.UTF8String));
 		char *s = copy.get();
-
 		loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
 		s[strcspn(s, " \0")] = 0;
 		concat(@(s));

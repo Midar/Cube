@@ -88,6 +88,8 @@ music(OFString *name)
 	stopsound();
 	if (soundvol && musicvol) {
 		@autoreleasepool {
+			name = [name stringByReplacingOccurrencesOfString:@"\\"
+			                                       withString:@"/"];
 			OFString *path =
 			    [OFString stringWithFormat:@"packages/%@", name];
 			OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
@@ -148,7 +150,8 @@ registersound(OFString *name)
 	if (snames == nil)
 		snames = [[OFMutableArray alloc] init];
 
-	[snames addObject:name];
+	[snames addObject:[name stringByReplacingOccurrencesOfString:@"\\"
+	                                                  withString:@"/"]];
 	samples.add(NULL);
 
 	return samples.length() - 1;

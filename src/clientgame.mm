@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "OFString+Cube.h"
 
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
@@ -238,7 +239,7 @@ static OFString *sleepcmd = nil;
 void
 sleepf(OFString *msec, OFString *cmd)
 {
-	sleepwait = msec.intValue + lastmillis;
+	sleepwait = msec.cube_intValue + lastmillis;
 	sleepcmd = cmd;
 }
 COMMANDN(sleep, sleepf, ARG_2STR)

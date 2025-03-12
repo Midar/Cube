@@ -5,6 +5,7 @@
 #include <ctype.h>
 
 #import "KeyMapping.h"
+#import "OFString+Cube.h"
 
 struct cline {
 	char *cref;
@@ -106,8 +107,8 @@ keymap(OFString *code, OFString *key, OFString *action)
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
-	KeyMapping *mapping = [[KeyMapping alloc] initWithCode:code.intValue
-	                                                  name:key];
+	KeyMapping *mapping =
+	    [[KeyMapping alloc] initWithCode:code.cube_intValue name:key];
 	mapping.action = action;
 	[keyMappings addObject:mapping];
 }

@@ -5,6 +5,7 @@
 #import "DynamicEntity.h"
 #import "MD2.h"
 #import "MapModelInfo.h"
+#import "OFString+Cube.h"
 
 static OFMutableDictionary<OFString *, MD2 *> *mdllookup = nil;
 static OFMutableArray<MD2 *> *mapmodels = nil;
@@ -67,11 +68,12 @@ void
 mapmodel(
     OFString *rad, OFString *h, OFString *zoff, OFString *snap, OFString *name)
 {
-	MD2 *m = loadmodel(name);
-	m.mmi = [[MapModelInfo alloc] initWithRad:rad.intValue
-	                                        h:h.intValue
-	                                     zoff:zoff.intValue
-	                                     snap:snap.intValue
+	MD2 *m = loadmodel([name stringByReplacingOccurrencesOfString:@"\\"
+	                                                   withString:@"/"]);
+	m.mmi = [[MapModelInfo alloc] initWithRad:rad.cube_intValue
+	                                        h:h.cube_intValue
+	                                     zoff:zoff.cube_intValue
+	                                     snap:snap.cube_intValue
 	                                     name:m.loadname];
 
 	if (mapmodels == nil)

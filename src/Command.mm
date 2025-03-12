@@ -1,4 +1,5 @@
 #import "Command.h"
+#import "OFString+Cube.h"
 
 #include <cube.h>
 
@@ -38,34 +39,34 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
 			((void(__cdecl *)(int))_function)(
-			    [arguments[1] intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase:0]);
 		}
 		break;
 	case ARG_2INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
 			((void(__cdecl *)(int, int))_function)(
-			    [arguments[1] intValueWithBase:0],
-			    [arguments[2] intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase:0],
+			    [arguments[2] cube_intValueWithBase:0]);
 		}
 		break;
 	case ARG_3INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 4);
 			((void(__cdecl *)(int, int, int))_function)(
-			    [arguments[1] intValueWithBase:0],
-			    [arguments[2] intValueWithBase:0],
-			    [arguments[3] intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase:0],
+			    [arguments[2] cube_intValueWithBase:0],
+			    [arguments[3] cube_intValueWithBase:0]);
 		}
 		break;
 	case ARG_4INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 5);
 			((void(__cdecl *)(int, int, int, int))_function)(
-			    [arguments[1] intValueWithBase:0],
-			    [arguments[2] intValueWithBase:0],
-			    [arguments[3] intValueWithBase:0],
-			    [arguments[4] intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase:0],
+			    [arguments[2] cube_intValueWithBase:0],
+			    [arguments[3] cube_intValueWithBase:0],
+			    [arguments[4] cube_intValueWithBase:0]);
 		}
 		break;
 	case ARG_NONE:

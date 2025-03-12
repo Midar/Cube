@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "OFString+Cube.h"
 #import "Projectile.h"
 
 static const int MONSTERDAMAGEFACTOR = 4;
@@ -63,9 +64,9 @@ reloadtime(int gun)
 void
 weapon(OFString *a1, OFString *a2, OFString *a3)
 {
-	selectgun((a1.length > 0 ? a1.intValue : -1),
-	    (a2.length > 0 ? a2.intValue : -1),
-	    (a3.length > 0 ? a3.intValue : -1));
+	selectgun((a1.length > 0 ? a1.cube_intValue : -1),
+	    (a2.length > 0 ? a2.cube_intValue : -1),
+	    (a3.length > 0 ? a3.cube_intValue : -1));
 }
 COMMAND(weapon, ARG_3STR)
 

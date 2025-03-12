@@ -23,11 +23,16 @@
 		x = _text.intValue;
 	} @catch (OFInvalidFormatException *e) {
 		x = 0;
+	} @catch (OFOutOfRangeException *e) {
+		x = 0;
 	}
 
-	@try {
+	@
+	try {
 		y = otherItem.text.intValue;
 	} @catch (OFInvalidFormatException *e) {
+		y = 0;
+	} @catch (OFOutOfRangeException *e) {
 		y = 0;
 	}
 

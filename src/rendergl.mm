@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "OFString+Cube.h"
 
 #ifdef DARWIN
 # define GL_COMBINE_EXT GL_COMBINE_ARB
@@ -197,11 +198,15 @@ void
 texture(OFString *aframe, OFString *name)
 {
 	@autoreleasepool {
-		int num = curtexnum++, frame = aframe.intValue;
+		int num = curtexnum++, frame = aframe.cube_intValue;
+
 		if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
 			return;
+
 		mapping[num][frame] = 1;
-		mapname[num][frame] = name;
+		mapname[num][frame] =
+		    [name stringByReplacingOccurrencesOfString:@"\\"
+		                                    withString:@"/"];
 	}
 }
 COMMAND(texture, ARG_2STR)
