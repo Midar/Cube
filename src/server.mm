@@ -207,8 +207,8 @@ process(ENetPacket *packet, int sender) // sender may be -1
 	char text[MAXTRANS];
 	int cn = -1, type;
 
-	while (p < end)
-		switch (type = getint(p)) {
+	while (p < end) {
+		switch ((type = getint(p))) {
 		case SV_TEXT:
 			sgetstr();
 			break;
@@ -294,13 +294,11 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			send(sender, recvmap(sender));
 			return;
 
-		case SV_EXT: // allows for new features that require no server
-		             // updates
-		{
+		// allows for new features that require no server updates
+		case SV_EXT:
 			for (int n = getint(p); n; n--)
 				getint(p);
 			break;
-		}
 
 		default: {
 			int size = msgsizelookup(type);
@@ -311,11 +309,13 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			loopi(size - 1) getint(p);
 		}
 		}
+	}
 
 	if (p > end) {
 		disconnect_client(sender, @"end of packet");
 		return;
 	}
+
 	multicast(packet, sender);
 }
 
@@ -352,14 +352,16 @@ multicast(ENetPacket *packet, int sender)
 {
 	size_t count = clients.count;
 	for (size_t i = 0; i < count; i++)
-		send(i, packet);
+		if (i != sender)
+			send(i, packet);
 }
 
 void
 localclienttoserver(ENetPacket *packet)
 {
 	process(packet, 0);
-	if (!packet->referenceCount)
+
+	if (packet->referenceCount == 0)
 		enet_packet_destroy(packet);
 }
 
