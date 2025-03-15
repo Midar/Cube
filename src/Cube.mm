@@ -198,7 +198,10 @@ VARP(minmillis, 0, 5, 1000);
 
 	log(@"mainloop");
 	int ignore = 5;
+	OFDate *past = [OFDate date];
 	for (;;) {
+		[OFRunLoop.mainRunLoop runUntilDate:past];
+
 		int millis = SDL_GetTicks() * gamespeed / 100;
 		if (millis - lastmillis > 200)
 			lastmillis = millis - 200;
