@@ -8,6 +8,8 @@
 
 #include "tools.h"
 
+#define _MAXDEFSTR 260
+
 @class DynamicEntity;
 
 @interface Cube: OFObject <OFApplicationDelegate>

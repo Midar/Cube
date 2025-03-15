@@ -47,8 +47,10 @@ sendstring(OFString *t_, uchar *&p)
 {
 	@autoreleasepool {
 		const char *t = t_.UTF8String;
-		while (*t)
+
+		for (size_t i = 0; i < _MAXDEFSTR && *t != '\0'; i++)
 			putint(p, *t++);
+
 		putint(p, 0);
 	}
 }

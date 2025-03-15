@@ -55,31 +55,6 @@ typedef unsigned int uint;
 # define _vsnprintf vsnprintf
 #endif
 
-// easy safe strings
-
-#define _MAXDEFSTR 260
-typedef char string[_MAXDEFSTR];
-
-inline void
-strn0cpy(char *d, const char *s, size_t m)
-{
-	strncpy(d, s, m);
-	d[(m)-1] = 0;
-}
-
-inline void
-strcpy_s(char *d, const char *s)
-{
-	strn0cpy(d, s, _MAXDEFSTR);
-}
-
-inline void
-strcat_s(char *d, const char *s)
-{
-	size_t n = strlen(d);
-	strn0cpy(d + n, s, _MAXDEFSTR - n);
-}
-
 #define fast_f2nat(val) ((int)(val))
 
 extern void endianswap(void *, int, int);

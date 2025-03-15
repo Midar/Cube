@@ -7,11 +7,31 @@
 #import "KeyMapping.h"
 #import "OFString+Cube.h"
 
-struct cline {
-	char *cref;
-	int outtime;
-};
-vector<cline> conlines;
+@interface ConsoleLine: OFObject
+@property (readonly, copy) OFString *text;
+@property (readonly) int outtime;
+
+- (instancetype)initWithText:(OFString *)text outtime:(int)outtime;
+@end
+
+static OFMutableArray<ConsoleLine *> *conlines;
+
+@implementation ConsoleLine
+- (instancetype)initWithText:(OFString *)text outtime:(int)outtime
+{
+	self = [super init];
+
+	_text = [text copy];
+	_outtime = outtime;
+
+	return self;
+}
+
+- (OFString *)description
+{
+	return _text;
+}
+@end
 
 const int ndraw = 5;
 const int WORDWRAP = 80;
@@ -32,22 +52,29 @@ COMMANDN(conskip, setconskip, ARG_1INT)
 static void
 conline(OFString *sf, bool highlight) // add a line to the console buffer
 {
-	cline cl;
+	OFMutableString *text;
+
 	// constrain the buffer size
-	cl.cref = conlines.length() > 100 ? conlines.pop().cref
-	                                  : (char *)calloc(_MAXDEFSTR, 1);
-	// for how long to keep line on screen
-	cl.outtime = lastmillis;
-	conlines.insert(0, cl);
-	if (highlight) {
+	if (conlines.count > 100) {
+		text = [conlines.lastObject.text mutableCopy];
+		[conlines removeLastObject];
+	} else
+		text = [[OFMutableString alloc] init];
+
+	if (highlight)
 		// show line in a different colour, for chat etc.
-		cl.cref[0] = '\f';
-		cl.cref[1] = 0;
-		strcat_s(cl.cref, sf.UTF8String);
-	} else {
-		strcpy_s(cl.cref, sf.UTF8String);
-	}
-	puts(cl.cref);
+		[text appendString:@"\f"];
+
+	[text appendString:sf];
+
+	if (conlines == nil)
+		conlines = [[OFMutableArray alloc] init];
+
+	[conlines insertObject:[[ConsoleLine alloc] initWithText:text
+	                                                 outtime:lastmillis]
+	               atIndex:0];
+
+	puts(text.UTF8String);
 #ifndef OF_WINDOWS
 	fflush(stdout);
 #endif
@@ -74,26 +101,29 @@ conoutf(OFConstantString *format, ...)
 	}
 }
 
+// render buffer taking into account time & scrolling
 void
-renderconsole() // render buffer taking into account time & scrolling
+renderconsole()
 {
 	int nd = 0;
-	char *refs[ndraw];
-	loopv(conlines)
-	{
-		if (conskip ? i >= conskip - 1 || i >= conlines.length() - ndraw
-		            : lastmillis - conlines[i].outtime < 20000) {
-			refs[nd++] = conlines[i].cref;
+	OFString *refs[ndraw];
+
+	size_t i = 0;
+	for (ConsoleLine *conline in conlines) {
+		if (conskip ? i >= conskip - 1 || i >= conlines.count - ndraw
+		            : lastmillis - conline.outtime < 20000) {
+			refs[nd++] = conline.text;
 			if (nd == ndraw)
 				break;
 		}
+
+		i++;
 	}
-	@autoreleasepool {
-		loopj(nd)
-		{
-			draw_text(@(refs[j]), FONTH / 3,
-			    (FONTH / 4 * 5) * (nd - j - 1) + FONTH / 3, 2);
-		}
+
+	loopj(nd)
+	{
+		draw_text(refs[j], FONTH / 3,
+		    (FONTH / 4 * 5) * (nd - j - 1) + FONTH / 3, 2);
 	}
 }
 

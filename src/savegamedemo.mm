@@ -105,9 +105,9 @@ savestate(OFIRI *IRI)
 		gzputi(SAVEGAMEVERSION);
 		OFData *data = [player1 dataBySerializing];
 		gzputi(data.count);
-		char map[260] = { 0 };
+		char map[_MAXDEFSTR] = { 0 };
 		memcpy(map, getclientmap().UTF8String,
-		    min(getclientmap().UTF8StringLength, 259));
+		    min(getclientmap().UTF8StringLength, _MAXDEFSTR - 1));
 		gzwrite(f, map, _MAXDEFSTR);
 		gzputi(gamemode);
 		gzputi(ents.length());
@@ -163,7 +163,8 @@ loadstate(OFIRI *IRI)
 			return;
 		}
 
-		string buf;
+		char mapname[_MAXDEFSTR] = { 0 };
+		char buf[8];
 		gzread(f, buf, 8);
 		if (strncmp(buf, "CUBESAVE", 8))
 			goto out;
@@ -174,7 +175,6 @@ loadstate(OFIRI *IRI)
 		if (gzgeti() != SAVEGAMEVERSION ||
 		    gzgeti() != DynamicEntity.serializedSize)
 			goto out;
-		string mapname;
 		gzread(f, mapname, _MAXDEFSTR);
 		nextmode = gzgeti();
 		@autoreleasepool {
@@ -453,7 +453,7 @@ demoplaybackstep()
 		int extras;
 		// read additional client side state not present in normal
 		// network stream
-		if (extras = gzget()) {
+		if ((extras = gzget())) {
 			target.gunselect = gzget();
 			target.lastattackgun = gzget();
 			target.lastaction = scaletime(gzgeti());
@@ -464,9 +464,9 @@ demoplaybackstep()
 			loopi(NUMGUNS) target.ammo[i] = gzget();
 			target.state = gzget();
 			target.lastmove = playbacktime;
-			if (bdamage = gzgeti())
+			if ((bdamage = gzgeti()))
 				damageblend(bdamage);
-			if (ddamage = gzgeti()) {
+			if ((ddamage = gzgeti())) {
 				gzgetv(dorig);
 				particle_splash(3, ddamage, 1000, dorig);
 			}

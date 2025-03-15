@@ -40,8 +40,7 @@ static int resolverlimit = 1000;
 				continue;
 
 			_query = resolverqueries.lastObject;
-			[resolverqueries
-			    removeObjectAtIndex:resolverqueries.count - 1];
+			[resolverqueries removeLastObject];
 			_starttime = lastmillis;
 		}
 
@@ -148,8 +147,7 @@ resolvercheck(OFString **name, ENetAddress *address)
 			ResolverResult *rr = resolverresults.lastObject;
 			*name = rr.query;
 			*address = rr.address;
-			[resolverresults
-			    removeObjectAtIndex:resolverresults.count - 1];
+			[resolverresults removeLastObject];
 			return true;
 		}
 
