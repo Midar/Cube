@@ -39,8 +39,8 @@ conline(OFString *sf, bool highlight) // add a line to the console buffer
 	// for how long to keep line on screen
 	cl.outtime = lastmillis;
 	conlines.insert(0, cl);
-	if (highlight) // show line in a different colour, for chat etc.
-	{
+	if (highlight) {
+		// show line in a different colour, for chat etc.
 		cl.cref[0] = '\f';
 		cl.cref[1] = 0;
 		strcat_s(cl.cref, sf.UTF8String);
@@ -152,7 +152,8 @@ void
 mapmsg(OFString *s)
 {
 	@autoreleasepool {
-		strn0cpy(hdr.maptitle, s.UTF8String, 128);
+		memset(hdr.maptitle, '\0', sizeof(hdr.maptitle));
+		strncpy(hdr.maptitle, s.UTF8String, 127);
 	}
 }
 COMMAND(mapmsg, ARG_1STR)

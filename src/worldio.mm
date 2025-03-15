@@ -12,29 +12,31 @@ backup(OFString *name, OFString *backupname)
 static OFString *cgzname, *bakname, *pcfname, *mcfname;
 
 static void
-setnames(OFString *name_)
+setnames(OFString *name)
 {
 	@autoreleasepool {
-		const char *name = name_.UTF8String;
-		string pakname, mapname;
-		const char *slash = strpbrk(name, "/\\");
-		if (slash) {
-			strn0cpy(pakname, name, slash - name + 1);
-			strcpy_s(mapname, slash + 1);
+		OFCharacterSet *cs =
+		    [OFCharacterSet characterSetWithCharactersInString:@"/\\"];
+		OFRange range = [name rangeOfCharacterFromSet:cs];
+		OFString *pakname, *mapname;
+
+		if (range.location != OFNotFound) {
+			pakname = [name substringToIndex:range.location];
+			mapname = [name substringFromIndex:range.location + 1];
 		} else {
-			strcpy_s(pakname, "base");
-			strcpy_s(mapname, name);
+			pakname = @"base";
+			mapname = name;
 		}
 
 		cgzname = [[OFString alloc]
-		    initWithFormat:@"packages/%s/%s.cgz", pakname, mapname];
+		    initWithFormat:@"packages/%@/%@.cgz", pakname, mapname];
 		bakname =
-		    [[OFString alloc] initWithFormat:@"packages/%s/%s_%d.BAK",
+		    [[OFString alloc] initWithFormat:@"packages/%@/%@_%d.BAK",
 		                      pakname, mapname, lastmillis];
 		pcfname = [[OFString alloc]
-		    initWithFormat:@"packages/%s/package.cfg", pakname];
+		    initWithFormat:@"packages/%@/package.cfg", pakname];
 		mcfname = [[OFString alloc]
-		    initWithFormat:@"packages/%s/%s.cfg", pakname, mapname];
+		    initWithFormat:@"packages/%@/%@.cfg", pakname, mapname];
 	}
 }
 
