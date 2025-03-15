@@ -5,17 +5,20 @@
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
 
-struct client // server side version of "dynent" type
-{
-	int type;
-	ENetPeer *peer;
-	string hostname;
-	string mapvote;
-	string name;
-	int modevote;
-};
+// server side version of "dynent" type
+@interface Client: OFObject
+@property (nonatomic) int type;
+@property (nonatomic) ENetPeer *peer;
+@property (copy, nonatomic) OFString *hostname;
+@property (copy, nonatomic) OFString *mapvote;
+@property (copy, nonatomic) OFString *name;
+@property (nonatomic) int modevote;
+@end
 
-vector<client> clients;
+@implementation Client
+@end
+
+static OFMutableArray<Client *> *clients;
 
 int maxclients = 8;
 static OFString *smapname;
@@ -28,8 +31,8 @@ struct server_entity {
 
 vector<server_entity> sents;
 
-bool notgotitems =
-    true; // true when map has changed and waiting for clients to send item
+// true when map has changed and waiting for clients to send item
+bool notgotitems = true;
 int mode = 0;
 
 void
@@ -56,20 +59,19 @@ int bsend = 0, brec = 0, laststatus = 0, lastsec = 0;
 
 void process(ENetPacket *packet, int sender);
 void multicast(ENetPacket *packet, int sender);
-void disconnect_client(int n, char *reason);
+void disconnect_client(int n, OFString *reason);
 
 void
 send(int n, ENetPacket *packet)
 {
 	if (!packet)
 		return;
+
 	switch (clients[n].type) {
-	case ST_TCPIP: {
+	case ST_TCPIP:
 		enet_peer_send(clients[n].peer, 0, packet);
 		bsend += packet->dataLength;
 		break;
-	}
-
 	case ST_LOCAL:
 		localservertoclient(packet->data, packet->dataLength);
 		break;
@@ -112,9 +114,10 @@ sendservmsg(OFString *msg)
 }
 
 void
-disconnect_client(int n, char *reason)
+disconnect_client(int n, OFString *reason)
 {
-	printf("disconnecting client (%s) [%s]\n", clients[n].hostname, reason);
+	[OFStdOut writeFormat:@"disconnecting client (%@) [%@]\n",
+	          clients[n].hostname, reason];
 	enet_peer_disconnect(clients[n].peer);
 	clients[n].type = ST_EMPTY;
 	send2(true, -1, SV_CDIS, n);
@@ -143,37 +146,44 @@ pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
 void
 resetvotes()
 {
-	loopv(clients) clients[i].mapvote[0] = 0;
+	for (Client *client in clients)
+		client.mapvote = @"";
 }
 
 bool
-vote(char *map, int reqmode, int sender)
+vote(OFString *map, int reqmode, int sender)
 {
-	strcpy_s(clients[sender].mapvote, map);
+	clients[sender].mapvote = map;
 	clients[sender].modevote = reqmode;
+
 	int yes = 0, no = 0;
-	loopv(clients) if (clients[i].type != ST_EMPTY)
-	{
-		if (clients[i].mapvote[0]) {
-			if (strcmp(clients[i].mapvote, map) == 0 &&
-			    clients[i].modevote == reqmode)
-				yes++;
-			else
+	for (Client *client in clients) {
+		if (client.type != ST_EMPTY) {
+			if (client.mapvote.length > 0) {
+				if ([client.mapvote isEqual:map] &&
+				    client.modevote == reqmode)
+					yes++;
+				else
+					no++;
+			} else
 				no++;
-		} else
-			no++;
+		}
 	}
+
 	if (yes == 1 && no == 0)
 		return true; // single player
+
 	@autoreleasepool {
 		OFString *msg =
 		    [OFString stringWithFormat:
-		                  @"%s suggests %@ on map %s (set map to vote)",
+		                  @"%@ suggests %@ on map %@ (set map to vote)",
 		              clients[sender].name, modestr(reqmode), map];
 		sendservmsg(msg);
 	}
+
 	if (yes / (float)(yes + no) <= 0.5f)
 		return false;
+
 	sendservmsg(@"vote passed");
 	resetvotes();
 	return true;
@@ -188,7 +198,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 {
 	if (ENET_NET_TO_HOST_16(*(ushort *)packet->data) !=
 	    packet->dataLength) {
-		disconnect_client(sender, "packet length");
+		disconnect_client(sender, @"packet length");
 		return;
 	}
 
@@ -205,7 +215,9 @@ process(ENetPacket *packet, int sender) // sender may be -1
 
 		case SV_INITC2S:
 			sgetstr();
-			strcpy_s(clients[cn].name, text);
+			@autoreleasepool {
+				clients[cn].name = @(text);
+			}
 			sgetstr();
 			getint(p);
 			break;
@@ -215,9 +227,11 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			int reqmode = getint(p);
 			if (reqmode < 0)
 				reqmode = 0;
-			if (smapname.length > 0 && !mapreload &&
-			    !vote(text, reqmode, sender))
-				return;
+			@autoreleasepool {
+				if (smapname.length > 0 && !mapreload &&
+				    !vote(@(text), reqmode, sender))
+					return;
+			}
 			mapreload = false;
 			mode = reqmode;
 			minremain = mode & 1 ? 15 : 10;
@@ -256,9 +270,9 @@ process(ENetPacket *packet, int sender) // sender may be -1
 
 		case SV_POS: {
 			cn = getint(p);
-			if (cn < 0 || cn >= clients.length() ||
+			if (cn < 0 || cn >= clients.count ||
 			    clients[cn].type == ST_EMPTY) {
-				disconnect_client(sender, "client num");
+				disconnect_client(sender, @"client num");
 				return;
 			}
 			int size = msgsizelookup(type);
@@ -291,7 +305,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		default: {
 			int size = msgsizelookup(type);
 			if (size == -1) {
-				disconnect_client(sender, "tag type");
+				disconnect_client(sender, @"tag type");
 				return;
 			}
 			loopi(size - 1) getint(p);
@@ -299,7 +313,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		}
 
 	if (p > end) {
-		disconnect_client(sender, "end of packet");
+		disconnect_client(sender, @"end of packet");
 		return;
 	}
 	multicast(packet, sender);
@@ -319,7 +333,7 @@ send_welcome(int n)
 		putint(p, *smapname.UTF8String);
 	}
 	sendstring(serverpassword, p);
-	putint(p, clients.length() > maxclients);
+	putint(p, clients.count > maxclients);
 	if (smapname.length > 0) {
 		putint(p, SV_MAPCHANGE);
 		sendstring(smapname, p);
@@ -336,12 +350,9 @@ send_welcome(int n)
 void
 multicast(ENetPacket *packet, int sender)
 {
-	loopv(clients)
-	{
-		if (i == sender)
-			continue;
+	size_t count = clients.count;
+	for (size_t i = 0; i < count; i++)
 		send(i, packet);
-	}
 }
 
 void
@@ -352,11 +363,21 @@ localclienttoserver(ENetPacket *packet)
 		enet_packet_destroy(packet);
 }
 
-client &
+Client *
 addclient()
 {
-	loopv(clients) if (clients[i].type == ST_EMPTY) return clients[i];
-	return clients.add();
+	for (Client *client in clients)
+		if (client.type == ST_EMPTY)
+			return client;
+
+	Client *client = [[Client alloc] init];
+
+	if (clients == nil)
+		clients = [[OFMutableArray alloc] init];
+
+	[clients addObject:client];
+
+	return client;
 }
 
 void
@@ -379,8 +400,11 @@ startintermission()
 void
 resetserverifempty()
 {
-	loopv(clients) if (clients[i].type != ST_EMPTY) return;
-	clients.setsize(0);
+	for (Client *client in clients)
+		if (client.type != ST_EMPTY)
+			return;
+
+	[clients removeAllObjects];
 	smapname = @"";
 	resetvotes();
 	resetitems();
@@ -416,12 +440,16 @@ serverslice(int seconds,
 		checkintermission();
 	if (interm && seconds > interm) {
 		interm = 0;
-		loopv(clients) if (clients[i].type != ST_EMPTY)
-		{
-			send2(true, i, SV_MAPRELOAD,
-			    0); // ask a client to trigger map reload
-			mapreload = true;
-			break;
+		size_t i = 0;
+		for (Client *client in clients) {
+			if (client.type != ST_EMPTY) {
+				// ask a client to trigger map reload
+				send2(true, i, SV_MAPRELOAD, 0);
+				mapreload = true;
+				break;
+			}
+
+			i++;
 		}
 	}
 
@@ -431,16 +459,20 @@ serverslice(int seconds,
 		return; // below is network only
 
 	int numplayers = 0;
-	loopv(clients) if (clients[i].type != ST_EMPTY)++ numplayers;
-	serverms(mode, numplayers, minremain, smapname, seconds,
-	    clients.length() >= maxclients);
+	for (Client *client in clients)
+		if (client.type != ST_EMPTY)
+			numplayers++;
 
-	if (seconds - laststatus >
-	    60) // display bandwidth stats, useful for server ops
-	{
+	serverms(mode, numplayers, minremain, smapname, seconds,
+	    clients.count >= maxclients);
+
+	// display bandwidth stats, useful for server ops
+	if (seconds - laststatus > 60) {
 		nonlocalclients = 0;
-		loopv(clients) if (clients[i].type == ST_TCPIP)
-		    nonlocalclients++;
+		for (Client *client in clients)
+			if (client.type == ST_TCPIP)
+				nonlocalclients++;
+
 		laststatus = seconds;
 		if (nonlocalclients || bsend || brec)
 			printf("status: %d remote clients, %.1f send, %.1f rec "
@@ -454,18 +486,21 @@ serverslice(int seconds,
 	if (enet_host_service(serverhost, &event, timeout) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT: {
-			client &c = addclient();
+			Client *c = addclient();
 			c.type = ST_TCPIP;
 			c.peer = event.peer;
-			c.peer->data = (void *)(&c - &clients[0]);
+			c.peer->data = (void *)(clients.count - 1);
 			char hn[1024];
-			strcpy_s(c.hostname,
-			    (enet_address_get_host(
-			         &c.peer->address, hn, sizeof(hn)) == 0)
-			        ? hn
-			        : "localhost");
-			printf("client connected (%s)\n", c.hostname);
-			send_welcome(lastconnect = &c - &clients[0]);
+			@autoreleasepool {
+				c.hostname =
+				    (enet_address_get_host(
+				         &c.peer->address, hn, sizeof(hn)) == 0
+				            ? @(hn)
+				            : @"localhost");
+			}
+			[OFStdOut
+			    writeFormat:@"client connected (%@)\n", c.hostname];
+			send_welcome(lastconnect = clients.count - 1);
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE:
@@ -478,16 +513,16 @@ serverslice(int seconds,
 		case ENET_EVENT_TYPE_DISCONNECT:
 			if ((intptr_t)event.peer->data < 0)
 				break;
-			printf("disconnected client (%s)\n",
-			    clients[(intptr_t)event.peer->data].hostname);
-			clients[(intptr_t)event.peer->data].type = ST_EMPTY;
+			[OFStdOut writeFormat:@"disconnected client (%@)\n",
+			          clients[(size_t)event.peer->data].hostname];
+			clients[(size_t)event.peer->data].type = ST_EMPTY;
 			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);
 			event.peer->data = (void *)-1;
 			break;
 		}
 
 		if (numplayers > maxclients)
-			disconnect_client(lastconnect, "maxclients reached");
+			disconnect_client(lastconnect, @"maxclients reached");
 	}
 #ifndef _WIN32
 	fflush(stdout);
@@ -504,17 +539,18 @@ cleanupserver()
 void
 localdisconnect()
 {
-	loopv(clients) if (clients[i].type == ST_LOCAL) clients[i].type =
-	    ST_EMPTY;
+	for (Client *client in clients)
+		if (client.type == ST_LOCAL)
+			client.type = ST_EMPTY;
 }
 
 void
 localconnect()
 {
-	client &c = addclient();
+	Client *c = addclient();
 	c.type = ST_LOCAL;
-	strcpy_s(c.hostname, "local");
-	send_welcome(&c - &clients[0]);
+	c.hostname = @"local";
+	send_welcome(clients.count - 1);
 }
 
 void
@@ -526,7 +562,7 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 	servermsinit(master ? master : @"wouter.fov120.com/cube/masterserver/",
 	    sdesc, dedicated);
 
-	if (isdedicated = dedicated) {
+	if ((isdedicated = dedicated)) {
 		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVER_PORT };
 		@autoreleasepool {
 			if (ip.length > 0 &&
