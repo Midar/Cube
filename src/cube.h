@@ -20,8 +20,8 @@
 @property (nonatomic) int framesInMap;
 @end
 
-enum // block types, order matters!
-{
+// block types, order matters!
+enum {
 	SOLID = 0, // entirely solid cube [only specifies wtex]
 	CORNER,    // half full corner of a wall
 	FHF,       // floor heightfield using neighbour vdelta values
@@ -44,8 +44,8 @@ struct sqr {
 	uchar tag;     // used by triggers
 };
 
-enum // hardcoded texture numbers
-{
+// hardcoded texture numbers
+enum {
 	DEFAULT_SKY = 0,
 	DEFAULT_LIQUID,
 	DEFAULT_WALL,
@@ -53,8 +53,8 @@ enum // hardcoded texture numbers
 	DEFAULT_CEIL
 };
 
-enum // static entity types
-{
+// static entity types
+enum {
 	NOTUSED = 0, // entity slot not in use in map
 	LIGHT,       // lightsource, attr1 = radius, attr2 = intensity
 	PLAYERSTART, // attr1 = angle
@@ -76,8 +76,8 @@ enum // static entity types
 	MAXENTTYPES
 };
 
-struct persistent_entity // map entity
-{
+// map entity
+struct persistent_entity {
 	short x, y, z; // cube aligned position
 	short attr1;
 	uchar type; // type is one of the above
@@ -90,8 +90,8 @@ struct entity: public persistent_entity {
 
 #define MAPVERSION 5 // bump if map format changes, see worldio.cpp
 
-struct header // map file format header
-{
+// map file format header
+struct header {
 	char head[4];   // "CUBE"
 	int version;    // any >8bit quantity is a little indian
 	int headersize; // sizeof(header)
@@ -344,8 +344,8 @@ extern bool demoplayback;
 #define m_classicsp (gamemode == -2)
 #define isteam(a, b) (m_teammode && [a isEqual:b])
 
-enum // function signatures for script functions, see command.cpp
-{
+// function signatures for script functions, see command.mm
+enum {
 	ARG_1INT,
 	ARG_2INT,
 	ARG_3INT,

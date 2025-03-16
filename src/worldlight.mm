@@ -189,15 +189,16 @@ calclight()
 
 VARP(dynlight, 0, 16, 32);
 
-vector<block *> dlights;
+static OFMutableData *dlights;
 
 void
 cleardlights()
 {
-	while (!dlights.empty()) {
-		block *backup = dlights.pop();
+	while (dlights.count > 0) {
+		block *backup = *(block **)[dlights lastItem];
+		[dlights removeLastItem];
 		blockpaste(*backup);
-		free(backup);
+		OFFreeMemory(backup);
 	}
 }
 
@@ -227,7 +228,13 @@ dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
 	if (b.ys + b.y > ssize - 2)
 		b.ys = ssize - 2 - b.y;
 
-	dlights.add(blockcopy(b)); // backup area before rendering in dynlight
+	if (dlights == nil)
+		dlights =
+		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
+
+	// backup area before rendering in dynlight
+	block *copy = blockcopy(b);
+	[dlights addItem:&copy];
 
 	persistent_entity l = { (short)v.x, (short)v.y, (short)v.z,
 		(short)reach, LIGHT, (uchar)strength, 0, 0 };
