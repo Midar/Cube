@@ -45,14 +45,12 @@ getint(uchar *&p)
 void
 sendstring(OFString *t_, uchar *&p)
 {
-	@autoreleasepool {
-		const char *t = t_.UTF8String;
+	const char *t = t_.UTF8String;
 
-		for (size_t i = 0; i < _MAXDEFSTR && *t != '\0'; i++)
-			putint(p, *t++);
+	for (size_t i = 0; i < _MAXDEFSTR && *t != '\0'; i++)
+		putint(p, *t++);
 
-		putint(p, 0);
-	}
+	putint(p, 0);
 }
 
 static const OFString *modenames[] = {

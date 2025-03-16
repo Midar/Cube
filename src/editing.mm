@@ -604,11 +604,9 @@ void
 newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 {
 	EDITSEL;
-	@autoreleasepool {
-		newentity(sel.x, sel.y, (int)player1.o.z, what,
-		    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
-		    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
-	}
+	newentity(sel.x, sel.y, (int)player1.o.z, what,
+	    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
+	    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
 }
 
 COMMANDN(select, selectpos, ARG_4INT)

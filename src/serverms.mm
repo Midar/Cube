@@ -10,9 +10,7 @@ httpgetsend(ENetAddress &ad, OFString *hostname, OFString *req, OFString *ref,
 {
 	if (ad.host == ENET_HOST_ANY) {
 		[OFStdOut writeFormat:@"looking up %@...\n", hostname];
-		@autoreleasepool {
-			enet_address_set_host(&ad, hostname.UTF8String);
-		}
+		enet_address_set_host(&ad, hostname.UTF8String);
 		if (ad.host == ENET_HOST_ANY)
 			return;
 	}
@@ -79,13 +77,10 @@ updatemasterserver(int seconds)
 {
 	// send alive signal to masterserver every hour of uptime
 	if (seconds > updmaster) {
-		@autoreleasepool {
-			OFString *path = [OFString
-			    stringWithFormat:@"%@register.do?action=add",
-			    masterpath];
-			httpgetsend(masterserver, masterbase, path,
-			    @"cubeserver", @"Cube Server");
-		}
+		OFString *path = [OFString
+		    stringWithFormat:@"%@register.do?action=add", masterpath];
+		httpgetsend(masterserver, masterbase, path, @"cubeserver",
+		    @"Cube Server");
 		masterrep[0] = 0;
 		masterb.data = masterrep;
 		masterb.dataLength = MAXTRANS - 1;
@@ -105,12 +100,10 @@ checkmasterreply()
 uchar *
 retrieveservers(uchar *buf, int buflen)
 {
-	@autoreleasepool {
-		OFString *path = [OFString
-		    stringWithFormat:@"%@retrieve.do?item=list", masterpath];
-		httpgetsend(masterserver, masterbase, path, @"cubeserver",
-		    @"Cube Server");
-	}
+	OFString *path =
+	    [OFString stringWithFormat:@"%@retrieve.do?item=list", masterpath];
+	httpgetsend(
+	    masterserver, masterbase, path, @"cubeserver", @"Cube Server");
 	ENetBuffer eb;
 	buf[0] = 0;
 	eb.data = buf;
@@ -160,23 +153,20 @@ serverms(int mode, int numplayers, int minremain, OFString *smapname,
 void
 servermsinit(OFString *master_, OFString *sdesc, bool listen)
 {
-	@autoreleasepool {
-		const char *master = master_.UTF8String;
-		const char *mid = strstr(master, "/");
-		if (!mid)
-			mid = master;
-		masterpath = @(mid);
-		masterbase = [[OFString alloc] initWithUTF8String:master
-		                                           length:mid - master];
-		serverdesc = sdesc;
+	const char *master = master_.UTF8String;
+	const char *mid = strstr(master, "/");
+	if (!mid)
+		mid = master;
+	masterpath = @(mid);
+	masterbase = [[OFString alloc] initWithUTF8String:master
+	                                           length:mid - master];
+	serverdesc = sdesc;
 
-		if (listen) {
-			ENetAddress address = { ENET_HOST_ANY,
-				CUBE_SERVINFO_PORT };
-			pongsock = enet_socket_create(
-			    ENET_SOCKET_TYPE_DATAGRAM, &address);
-			if (pongsock == ENET_SOCKET_NULL)
-				fatal(@"could not create server info socket\n");
-		}
+	if (listen) {
+		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
+		pongsock =
+		    enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, &address);
+		if (pongsock == ENET_SOCKET_NULL)
+			fatal(@"could not create server info socket\n");
 	}
 }

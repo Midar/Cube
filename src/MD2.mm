@@ -54,60 +54,57 @@ snap(int sn, float f)
 
 - (bool)loadWithIRI:(OFIRI *)IRI
 {
-	@autoreleasepool {
-		OFSeekableStream *stream;
-		@try {
-			stream = (OFSeekableStream *)[[OFIRIHandler
-			    handlerForIRI:IRI] openItemAtIRI:IRI mode:@"r"];
-		} @catch (id e) {
-			return false;
-		}
-
-		if (![stream isKindOfClass:OFSeekableStream.class])
-			return false;
-
-		md2_header header;
-		[stream readIntoBuffer:&header exactLength:sizeof(md2_header)];
-		endianswap(
-		    &header, sizeof(int), sizeof(md2_header) / sizeof(int));
-
-		if (header.magic != 844121161 || header.version != 8)
-			return false;
-
-		_frames = new char[header.frameSize * header.numFrames];
-		if (_frames == NULL)
-			return false;
-
-		[stream seekToOffset:header.offsetFrames whence:OFSeekSet];
-		[stream readIntoBuffer:_frames
-		           exactLength:header.frameSize * header.numFrames];
-
-		for (int i = 0; i < header.numFrames; ++i)
-			endianswap(
-			    _frames + i * header.frameSize, sizeof(float), 6);
-
-		_glCommands = new int[header.numGlCommands];
-		if (_glCommands == NULL)
-			return false;
-
-		[stream seekToOffset:header.offsetGlCommands whence:OFSeekSet];
-		[stream readIntoBuffer:_glCommands
-		           exactLength:header.numGlCommands * sizeof(int)];
-		endianswap(_glCommands, sizeof(int), header.numGlCommands);
-
-		_numFrames = header.numFrames;
-		_numGlCommands = header.numGlCommands;
-		_frameSize = header.frameSize;
-		_numTriangles = header.numTriangles;
-		_numVerts = header.numVertices;
-
-		[stream close];
-
-		_mverts = new OFVector3D *[_numFrames];
-		loopj(_numFrames) _mverts[j] = NULL;
-
-		return true;
+	OFSeekableStream *stream;
+	@try {
+		stream = (OFSeekableStream *)[[OFIRIHandler handlerForIRI:IRI]
+		    openItemAtIRI:IRI
+		             mode:@"r"];
+	} @catch (id e) {
+		return false;
 	}
+
+	if (![stream isKindOfClass:OFSeekableStream.class])
+		return false;
+
+	md2_header header;
+	[stream readIntoBuffer:&header exactLength:sizeof(md2_header)];
+	endianswap(&header, sizeof(int), sizeof(md2_header) / sizeof(int));
+
+	if (header.magic != 844121161 || header.version != 8)
+		return false;
+
+	_frames = new char[header.frameSize * header.numFrames];
+	if (_frames == NULL)
+		return false;
+
+	[stream seekToOffset:header.offsetFrames whence:OFSeekSet];
+	[stream readIntoBuffer:_frames
+	           exactLength:header.frameSize * header.numFrames];
+
+	for (int i = 0; i < header.numFrames; ++i)
+		endianswap(_frames + i * header.frameSize, sizeof(float), 6);
+
+	_glCommands = new int[header.numGlCommands];
+	if (_glCommands == NULL)
+		return false;
+
+	[stream seekToOffset:header.offsetGlCommands whence:OFSeekSet];
+	[stream readIntoBuffer:_glCommands
+	           exactLength:header.numGlCommands * sizeof(int)];
+	endianswap(_glCommands, sizeof(int), header.numGlCommands);
+
+	_numFrames = header.numFrames;
+	_numGlCommands = header.numGlCommands;
+	_frameSize = header.frameSize;
+	_numTriangles = header.numTriangles;
+	_numVerts = header.numVertices;
+
+	[stream close];
+
+	_mverts = new OFVector3D *[_numFrames];
+	loopj(_numFrames) _mverts[j] = NULL;
+
+	return true;
 }
 
 - (void)scaleWithFrame:(int)frame scale:(float)scale snap:(int)sn

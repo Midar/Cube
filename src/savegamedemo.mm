@@ -91,40 +91,38 @@ stopifrecording()
 void
 savestate(OFIRI *IRI)
 {
-	@autoreleasepool {
-		stop();
-		f = gzopen([IRI.fileSystemRepresentation
-		               cStringWithEncoding:OFLocale.encoding],
-		    "wb9");
-		if (!f) {
-			conoutf(@"could not write %@", IRI.string);
-			return;
-		}
-		gzwrite(f, (void *)"CUBESAVE", 8);
-		gzputc(f, islittleendian);
-		gzputi(SAVEGAMEVERSION);
-		OFData *data = [player1 dataBySerializing];
-		gzputi(data.count);
-		char map[_MAXDEFSTR] = { 0 };
-		memcpy(map, getclientmap().UTF8String,
-		    min(getclientmap().UTF8StringLength, _MAXDEFSTR - 1));
-		gzwrite(f, map, _MAXDEFSTR);
-		gzputi(gamemode);
-		gzputi(ents.length());
-		loopv(ents) gzputc(f, ents[i].spawned);
+	stop();
+	f = gzopen([IRI.fileSystemRepresentation
+	               cStringWithEncoding:OFLocale.encoding],
+	    "wb9");
+	if (!f) {
+		conoutf(@"could not write %@", IRI.string);
+		return;
+	}
+	gzwrite(f, (void *)"CUBESAVE", 8);
+	gzputc(f, islittleendian);
+	gzputi(SAVEGAMEVERSION);
+	OFData *data = [player1 dataBySerializing];
+	gzputi(data.count);
+	char map[_MAXDEFSTR] = { 0 };
+	memcpy(map, getclientmap().UTF8String,
+	    min(getclientmap().UTF8StringLength, _MAXDEFSTR - 1));
+	gzwrite(f, map, _MAXDEFSTR);
+	gzputi(gamemode);
+	gzputi(ents.length());
+	loopv(ents) gzputc(f, ents[i].spawned);
+	gzwrite(f, data.items, data.count);
+	OFArray<DynamicEntity *> *monsters = getmonsters();
+	gzputi(monsters.count);
+	for (DynamicEntity *monster in monsters) {
+		data = [monster dataBySerializing];
 		gzwrite(f, data.items, data.count);
-		OFArray<DynamicEntity *> *monsters = getmonsters();
-		gzputi(monsters.count);
-		for (DynamicEntity *monster in monsters) {
-			data = [monster dataBySerializing];
-			gzwrite(f, data.items, data.count);
-		}
-		gzputi(players.count);
-		for (id player in players) {
-			gzput(player == [OFNull null]);
-			data = [player dataBySerializing];
-			gzwrite(f, data.items, data.count);
-		}
+	}
+	gzputi(players.count);
+	for (id player in players) {
+		gzput(player == [OFNull null]);
+		data = [player dataBySerializing];
+		gzwrite(f, data.items, data.count);
 	}
 }
 
@@ -136,70 +134,60 @@ savegame(OFString *name)
 		return;
 	}
 
-	@autoreleasepool {
-		OFString *path =
-		    [OFString stringWithFormat:@"savegames/%@.csgz", name];
-		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
-		    IRIByAppendingPathComponent:path];
-		savestate(IRI);
-		stop();
-		conoutf(@"wrote %@", IRI.string);
-	}
+	OFString *path = [OFString stringWithFormat:@"savegames/%@.csgz", name];
+	OFIRI *IRI =
+	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	savestate(IRI);
+	stop();
+	conoutf(@"wrote %@", IRI.string);
 }
 COMMAND(savegame, ARG_1STR)
 
 void
 loadstate(OFIRI *IRI)
 {
-	@autoreleasepool {
-		stop();
-		if (multiplayer())
-			return;
-		f = gzopen([IRI.fileSystemRepresentation
-		               cStringWithEncoding:OFLocale.encoding],
-		    "rb9");
-		if (!f) {
-			conoutf(@"could not open %@", IRI.string);
-			return;
-		}
-
-		char mapname[_MAXDEFSTR] = { 0 };
-		char buf[8];
-		gzread(f, buf, 8);
-		if (strncmp(buf, "CUBESAVE", 8))
-			goto out;
-		if (gzgetc(f) != islittleendian)
-			goto out; // not supporting save->load accross
-			          // incompatible architectures simpifies things
-			          // a LOT
-		if (gzgeti() != SAVEGAMEVERSION ||
-		    gzgeti() != DynamicEntity.serializedSize)
-			goto out;
-		gzread(f, mapname, _MAXDEFSTR);
-		nextmode = gzgeti();
-		@autoreleasepool {
-			// continue below once map has been loaded and client &
-			// server have updated
-			changemap(@(mapname));
-		}
+	stop();
+	if (multiplayer())
 		return;
-	out:
-		conoutf(@"aborting: savegame/demo from a different version of "
-		        @"cube or cpu architecture");
-		stop();
+	f = gzopen([IRI.fileSystemRepresentation
+	               cStringWithEncoding:OFLocale.encoding],
+	    "rb9");
+	if (!f) {
+		conoutf(@"could not open %@", IRI.string);
+		return;
 	}
+
+	char mapname[_MAXDEFSTR] = { 0 };
+	char buf[8];
+	gzread(f, buf, 8);
+	if (strncmp(buf, "CUBESAVE", 8))
+		goto out;
+	if (gzgetc(f) != islittleendian)
+		goto out; // not supporting save->load accross
+		          // incompatible architectures simpifies things
+		          // a LOT
+	if (gzgeti() != SAVEGAMEVERSION ||
+	    gzgeti() != DynamicEntity.serializedSize)
+		goto out;
+	gzread(f, mapname, _MAXDEFSTR);
+	nextmode = gzgeti();
+	// continue below once map has been loaded and client & server
+	// have updated
+	changemap(@(mapname));
+	return;
+out:
+	conoutf(@"aborting: savegame/demo from a different version of "
+	        @"cube or cpu architecture");
+	stop();
 }
 
 void
 loadgame(OFString *name)
 {
-	@autoreleasepool {
-		OFString *path =
-		    [OFString stringWithFormat:@"savegames/%@.csgz", name];
-		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
-		    IRIByAppendingPathComponent:path];
-		loadstate(IRI);
-	}
+	OFString *path = [OFString stringWithFormat:@"savegames/%@.csgz", name];
+	OFIRI *IRI =
+	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	loadstate(IRI);
 }
 COMMAND(loadgame, ARG_1STR)
 
@@ -286,18 +274,15 @@ record(OFString *name)
 	if (cn < 0)
 		return;
 
-	@autoreleasepool {
-		OFString *path =
-		    [OFString stringWithFormat:@"demos/%@.cdgz", name];
-		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
-		    IRIByAppendingPathComponent:path];
-		savestate(IRI);
-		gzputi(cn);
-		conoutf(@"started recording demo to %@", IRI.string);
-		demorecording = true;
-		starttime = lastmillis;
-		ddamage = bdamage = 0;
-	}
+	OFString *path = [OFString stringWithFormat:@"demos/%@.cdgz", name];
+	OFIRI *IRI =
+	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	savestate(IRI);
+	gzputi(cn);
+	conoutf(@"started recording demo to %@", IRI.string);
+	demorecording = true;
+	starttime = lastmillis;
+	ddamage = bdamage = 0;
 }
 COMMAND(record, ARG_1STR)
 
@@ -348,14 +333,11 @@ incomingdemodata(uchar *buf, int len, bool extras)
 void
 demo(OFString *name)
 {
-	@autoreleasepool {
-		OFString *path =
-		    [OFString stringWithFormat:@"demos/%@.cdgz", name];
-		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
-		    IRIByAppendingPathComponent:path];
-		loadstate(IRI);
-		demoloading = true;
-	}
+	OFString *path = [OFString stringWithFormat:@"demos/%@.cdgz", name];
+	OFIRI *IRI =
+	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	loadstate(IRI);
+	demoloading = true;
 }
 COMMAND(demo, ARG_1STR)
 

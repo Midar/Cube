@@ -102,114 +102,106 @@ short char_coords[96][4] = {
 int
 text_width(OFString *string)
 {
-	@autoreleasepool {
-		const char *str = string.UTF8String;
-		size_t len = string.UTF8StringLength;
+	const char *str = string.UTF8String;
+	size_t len = string.UTF8StringLength;
 
-		int x = 0;
-		for (int i = 0; i < len; i++) {
-			int c = str[i];
-			if (c == '\t') {
-				x = (x + PIXELTAB) / PIXELTAB * PIXELTAB;
-				continue;
-			}
-
-			if (c == '\f')
-				continue;
-
-			if (c == ' ') {
-				x += FONTH / 2;
-				continue;
-			}
-
-			c -= 33;
-			if (c < 0 || c >= 95)
-				continue;
-
-			int in_width = char_coords[c][2] - char_coords[c][0];
-			x += in_width + 1;
+	int x = 0;
+	for (int i = 0; i < len; i++) {
+		int c = str[i];
+		if (c == '\t') {
+			x = (x + PIXELTAB) / PIXELTAB * PIXELTAB;
+			continue;
 		}
 
-		return x;
+		if (c == '\f')
+			continue;
+
+		if (c == ' ') {
+			x += FONTH / 2;
+			continue;
+		}
+
+		c -= 33;
+		if (c < 0 || c >= 95)
+			continue;
+
+		int in_width = char_coords[c][2] - char_coords[c][0];
+		x += in_width + 1;
 	}
+
+	return x;
 }
 
 void
 draw_textf(OFConstantString *format, int left, int top, int gl_num, ...)
 {
-	@autoreleasepool {
-		va_list arguments;
-		va_start(arguments, gl_num);
-		OFString *str = [[OFString alloc] initWithFormat:format
-		                                       arguments:arguments];
-		va_end(arguments);
-		draw_text(str, left, top, gl_num);
-	}
+	va_list arguments;
+	va_start(arguments, gl_num);
+	OFString *str = [[OFString alloc] initWithFormat:format
+	                                       arguments:arguments];
+	va_end(arguments);
+	draw_text(str, left, top, gl_num);
 }
 
 void
 draw_text(OFString *string, int left, int top, int gl_num)
 {
-	@autoreleasepool {
-		glBlendFunc(GL_ONE, GL_ONE);
-		glBindTexture(GL_TEXTURE_2D, gl_num);
-		glColor3ub(255, 255, 255);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glBindTexture(GL_TEXTURE_2D, gl_num);
+	glColor3ub(255, 255, 255);
 
-		int x = left;
-		int y = top;
+	int x = left;
+	int y = top;
 
-		int i;
-		float in_left, in_top, in_right, in_bottom;
-		int in_width, in_height;
+	int i;
+	float in_left, in_top, in_right, in_bottom;
+	int in_width, in_height;
 
-		const char *str = string.UTF8String;
-		size_t len = string.UTF8StringLength;
-		for (i = 0; i < len; i++) {
-			int c = str[i];
+	const char *str = string.UTF8String;
+	size_t len = string.UTF8StringLength;
+	for (i = 0; i < len; i++) {
+		int c = str[i];
 
-			if (c == '\t') {
-				x = (x - left + PIXELTAB) / PIXELTAB *
-				        PIXELTAB +
-				    left;
-				continue;
-			}
-
-			if (c == '\f') {
-				glColor3ub(64, 255, 128);
-				continue;
-			}
-
-			if (c == ' ') {
-				x += FONTH / 2;
-				continue;
-			}
-
-			c -= 33;
-			if (c < 0 || c >= 95)
-				continue;
-
-			in_left = ((float)char_coords[c][0]) / 512.0f;
-			in_top = ((float)char_coords[c][1] + 2) / 512.0f;
-			in_right = ((float)char_coords[c][2]) / 512.0f;
-			in_bottom = ((float)char_coords[c][3] - 2) / 512.0f;
-
-			in_width = char_coords[c][2] - char_coords[c][0];
-			in_height = char_coords[c][3] - char_coords[c][1];
-
-			glBegin(GL_QUADS);
-			glTexCoord2f(in_left, in_top);
-			glVertex2i(x, y);
-			glTexCoord2f(in_right, in_top);
-			glVertex2i(x + in_width, y);
-			glTexCoord2f(in_right, in_bottom);
-			glVertex2i(x + in_width, y + in_height);
-			glTexCoord2f(in_left, in_bottom);
-			glVertex2i(x, y + in_height);
-			glEnd();
-
-			xtraverts += 4;
-			x += in_width + 1;
+		if (c == '\t') {
+			x = (x - left + PIXELTAB) / PIXELTAB * PIXELTAB + left;
+			continue;
 		}
+
+		if (c == '\f') {
+			glColor3ub(64, 255, 128);
+			continue;
+		}
+
+		if (c == ' ') {
+			x += FONTH / 2;
+			continue;
+		}
+
+		c -= 33;
+		if (c < 0 || c >= 95)
+			continue;
+
+		in_left = ((float)char_coords[c][0]) / 512.0f;
+		in_top = ((float)char_coords[c][1] + 2) / 512.0f;
+		in_right = ((float)char_coords[c][2]) / 512.0f;
+		in_bottom = ((float)char_coords[c][3] - 2) / 512.0f;
+
+		in_width = char_coords[c][2] - char_coords[c][0];
+		in_height = char_coords[c][3] - char_coords[c][1];
+
+		glBegin(GL_QUADS);
+		glTexCoord2f(in_left, in_top);
+		glVertex2i(x, y);
+		glTexCoord2f(in_right, in_top);
+		glVertex2i(x + in_width, y);
+		glTexCoord2f(in_right, in_bottom);
+		glVertex2i(x + in_width, y + in_height);
+		glTexCoord2f(in_left, in_bottom);
+		glVertex2i(x, y + in_height);
+		glEnd();
+
+		xtraverts += 4;
+		x += in_width + 1;
 	}
 }
 

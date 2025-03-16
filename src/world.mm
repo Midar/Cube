@@ -67,13 +67,11 @@ trigger(int tag, int type, bool savegame)
 	if (!savegame && type != 3)
 		playsound(S_RUMBLE);
 
-	@autoreleasepool {
-		OFString *aliasname =
-		    [OFString stringWithFormat:@"level_trigger_%d", tag];
+	OFString *aliasname =
+	    [OFString stringWithFormat:@"level_trigger_%d", tag];
 
-		if (identexists(aliasname))
-			execute(aliasname);
-	}
+	if (identexists(aliasname))
+		execute(aliasname);
 
 	if (type == 2)
 		endsp(false);
@@ -306,9 +304,7 @@ delent()
 		return;
 	}
 	int t = ents[e].type;
-	@autoreleasepool {
-		conoutf(@"%@ entity deleted", entnames[t]);
-	}
+	conoutf(@"%@ entity deleted", entnames[t]);
 	ents[e].type = NOTUSED;
 	addmsg(1, 10, SV_EDITENT, e, NOTUSED, 0, 0, 0, 0, 0, 0, 0);
 	if (t == LIGHT)
@@ -318,11 +314,9 @@ delent()
 int
 findtype(OFString *what)
 {
-	@autoreleasepool {
-		loopi(MAXENTTYPES) if ([what isEqual:entnames[i]]) return i;
-		conoutf(@"unknown entity type \"%@\"", what);
-		return NOTUSED;
-	}
+	loopi(MAXENTTYPES) if ([what isEqual:entnames[i]]) return i;
+	conoutf(@"unknown entity type \"%@\"", what);
+	return NOTUSED;
 }
 
 entity *

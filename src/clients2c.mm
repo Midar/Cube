@@ -95,15 +95,12 @@ localservertoclient(uchar *buf, int len)
 				// map
 				toservermap = getclientmap();
 			sgetstr();
-			@autoreleasepool {
-				if (text[0] &&
-				    strcmp(text, clientpassword.UTF8String)) {
-					conoutf(@"you need to set the correct "
-					        @"password "
-					        @"to join this server!");
-					disconnect();
-					return;
-				}
+			if (text[0] &&
+			    strcmp(text, clientpassword.UTF8String)) {
+				conoutf(@"you need to set the correct password "
+				        @"to join this server!");
+				disconnect();
+				return;
 			}
 			if (getint(p) == 1)
 				conoutf(@"server is FULL, disconnecting..");
@@ -150,9 +147,7 @@ localservertoclient(uchar *buf, int len)
 
 		case SV_MAPCHANGE:
 			sgetstr();
-			@autoreleasepool {
-				changemapserv(@(text), getint(p));
-			}
+			changemapserv(@(text), getint(p));
 			mapchanged = true;
 			break;
 
@@ -378,12 +373,10 @@ localservertoclient(uchar *buf, int len)
 			conoutf(@"received map \"%s\" from server, reloading..",
 			    text);
 			int mapsize = getint(p);
-			@autoreleasepool {
-				OFString *string = @(text);
-				writemap(string, mapsize, p);
-				p += mapsize;
-				changemapserv(string, gamemode);
-			}
+			OFString *string = @(text);
+			writemap(string, mapsize, p);
+			p += mapsize;
+			changemapserv(string, gamemode);
 			break;
 		}
 

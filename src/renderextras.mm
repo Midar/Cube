@@ -203,34 +203,31 @@ renderents() // show sparkly thingies for map entities in edit mode
 void
 loadsky(OFString *basename)
 {
-	@autoreleasepool {
-		static OFString *lastsky = @"";
+	static OFString *lastsky = @"";
 
-		basename = [basename stringByReplacingOccurrencesOfString:@"\\"
-		                                               withString:@"/"];
+	basename = [basename stringByReplacingOccurrencesOfString:@"\\"
+	                                               withString:@"/"];
 
-		if ([lastsky isEqual:basename])
-			return;
+	if ([lastsky isEqual:basename])
+		return;
 
-		static const OFString *side[] = { @"ft", @"bk", @"lf", @"rt",
-			@"dn", @"up" };
-		int texnum = 14;
-		loopi(6)
-		{
-			OFString *path =
-			    [OFString stringWithFormat:@"packages/%@_%@.jpg",
-			              basename, side[i]];
+	static const OFString *side[] = { @"ft", @"bk", @"lf", @"rt", @"dn",
+		@"up" };
+	int texnum = 14;
+	loopi(6)
+	{
+		OFString *path = [OFString
+		    stringWithFormat:@"packages/%@_%@.jpg", basename, side[i]];
 
-			int xs, ys;
-			if (!installtex(texnum + i,
-			        [Cube.sharedInstance.gameDataIRI
-			            IRIByAppendingPathComponent:path],
-			        &xs, &ys, true))
-				conoutf(@"could not load sky textures");
-		}
-
-		lastsky = basename;
+		int xs, ys;
+		if (!installtex(texnum + i,
+		        [Cube.sharedInstance.gameDataIRI
+		            IRIByAppendingPathComponent:path],
+		        &xs, &ys, true))
+			conoutf(@"could not load sky textures");
 	}
+
+	lastsky = basename;
 }
 COMMAND(loadsky, ARG_1STR)
 
@@ -367,17 +364,15 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 
 	glEnable(GL_TEXTURE_2D);
 
-	@autoreleasepool {
-		OFString *command = getcurcommand();
-		OFString *player = playerincrosshair();
+	OFString *command = getcurcommand();
+	OFString *player = playerincrosshair();
 
-		if (command)
-			draw_textf(@"> %@_", 20, 1570, 2, command);
-		else if (closeent.length > 0)
-			draw_text(closeent, 20, 1570, 2);
-		else if (player != nil)
-			draw_text(player, 20, 1570, 2);
-	}
+	if (command)
+		draw_textf(@"> %@_", 20, 1570, 2, command);
+	else if (closeent.length > 0)
+		draw_text(closeent, 20, 1570, 2);
+	else if (player != nil)
+		draw_text(player, 20, 1570, 2);
 
 	renderscores();
 	if (!rendermenu()) {

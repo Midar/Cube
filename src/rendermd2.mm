@@ -16,52 +16,42 @@ void
 delayedload(MD2 *m)
 {
 	if (!m.loaded) {
-		@autoreleasepool {
-			OFString *path = [OFString
-			    stringWithFormat:@"packages/models/%@", m.loadname];
-			OFIRI *baseIRI = [Cube.sharedInstance.gameDataIRI
-			    IRIByAppendingPathComponent:path];
+		OFString *path = [OFString
+		    stringWithFormat:@"packages/models/%@", m.loadname];
+		OFIRI *baseIRI = [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent:path];
 
-			OFIRI *IRI1 =
-			    [baseIRI IRIByAppendingPathComponent:@"tris.md2"];
-			if (![m loadWithIRI:IRI1])
-				fatal(@"loadmodel: ", IRI1.string);
+		OFIRI *IRI1 = [baseIRI IRIByAppendingPathComponent:@"tris.md2"];
+		if (![m loadWithIRI:IRI1])
+			fatal(@"loadmodel: ", IRI1.string);
 
-			OFIRI *IRI2 =
-			    [baseIRI IRIByAppendingPathComponent:@"skin.jpg"];
-			int xs, ys;
-			installtex(FIRSTMDL + m.mdlnum, IRI2, &xs, &ys, false);
-			m.loaded = true;
-		}
+		OFIRI *IRI2 = [baseIRI IRIByAppendingPathComponent:@"skin.jpg"];
+		int xs, ys;
+		installtex(FIRSTMDL + m.mdlnum, IRI2, &xs, &ys, false);
+		m.loaded = true;
 	}
 }
 
 MD2 *
 loadmodel(OFString *name)
 {
-	@autoreleasepool {
-		static int modelnum = 0;
+	static int modelnum = 0;
 
-		MD2 *m = mdllookup[name];
-		if (m != nil)
-			return m;
-
-		m = [[MD2 alloc] init];
-		m.mdlnum = modelnum++;
-		m.mmi = [[MapModelInfo alloc] initWithRad:2
-		                                        h:2
-		                                     zoff:0
-		                                     snap:0
-		                                     name:@""];
-		m.loadname = name;
-
-		if (mdllookup == nil)
-			mdllookup = [[OFMutableDictionary alloc] init];
-
-		mdllookup[name] = m;
-
+	MD2 *m = mdllookup[name];
+	if (m != nil)
 		return m;
-	}
+
+	m = [[MD2 alloc] init];
+	m.mdlnum = modelnum++;
+	m.mmi = [[MapModelInfo alloc] initWithRad:2 h:2 zoff:0 snap:0 name:@""];
+	m.loadname = name;
+
+	if (mdllookup == nil)
+		mdllookup = [[OFMutableDictionary alloc] init];
+
+	mdllookup[name] = m;
+
+	return m;
 }
 
 void

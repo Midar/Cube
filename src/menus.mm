@@ -43,53 +43,50 @@ void refreshservers();
 bool
 rendermenu()
 {
-	@autoreleasepool {
-		if (vmenu < 0) {
-			[menuStack removeAllObjects];
-			return false;
-		}
-
-		if (vmenu == 1)
-			refreshservers();
-
-		Menu *m = menus[vmenu];
-		OFString *title;
-		if (vmenu > 1)
-			title =
-			    [OFString stringWithFormat:@"[ %@ menu ]", m.name];
-		else
-			title = m.name;
-		int mdisp = m.items.count;
-		int w = 0;
-		loopi(mdisp)
-		{
-			int x = text_width(m.items[i].text);
-			if (x > w)
-				w = x;
-		}
-		int tw = text_width(title);
-		if (tw > w)
-			w = tw;
-		int step = FONTH / 4 * 5;
-		int h = (mdisp + 2) * step;
-		int y = (VIRTH - h) / 2;
-		int x = (VIRTW - w) / 2;
-		blendbox(x - FONTH / 2 * 3, y - FONTH, x + w + FONTH / 2 * 3,
-		    y + h + FONTH, true);
-		draw_text(title, x, y, 2);
-		y += FONTH * 2;
-		if (vmenu) {
-			int bh = y + m.menusel * step;
-			blendbox(x - FONTH, bh - 10, x + w + FONTH,
-			    bh + FONTH + 10, false);
-		}
-		loopj(mdisp)
-		{
-			draw_text(m.items[j].text, x, y, 2);
-			y += step;
-		}
-		return true;
+	if (vmenu < 0) {
+		[menuStack removeAllObjects];
+		return false;
 	}
+
+	if (vmenu == 1)
+		refreshservers();
+
+	Menu *m = menus[vmenu];
+	OFString *title;
+	if (vmenu > 1)
+		title = [OFString stringWithFormat:@"[ %@ menu ]", m.name];
+	else
+		title = m.name;
+	int mdisp = m.items.count;
+	int w = 0;
+	loopi(mdisp)
+	{
+		int x = text_width(m.items[i].text);
+		if (x > w)
+			w = x;
+	}
+	int tw = text_width(title);
+	if (tw > w)
+		w = tw;
+	int step = FONTH / 4 * 5;
+	int h = (mdisp + 2) * step;
+	int y = (VIRTH - h) / 2;
+	int x = (VIRTW - w) / 2;
+	blendbox(x - FONTH / 2 * 3, y - FONTH, x + w + FONTH / 2 * 3,
+	    y + h + FONTH, true);
+	draw_text(title, x, y, 2);
+	y += FONTH * 2;
+	if (vmenu) {
+		int bh = y + m.menusel * step;
+		blendbox(
+		    x - FONTH, bh - 10, x + w + FONTH, bh + FONTH + 10, false);
+	}
+	loopj(mdisp)
+	{
+		draw_text(m.items[j].text, x, y, 2);
+		y += step;
+	}
+	return true;
 }
 
 void
@@ -154,11 +151,8 @@ menukey(int code, bool isdown)
 	} else {
 		if (code == SDLK_RETURN || code == -2) {
 			OFString *action = menus[vmenu].items[menusel].action;
-			if (vmenu == 1) {
-				@autoreleasepool {
-					connects(getservername(menusel));
-				}
-			}
+			if (vmenu == 1)
+				connects(getservername(menusel));
 
 			if (menuStack == nil)
 				menuStack = [[OFMutableArray alloc] init];

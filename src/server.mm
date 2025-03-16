@@ -173,13 +173,10 @@ vote(OFString *map, int reqmode, int sender)
 	if (yes == 1 && no == 0)
 		return true; // single player
 
-	@autoreleasepool {
-		OFString *msg =
-		    [OFString stringWithFormat:
-		                  @"%@ suggests %@ on map %@ (set map to vote)",
-		              clients[sender].name, modestr(reqmode), map];
-		sendservmsg(msg);
-	}
+	OFString *msg = [OFString
+	    stringWithFormat:@"%@ suggests %@ on map %@ (set map to vote)",
+	    clients[sender].name, modestr(reqmode), map];
+	sendservmsg(msg);
 
 	if (yes / (float)(yes + no) <= 0.5f)
 		return false;
@@ -215,9 +212,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 
 		case SV_INITC2S:
 			sgetstr();
-			@autoreleasepool {
-				clients[cn].name = @(text);
-			}
+			clients[cn].name = @(text);
 			sgetstr();
 			getint(p);
 			break;
@@ -227,19 +222,15 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			int reqmode = getint(p);
 			if (reqmode < 0)
 				reqmode = 0;
-			@autoreleasepool {
-				if (smapname.length > 0 && !mapreload &&
-				    !vote(@(text), reqmode, sender))
-					return;
-			}
+			if (smapname.length > 0 && !mapreload &&
+			    !vote(@(text), reqmode, sender))
+				return;
 			mapreload = false;
 			mode = reqmode;
 			minremain = mode & 1 ? 15 : 10;
 			mapend = lastsec + minremain * 60;
 			interm = 0;
-			@autoreleasepool {
-				smapname = @(text);
-			}
+			smapname = @(text);
 			resetitems();
 			sender = -1;
 			break;
@@ -284,9 +275,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		case SV_SENDMAP: {
 			sgetstr();
 			int mapsize = getint(p);
-			@autoreleasepool {
-				sendmaps(sender, @(text), mapsize, p);
-			}
+			sendmaps(sender, @(text), mapsize, p);
 			return;
 		}
 
@@ -329,9 +318,7 @@ send_welcome(int n)
 	putint(p, SV_INITS2C);
 	putint(p, n);
 	putint(p, PROTOCOL_VERSION);
-	@autoreleasepool {
-		putint(p, *smapname.UTF8String);
-	}
+	putint(p, *smapname.UTF8String);
 	sendstring(serverpassword, p);
 	putint(p, clients.count > maxclients);
 	if (smapname.length > 0) {
@@ -493,13 +480,10 @@ serverslice(int seconds,
 			c.peer = event.peer;
 			c.peer->data = (void *)(clients.count - 1);
 			char hn[1024];
-			@autoreleasepool {
-				c.hostname =
-				    (enet_address_get_host(
-				         &c.peer->address, hn, sizeof(hn)) == 0
-				            ? @(hn)
-				            : @"localhost");
-			}
+			c.hostname = (enet_address_get_host(
+			                  &c.peer->address, hn, sizeof(hn)) == 0
+			        ? @(hn)
+			        : @"localhost");
 			[OFStdOut
 			    writeFormat:@"client connected (%@)\n", c.hostname];
 			send_welcome(lastconnect = clients.count - 1);
@@ -566,11 +550,9 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 
 	if ((isdedicated = dedicated)) {
 		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVER_PORT };
-		@autoreleasepool {
-			if (ip.length > 0 &&
-			    enet_address_set_host(&address, ip.UTF8String) < 0)
-				printf("WARNING: server ip not resolved");
-		}
+		if (ip.length > 0 &&
+		    enet_address_set_host(&address, ip.UTF8String) < 0)
+			printf("WARNING: server ip not resolved");
 		serverhost = enet_host_create(&address, MAXCLIENTS, 0, uprate);
 		if (!serverhost)
 			fatal(@"could not create server host\n");
@@ -589,6 +571,9 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 		atexit(cleanupserver);
 		atexit(enet_deinitialize);
 		for (;;)
-			serverslice(/*enet_time_get_sec()*/ time(NULL), 5);
+			@autoreleasepool {
+				serverslice(
+				    /*enet_time_get_sec()*/ time(NULL), 5);
+			}
 	}
 }

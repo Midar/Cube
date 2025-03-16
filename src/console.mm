@@ -83,22 +83,20 @@ conline(OFString *sf, bool highlight) // add a line to the console buffer
 void
 conoutf(OFConstantString *format, ...)
 {
-	@autoreleasepool {
-		va_list arguments;
-		va_start(arguments, format);
+	va_list arguments;
+	va_start(arguments, format);
 
-		OFString *string = [[OFString alloc] initWithFormat:format
-		                                          arguments:arguments];
+	OFString *string = [[OFString alloc] initWithFormat:format
+	                                          arguments:arguments];
 
-		va_end(arguments);
+	va_end(arguments);
 
-		int n = 0;
-		while (string.length > WORDWRAP) {
-			conline([string substringToIndex:WORDWRAP], n++ != 0);
-			string = [string substringFromIndex:WORDWRAP];
-		}
-		conline(string, n != 0);
+	int n = 0;
+	while (string.length > WORDWRAP) {
+		conline([string substringToIndex:WORDWRAP], n++ != 0);
+		string = [string substringFromIndex:WORDWRAP];
 	}
+	conline(string, n != 0);
 }
 
 // render buffer taking into account time & scrolling
@@ -181,19 +179,15 @@ COMMAND(saycommand, ARG_VARI)
 void
 mapmsg(OFString *s)
 {
-	@autoreleasepool {
-		memset(hdr.maptitle, '\0', sizeof(hdr.maptitle));
-		strncpy(hdr.maptitle, s.UTF8String, 127);
-	}
+	memset(hdr.maptitle, '\0', sizeof(hdr.maptitle));
+	strncpy(hdr.maptitle, s.UTF8String, 127);
 }
 COMMAND(mapmsg, ARG_1STR)
 
 void
 pasteconsole()
 {
-	@autoreleasepool {
-		[commandbuf appendString:@(SDL_GetClipboardText())];
-	}
+	[commandbuf appendString:@(SDL_GetClipboardText())];
 }
 
 static OFMutableArray<OFString *> *vhistory;
@@ -262,21 +256,17 @@ keypress(int code, bool isDown)
 		} else {
 			if (code == SDLK_RETURN) {
 				if (commandbuf.length > 0) {
-					@autoreleasepool {
-						if (vhistory == nil)
-							vhistory =
-							    [[OFMutableArray
-							        alloc] init];
+					if (vhistory == nil)
+						vhistory =
+						    [[OFMutableArray alloc]
+						        init];
 
-						if (vhistory.count == 0 ||
-						    ![vhistory.lastObject
-						        isEqual:commandbuf]) {
-							// cap this?
-							[vhistory
-							    addObject:
-							        [commandbuf
-							            copy]];
-						}
+					if (vhistory.count == 0 ||
+					    ![vhistory.lastObject
+					        isEqual:commandbuf]) {
+						// cap this?
+						[vhistory addObject:[commandbuf
+						                        copy]];
 					}
 					histpos = vhistory.count;
 					if ([commandbuf hasPrefix:@"/"])

@@ -123,16 +123,13 @@ parseexp(char *&p, int right)
 	}
 	char *s = strndup(word, p - word - 1);
 	if (left == '(') {
-		@autoreleasepool {
-			OFString *t;
-			@try {
-				t = [OFString
-				    stringWithFormat:@"%d", execute(@(s))];
-			} @finally {
-				free(s);
-			}
-			s = strdup(t.UTF8String);
+		OFString *t;
+		@try {
+			t = [OFString stringWithFormat:@"%d", execute(@(s))];
+		} @finally {
+			free(s);
 		}
+		s = strdup(t.UTF8String);
 	}
 	return s;
 }
@@ -164,19 +161,16 @@ parseword(char *&p)
 	return strndup(word, p - word);
 }
 
+// find value of ident referenced with $ in exp
 OFString *
-lookup(OFString *n) // find value of ident referenced with $ in exp
+lookup(OFString *n)
 {
-	@autoreleasepool {
-		__kindof Identifier *identifier =
-		    identifiers[[n substringFromIndex:1]];
+	__kindof Identifier *identifier = identifiers[[n substringFromIndex:1]];
 
-		if ([identifier isKindOfClass:Variable.class]) {
-			return [OFString
-			    stringWithFormat:@"%d", *[identifier storage]];
-		} else if ([identifier isKindOfClass:Alias.class])
-			return [identifier action];
-	}
+	if ([identifier isKindOfClass:Variable.class]) {
+		return [OFString stringWithFormat:@"%d", *[identifier storage]];
+	} else if ([identifier isKindOfClass:Alias.class])
+		return [identifier action];
 
 	conoutf(@"unknown alias lookup: %@", [n substringFromIndex:1]);
 	return n;
@@ -234,57 +228,55 @@ executeIdentifier(__kindof Identifier *identifier,
 int
 execute(OFString *string, bool isDown)
 {
-	@autoreleasepool {
-		std::unique_ptr<char> copy(strdup(string.UTF8String));
-		char *p = copy.get();
-		const int MAXWORDS = 25; // limit, remove
-		OFString *w[MAXWORDS];
-		int val = 0;
-		for (bool cont = true; cont;) {
-			// for each ; seperated statement
-			int numargs = MAXWORDS;
-			loopi(MAXWORDS)
-			{
-				// collect all argument values
-				w[i] = @"";
-				if (i > numargs)
-					continue;
-				// parse and evaluate exps
-				char *s = parseword(p);
-				if (!s) {
-					numargs = i;
-					s = strdup("");
-				}
-				@try {
-					if (*s == '$')
-						// substitute variables
-						w[i] = lookup(@(s));
-					else
-						w[i] = @(s);
-				} @finally {
-					free(s);
-				}
-			}
-
-			p += strcspn(p, ";\n\0");
-			// more statements if this isn't the end of the string
-			cont = *p++ != 0;
-			OFString *c = w[0];
-			// strip irc-style command prefix
-			if ([c hasPrefix:@"/"]) {
-				c = [c substringFromIndex:1];
-				w[0] = c;
-			}
-			// empty statement
-			if (c.length == 0)
+	std::unique_ptr<char> copy(strdup(string.UTF8String));
+	char *p = copy.get();
+	const int MAXWORDS = 25; // limit, remove
+	OFString *w[MAXWORDS];
+	int val = 0;
+	for (bool cont = true; cont;) {
+		// for each ; seperated statement
+		int numargs = MAXWORDS;
+		loopi(MAXWORDS)
+		{
+			// collect all argument values
+			w[i] = @"";
+			if (i > numargs)
 				continue;
-
-			val = executeIdentifier(identifiers[c],
-			    [OFArray arrayWithObjects:w count:numargs], isDown);
+			// parse and evaluate exps
+			char *s = parseword(p);
+			if (!s) {
+				numargs = i;
+				s = strdup("");
+			}
+			@try {
+				if (*s == '$')
+					// substitute variables
+					w[i] = lookup(@(s));
+				else
+					w[i] = @(s);
+			} @finally {
+				free(s);
+			}
 		}
 
-		return val;
+		p += strcspn(p, ";\n\0");
+		// more statements if this isn't the end of the string
+		cont = *p++ != 0;
+		OFString *c = w[0];
+		// strip irc-style command prefix
+		if ([c hasPrefix:@"/"]) {
+			c = [c substringFromIndex:1];
+			w[0] = c;
+		}
+		// empty statement
+		if (c.length == 0)
+			continue;
+
+		val = executeIdentifier(identifiers[c],
+		    [OFArray arrayWithObjects:w count:numargs], isDown);
 	}
+
+	return val;
 }
 
 // tab-completion of all identifiers
@@ -300,64 +292,57 @@ resetcomplete()
 void
 complete(OFMutableString *s)
 {
-	@autoreleasepool {
-		if (![s hasPrefix:@"/"])
-			[s insertString:@"/" atIndex:0];
+	if (![s hasPrefix:@"/"])
+		[s insertString:@"/" atIndex:0];
 
-		if (s.length == 1)
-			return;
+	if (s.length == 1)
+		return;
 
-		if (!completesize) {
-			completesize = s.length - 1;
-			completeidx = 0;
-		}
-
-		__block int idx = 0;
-		[identifiers enumerateKeysAndObjectsUsingBlock:^(
-		    OFString *name, Identifier *identifier, bool *stop) {
-			if (strncmp(identifier.name.UTF8String,
-			        s.UTF8String + 1, completesize) == 0 &&
-			    idx++ == completeidx)
-				[s replaceCharactersInRange:OFMakeRange(
-				                                1, s.length - 1)
-				                 withString:identifier.name];
-		}];
-
-		completeidx++;
-
-		if (completeidx >= idx)
-			completeidx = 0;
+	if (!completesize) {
+		completesize = s.length - 1;
+		completeidx = 0;
 	}
+
+	__block int idx = 0;
+	[identifiers enumerateKeysAndObjectsUsingBlock:^(
+	    OFString *name, Identifier *identifier, bool *stop) {
+		if (strncmp(identifier.name.UTF8String, s.UTF8String + 1,
+		        completesize) == 0 &&
+		    idx++ == completeidx)
+			[s replaceCharactersInRange:OFMakeRange(1, s.length - 1)
+			                 withString:identifier.name];
+	}];
+
+	completeidx++;
+
+	if (completeidx >= idx)
+		completeidx = 0;
 }
 
 bool
 execfile(OFIRI *cfgfile)
 {
-	@autoreleasepool {
-		OFString *command;
-		@try {
-			command = [OFString stringWithContentsOfIRI:cfgfile];
-		} @catch (OFOpenItemFailedException *e) {
-			return false;
-		} @catch (OFReadFailedException *e) {
-			return false;
-		}
-
-		execute(command);
-		return true;
+	OFString *command;
+	@try {
+		command = [OFString stringWithContentsOfIRI:cfgfile];
+	} @catch (OFOpenItemFailedException *e) {
+		return false;
+	} @catch (OFReadFailedException *e) {
+		return false;
 	}
+
+	execute(command);
+	return true;
 }
 
 void
 exec(OFString *cfgfile)
 {
-	@autoreleasepool {
-		if (!execfile([Cube.sharedInstance.userDataIRI
-		        IRIByAppendingPathComponent:cfgfile]) &&
-		    !execfile([Cube.sharedInstance.gameDataIRI
-		        IRIByAppendingPathComponent:cfgfile]))
-			conoutf(@"could not read \"%@\"", cfgfile);
-	}
+	if (!execfile([Cube.sharedInstance.userDataIRI
+	        IRIByAppendingPathComponent:cfgfile]) &&
+	    !execfile([Cube.sharedInstance.gameDataIRI
+	        IRIByAppendingPathComponent:cfgfile]))
+		conoutf(@"could not read \"%@\"", cfgfile);
 }
 
 void
@@ -418,9 +403,7 @@ COMMAND(writecfg, ARG_NONE)
 void
 intset(OFString *name, int v)
 {
-	@autoreleasepool {
-		alias(name, [OFString stringWithFormat:@"%d", v]);
-	}
+	alias(name, [OFString stringWithFormat:@"%d", v]);
 }
 
 void
@@ -432,14 +415,12 @@ ifthen(OFString *cond, OFString *thenp, OFString *elsep)
 void
 loopa(OFString *times, OFString *body)
 {
-	@autoreleasepool {
-		int t = times.cube_intValue;
+	int t = times.cube_intValue;
 
-		loopi(t)
-		{
-			intset(@"i", i);
-			execute(body);
-		}
+	loopi(t)
+	{
+		intset(@"i", i);
+		execute(body);
 	}
 }
 
@@ -472,32 +453,28 @@ concatword(OFString *s)
 int
 listlen(OFString *a_)
 {
-	@autoreleasepool {
-		const char *a = a_.UTF8String;
+	const char *a = a_.UTF8String;
 
-		if (!*a)
-			return 0;
+	if (!*a)
+		return 0;
 
-		int n = 0;
-		while (*a)
-			if (*a++ == ' ')
-				n++;
+	int n = 0;
+	while (*a)
+		if (*a++ == ' ')
+			n++;
 
-		return n + 1;
-	}
+	return n + 1;
 }
 
 void
 at(OFString *s_, OFString *pos)
 {
-	@autoreleasepool {
-		int n = pos.cube_intValue;
-		std::unique_ptr<char> copy(strdup(s_.UTF8String));
-		char *s = copy.get();
-		loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
-		s[strcspn(s, " \0")] = 0;
-		concat(@(s));
-	}
+	int n = pos.cube_intValue;
+	std::unique_ptr<char> copy(strdup(s_.UTF8String));
+	char *s = copy.get();
+	loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
+	s[strcspn(s, " \0")] = 0;
+	concat(@(s));
 }
 
 COMMANDN(loop, loopa, ARG_2STR)

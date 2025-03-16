@@ -63,28 +63,24 @@ throttle()
 void
 newname(OFString *name)
 {
-	@autoreleasepool {
-		c2sinit = false;
+	c2sinit = false;
 
-		if (name.length > 16)
-			name = [name substringToIndex:16];
+	if (name.length > 16)
+		name = [name substringToIndex:16];
 
-		player1.name = name;
-	}
+	player1.name = name;
 }
 COMMANDN(name, newname, ARG_1STR)
 
 void
 newteam(OFString *name)
 {
-	@autoreleasepool {
-		c2sinit = false;
+	c2sinit = false;
 
-		if (name.length > 5)
-			name = [name substringToIndex:5];
+	if (name.length > 5)
+		name = [name substringToIndex:5];
 
-		player1.team = name;
-	}
+	player1.team = name;
 }
 COMMANDN(team, newteam, ARG_1STR)
 
@@ -103,12 +99,9 @@ connects(OFString *servername)
 
 	conoutf(@"attempting to connect to %@", servername);
 	ENetAddress address = { ENET_HOST_ANY, CUBE_SERVER_PORT };
-	@autoreleasepool {
-		if (enet_address_set_host(&address, servername.UTF8String) <
-		    0) {
-			conoutf(@"could not resolve server %@", servername);
-			return;
-		}
+	if (enet_address_set_host(&address, servername.UTF8String) < 0) {
+		conoutf(@"could not resolve server %@", servername);
+		return;
 	}
 
 	clienthost = enet_host_create(NULL, 1, rate, rate);
@@ -287,99 +280,94 @@ sendpackettoserv(void *packet)
 void
 c2sinfo(DynamicEntity *d)
 {
-	@autoreleasepool {
-		if (clientnum < 0)
-			return; // we haven't had a welcome message from the
-			        // server yet
-		if (lastmillis - lastupdate < 40)
-			return; // don't update faster than 25fps
-		ENetPacket *packet = enet_packet_create(NULL, MAXTRANS, 0);
-		uchar *start = packet->data;
-		uchar *p = start + 2;
-		bool serveriteminitdone = false;
-		if (toservermap.length > 0) // suggest server to change map
-		{ // do this exclusively as map change may invalidate rest of
-		  // update
-			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			putint(p, SV_MAPCHANGE);
-			sendstring(toservermap, p);
-			toservermap = @"";
-			putint(p, nextmode);
-		} else {
-			putint(p, SV_POS);
-			putint(p, clientnum);
-			// quantize coordinates to 1/16th of a cube, between 1
-			// and 3 bytes
-			putint(p, (int)(d.o.x * DMF));
-			putint(p, (int)(d.o.y * DMF));
-			putint(p, (int)(d.o.z * DMF));
-			putint(p, (int)(d.yaw * DAF));
-			putint(p, (int)(d.pitch * DAF));
-			putint(p, (int)(d.roll * DAF));
-			// quantize to 1/100, almost always 1 byte
-			putint(p, (int)(d.vel.x * DVF));
-			putint(p, (int)(d.vel.y * DVF));
-			putint(p, (int)(d.vel.z * DVF));
-			// pack rest in 1 byte: strafe:2, move:2, onfloor:1,
-			// state:3
-			putint(p,
-			    (d.strafe & 3) | ((d.move & 3) << 2) |
-			        (((int)d.onfloor) << 4) |
-			        ((editmode ? CS_EDITING : d.state) << 5));
+	if (clientnum < 0)
+		return; // we haven't had a welcome message from the server yet
+	if (lastmillis - lastupdate < 40)
+		return; // don't update faster than 25fps
+	ENetPacket *packet = enet_packet_create(NULL, MAXTRANS, 0);
+	uchar *start = packet->data;
+	uchar *p = start + 2;
+	bool serveriteminitdone = false;
+	// suggest server to change map
+	if (toservermap.length > 0) {
+		// do this exclusively as map change may invalidate rest of
+		// update
+		packet->flags = ENET_PACKET_FLAG_RELIABLE;
+		putint(p, SV_MAPCHANGE);
+		sendstring(toservermap, p);
+		toservermap = @"";
+		putint(p, nextmode);
+	} else {
+		putint(p, SV_POS);
+		putint(p, clientnum);
+		// quantize coordinates to 1/16th of a cube, between 1 and 3
+		// bytes
+		putint(p, (int)(d.o.x * DMF));
+		putint(p, (int)(d.o.y * DMF));
+		putint(p, (int)(d.o.z * DMF));
+		putint(p, (int)(d.yaw * DAF));
+		putint(p, (int)(d.pitch * DAF));
+		putint(p, (int)(d.roll * DAF));
+		// quantize to 1/100, almost always 1 byte
+		putint(p, (int)(d.vel.x * DVF));
+		putint(p, (int)(d.vel.y * DVF));
+		putint(p, (int)(d.vel.z * DVF));
+		// pack rest in 1 byte: strafe:2, move:2, onfloor:1, state:3
+		putint(p,
+		    (d.strafe & 3) | ((d.move & 3) << 2) |
+		        (((int)d.onfloor) << 4) |
+		        ((editmode ? CS_EDITING : d.state) << 5));
 
-			if (senditemstoserver) {
-				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-				putint(p, SV_ITEMLIST);
-				if (!m_noitems)
-					putitems(p);
-				putint(p, -1);
-				senditemstoserver = false;
-				serveriteminitdone = true;
-			}
-			// player chat, not flood protected for now
-			if (ctext.length > 0) {
-				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-				putint(p, SV_TEXT);
-				sendstring(ctext, p);
-				ctext = @"";
-			}
-			// tell other clients who I am
-			if (!c2sinit) {
-				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-				c2sinit = true;
-				putint(p, SV_INITC2S);
-				sendstring(player1.name, p);
-				sendstring(player1.team, p);
-				putint(p, player1.lifesequence);
-			}
-			for (OFData *msg in messages) {
-				// send messages collected during the previous
-				// frames
-				if (*(int *)[msg itemAtIndex:1])
-					packet->flags =
-					    ENET_PACKET_FLAG_RELIABLE;
-				loopi(*(int *)[msg itemAtIndex:0])
-				    putint(p, *(int *)[msg itemAtIndex:i + 2]);
-			}
-			[messages removeAllObjects];
-			if (lastmillis - lastping > 250) {
-				putint(p, SV_PING);
-				putint(p, lastmillis);
-				lastping = lastmillis;
-			}
+		if (senditemstoserver) {
+			packet->flags = ENET_PACKET_FLAG_RELIABLE;
+			putint(p, SV_ITEMLIST);
+			if (!m_noitems)
+				putitems(p);
+			putint(p, -1);
+			senditemstoserver = false;
+			serveriteminitdone = true;
 		}
-		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
-		enet_packet_resize(packet, p - start);
-		incomingdemodata(start, p - start, true);
-		if (clienthost) {
-			enet_host_broadcast(clienthost, 0, packet);
-			enet_host_flush(clienthost);
-		} else
-			localclienttoserver(packet);
-		lastupdate = lastmillis;
-		if (serveriteminitdone)
-			loadgamerest(); // hack
+		// player chat, not flood protected for now
+		if (ctext.length > 0) {
+			packet->flags = ENET_PACKET_FLAG_RELIABLE;
+			putint(p, SV_TEXT);
+			sendstring(ctext, p);
+			ctext = @"";
+		}
+		// tell other clients who I am
+		if (!c2sinit) {
+			packet->flags = ENET_PACKET_FLAG_RELIABLE;
+			c2sinit = true;
+			putint(p, SV_INITC2S);
+			sendstring(player1.name, p);
+			sendstring(player1.team, p);
+			putint(p, player1.lifesequence);
+		}
+		for (OFData *msg in messages) {
+			// send messages collected during the previous frames
+			if (*(int *)[msg itemAtIndex:1])
+				packet->flags = ENET_PACKET_FLAG_RELIABLE;
+			loopi(*(int *)[msg itemAtIndex:0])
+			    putint(p, *(int *)[msg itemAtIndex:i + 2]);
+		}
+		[messages removeAllObjects];
+		if (lastmillis - lastping > 250) {
+			putint(p, SV_PING);
+			putint(p, lastmillis);
+			lastping = lastmillis;
+		}
 	}
+	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	enet_packet_resize(packet, p - start);
+	incomingdemodata(start, p - start, true);
+	if (clienthost) {
+		enet_host_broadcast(clienthost, 0, packet);
+		enet_host_flush(clienthost);
+	} else
+		localclienttoserver(packet);
+	lastupdate = lastmillis;
+	if (serveriteminitdone)
+		loadgamerest(); // hack
 }
 
 void

@@ -14,30 +14,27 @@ static OFString *cgzname, *bakname, *pcfname, *mcfname;
 static void
 setnames(OFString *name)
 {
-	@autoreleasepool {
-		OFCharacterSet *cs =
-		    [OFCharacterSet characterSetWithCharactersInString:@"/\\"];
-		OFRange range = [name rangeOfCharacterFromSet:cs];
-		OFString *pakname, *mapname;
+	OFCharacterSet *cs =
+	    [OFCharacterSet characterSetWithCharactersInString:@"/\\"];
+	OFRange range = [name rangeOfCharacterFromSet:cs];
+	OFString *pakname, *mapname;
 
-		if (range.location != OFNotFound) {
-			pakname = [name substringToIndex:range.location];
-			mapname = [name substringFromIndex:range.location + 1];
-		} else {
-			pakname = @"base";
-			mapname = name;
-		}
-
-		cgzname = [[OFString alloc]
-		    initWithFormat:@"packages/%@/%@.cgz", pakname, mapname];
-		bakname =
-		    [[OFString alloc] initWithFormat:@"packages/%@/%@_%d.BAK",
-		                      pakname, mapname, lastmillis];
-		pcfname = [[OFString alloc]
-		    initWithFormat:@"packages/%@/package.cfg", pakname];
-		mcfname = [[OFString alloc]
-		    initWithFormat:@"packages/%@/%@.cfg", pakname, mapname];
+	if (range.location != OFNotFound) {
+		pakname = [name substringToIndex:range.location];
+		mapname = [name substringFromIndex:range.location + 1];
+	} else {
+		pakname = @"base";
+		mapname = name;
 	}
+
+	cgzname = [[OFString alloc]
+	    initWithFormat:@"packages/%@/%@.cgz", pakname, mapname];
+	bakname = [[OFString alloc] initWithFormat:@"packages/%@/%@_%d.BAK",
+	                            pakname, mapname, lastmillis];
+	pcfname = [[OFString alloc]
+	    initWithFormat:@"packages/%@/package.cfg", pakname];
+	mcfname = [[OFString alloc]
+	    initWithFormat:@"packages/%@/%@.cfg", pakname, mapname];
 }
 
 // the optimize routines below are here to reduce the detrimental effects of
@@ -160,38 +157,37 @@ readmap(OFString *mname)
 void
 save_world(OFString *mname)
 {
-	@autoreleasepool {
-		resettagareas(); // wouldn't be able to reproduce tagged areas
-		                 // otherwise
-		voptimize();
-		toptimize();
-		if (mname.length == 0)
-			mname = getclientmap();
-		setnames(mname);
-		backup(cgzname, bakname);
-		gzFile f = gzopen(
-		    [cgzname cStringWithEncoding:OFLocale.encoding], "wb9");
-		if (!f) {
-			conoutf(@"could not write map to %@", cgzname);
-			return;
+	resettagareas(); // wouldn't be able to reproduce tagged areas
+	                 // otherwise
+	voptimize();
+	toptimize();
+	if (mname.length == 0)
+		mname = getclientmap();
+	setnames(mname);
+	backup(cgzname, bakname);
+	gzFile f =
+	    gzopen([cgzname cStringWithEncoding:OFLocale.encoding], "wb9");
+	if (!f) {
+		conoutf(@"could not write map to %@", cgzname);
+		return;
+	}
+	hdr.version = MAPVERSION;
+	hdr.numents = 0;
+	loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
+	header tmp = hdr;
+	endianswap(&tmp.version, sizeof(int), 4);
+	endianswap(&tmp.waterlevel, sizeof(int), 16);
+	gzwrite(f, &tmp, sizeof(header));
+	loopv(ents)
+	{
+		if (ents[i].type != NOTUSED) {
+			entity tmp = ents[i];
+			endianswap(&tmp, sizeof(short), 4);
+			gzwrite(f, &tmp, sizeof(persistent_entity));
 		}
-		hdr.version = MAPVERSION;
-		hdr.numents = 0;
-		loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
-		header tmp = hdr;
-		endianswap(&tmp.version, sizeof(int), 4);
-		endianswap(&tmp.waterlevel, sizeof(int), 16);
-		gzwrite(f, &tmp, sizeof(header));
-		loopv(ents)
-		{
-			if (ents[i].type != NOTUSED) {
-				entity tmp = ents[i];
-				endianswap(&tmp, sizeof(short), 4);
-				gzwrite(f, &tmp, sizeof(persistent_entity));
-			}
-		}
-		sqr *t = NULL;
-		int sc = 0;
+	}
+	sqr *t = NULL;
+	int sc = 0;
 #define spurge                          \
 	while (sc) {                    \
 		gzputc(f, 255);         \
@@ -203,50 +199,49 @@ save_world(OFString *mname)
 			sc = 0;         \
 		}                       \
 	}
-		loopk(cubicsize)
-		{
-			sqr *s = &world[k];
+	loopk(cubicsize)
+	{
+		sqr *s = &world[k];
 #define c(f) (s->f == t->f)
-			// 4 types of blocks, to compress a bit:
-			// 255 (2): same as previous block + count
-			// 254 (3): same as previous, except light // deprecated
-			// SOLID (5)
-			// anything else (9)
+		// 4 types of blocks, to compress a bit:
+		// 255 (2): same as previous block + count
+		// 254 (3): same as previous, except light // deprecated
+		// SOLID (5)
+		// anything else (9)
 
-			if (SOLID(s)) {
-				if (t && c(type) && c(wtex) && c(vdelta)) {
-					sc++;
-				} else {
-					spurge;
-					gzputc(f, s->type);
-					gzputc(f, s->wtex);
-					gzputc(f, s->vdelta);
-				}
+		if (SOLID(s)) {
+			if (t && c(type) && c(wtex) && c(vdelta)) {
+				sc++;
 			} else {
-				if (t && c(type) && c(floor) && c(ceil) &&
-				    c(ctex) && c(ftex) && c(utex) && c(wtex) &&
-				    c(vdelta) && c(tag)) {
-					sc++;
-				} else {
-					spurge;
-					gzputc(f, s->type);
-					gzputc(f, s->floor);
-					gzputc(f, s->ceil);
-					gzputc(f, s->wtex);
-					gzputc(f, s->ftex);
-					gzputc(f, s->ctex);
-					gzputc(f, s->vdelta);
-					gzputc(f, s->utex);
-					gzputc(f, s->tag);
-				}
+				spurge;
+				gzputc(f, s->type);
+				gzputc(f, s->wtex);
+				gzputc(f, s->vdelta);
 			}
-			t = s;
+		} else {
+			if (t && c(type) && c(floor) && c(ceil) && c(ctex) &&
+			    c(ftex) && c(utex) && c(wtex) && c(vdelta) &&
+			    c(tag)) {
+				sc++;
+			} else {
+				spurge;
+				gzputc(f, s->type);
+				gzputc(f, s->floor);
+				gzputc(f, s->ceil);
+				gzputc(f, s->wtex);
+				gzputc(f, s->ftex);
+				gzputc(f, s->ctex);
+				gzputc(f, s->vdelta);
+				gzputc(f, s->utex);
+				gzputc(f, s->tag);
+			}
 		}
-		spurge;
-		gzclose(f);
-		conoutf(@"wrote map file %@", cgzname);
-		settagareas();
+		t = s;
 	}
+	spurge;
+	gzclose(f);
+	conoutf(@"wrote map file %@", cgzname);
+	settagareas();
 }
 COMMANDN(savemap, save_world, ARG_1STR)
 
@@ -254,142 +249,136 @@ void
 load_world(OFString *mname) // still supports all map formats that have existed
                             // since the earliest cube betas!
 {
-	@autoreleasepool {
-		stopifrecording();
-		cleardlights();
-		pruneundos();
-		setnames(mname);
-		gzFile f = gzopen(
-		    [cgzname cStringWithEncoding:OFLocale.encoding], "rb9");
-		if (!f) {
-			conoutf(@"could not read map %@", cgzname);
-			return;
-		}
-		gzread(f, &hdr, sizeof(header) - sizeof(int) * 16);
-		endianswap(&hdr.version, sizeof(int), 4);
-		if (strncmp(hdr.head, "CUBE", 4) != 0)
-			fatal(@"while reading map: header malformatted");
-		if (hdr.version > MAPVERSION)
-			fatal(@"this map requires a newer version of cube");
-		if (sfactor < SMALLEST_FACTOR || sfactor > LARGEST_FACTOR)
-			fatal(@"illegal map size");
-		if (hdr.version >= 4) {
-			gzread(f, &hdr.waterlevel, sizeof(int) * 16);
-			endianswap(&hdr.waterlevel, sizeof(int), 16);
-		} else {
-			hdr.waterlevel = -100000;
-		}
-		ents.setsize(0);
-		loopi(hdr.numents)
-		{
-			entity &e = ents.add();
-			gzread(f, &e, sizeof(persistent_entity));
-			endianswap(&e, sizeof(short), 4);
-			e.spawned = false;
-			if (e.type == LIGHT) {
-				if (!e.attr2)
-					e.attr2 =
-					    255; // needed for MAPVERSION<=2
-				if (e.attr1 > 32)
-					e.attr1 = 32; // 12_03 and below
-			}
-		}
-		free(world);
-		setupworld(hdr.sfactor);
-		char texuse[256];
-		loopi(256) texuse[i] = 0;
-		sqr *t = NULL;
-		loopk(cubicsize)
-		{
-			sqr *s = &world[k];
-			int type = gzgetc(f);
-			switch (type) {
-			case 255: {
-				int n = gzgetc(f);
-				for (int i = 0; i < n; i++, k++)
-					memcpy(&world[k], t, sizeof(sqr));
-				k--;
-				break;
-			}
-			case 254: // only in MAPVERSION<=2
-			{
-				memcpy(s, t, sizeof(sqr));
-				s->r = s->g = s->b = gzgetc(f);
-				gzgetc(f);
-				break;
-			}
-			case SOLID: {
-				s->type = SOLID;
-				s->wtex = gzgetc(f);
-				s->vdelta = gzgetc(f);
-				if (hdr.version <= 2) {
-					gzgetc(f);
-					gzgetc(f);
-				}
-				s->ftex = DEFAULT_FLOOR;
-				s->ctex = DEFAULT_CEIL;
-				s->utex = s->wtex;
-				s->tag = 0;
-				s->floor = 0;
-				s->ceil = 16;
-				break;
-			}
-			default: {
-				if (type < 0 || type >= MAXTYPE) {
-					OFString *t = [OFString
-					    stringWithFormat:@"%d @ %d", type,
-					    k];
-					fatal(@"while reading map: type out of "
-					      @"range: ",
-					    t);
-				}
-				s->type = type;
-				s->floor = gzgetc(f);
-				s->ceil = gzgetc(f);
-				if (s->floor >= s->ceil)
-					s->floor = s->ceil - 1; // for pre 12_13
-				s->wtex = gzgetc(f);
-				s->ftex = gzgetc(f);
-				s->ctex = gzgetc(f);
-				if (hdr.version <= 2) {
-					gzgetc(f);
-					gzgetc(f);
-				}
-				s->vdelta = gzgetc(f);
-				s->utex =
-				    (hdr.version >= 2) ? gzgetc(f) : s->wtex;
-				s->tag = (hdr.version >= 5) ? gzgetc(f) : 0;
-				s->type = type;
-			}
-			}
-			s->defer = 0;
-			t = s;
-			texuse[s->wtex] = 1;
-			if (!SOLID(s))
-				texuse[s->utex] = texuse[s->ftex] =
-				    texuse[s->ctex] = 1;
-		}
-		gzclose(f);
-		calclight();
-		settagareas();
-		int xs, ys;
-		loopi(256) if (texuse) lookuptexture(i, &xs, &ys);
-		conoutf(@"read map %@ (%d milliseconds)", cgzname,
-		    SDL_GetTicks() - lastmillis);
-		conoutf(@"%s", hdr.maptitle);
-		startmap(mname);
-		loopl(256)
-		{
-			// can this be done smarter?
-			OFString *aliasname =
-			    [OFString stringWithFormat:@"level_trigger_%d", l];
-			if (identexists(aliasname))
-				alias(aliasname, @"");
-		}
-		OFIRI *gameDataIRI = Cube.sharedInstance.gameDataIRI;
-		execfile([gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/default_map_settings.cfg"]);
-		execfile([gameDataIRI IRIByAppendingPathComponent:pcfname]);
-		execfile([gameDataIRI IRIByAppendingPathComponent:mcfname]);
+	stopifrecording();
+	cleardlights();
+	pruneundos();
+	setnames(mname);
+	gzFile f =
+	    gzopen([cgzname cStringWithEncoding:OFLocale.encoding], "rb9");
+	if (!f) {
+		conoutf(@"could not read map %@", cgzname);
+		return;
 	}
+	gzread(f, &hdr, sizeof(header) - sizeof(int) * 16);
+	endianswap(&hdr.version, sizeof(int), 4);
+	if (strncmp(hdr.head, "CUBE", 4) != 0)
+		fatal(@"while reading map: header malformatted");
+	if (hdr.version > MAPVERSION)
+		fatal(@"this map requires a newer version of cube");
+	if (sfactor < SMALLEST_FACTOR || sfactor > LARGEST_FACTOR)
+		fatal(@"illegal map size");
+	if (hdr.version >= 4) {
+		gzread(f, &hdr.waterlevel, sizeof(int) * 16);
+		endianswap(&hdr.waterlevel, sizeof(int), 16);
+	} else {
+		hdr.waterlevel = -100000;
+	}
+	ents.setsize(0);
+	loopi(hdr.numents)
+	{
+		entity &e = ents.add();
+		gzread(f, &e, sizeof(persistent_entity));
+		endianswap(&e, sizeof(short), 4);
+		e.spawned = false;
+		if (e.type == LIGHT) {
+			if (!e.attr2)
+				e.attr2 = 255; // needed for MAPVERSION<=2
+			if (e.attr1 > 32)
+				e.attr1 = 32; // 12_03 and below
+		}
+	}
+	free(world);
+	setupworld(hdr.sfactor);
+	char texuse[256];
+	loopi(256) texuse[i] = 0;
+	sqr *t = NULL;
+	loopk(cubicsize)
+	{
+		sqr *s = &world[k];
+		int type = gzgetc(f);
+		switch (type) {
+		case 255: {
+			int n = gzgetc(f);
+			for (int i = 0; i < n; i++, k++)
+				memcpy(&world[k], t, sizeof(sqr));
+			k--;
+			break;
+		}
+		case 254: // only in MAPVERSION<=2
+		{
+			memcpy(s, t, sizeof(sqr));
+			s->r = s->g = s->b = gzgetc(f);
+			gzgetc(f);
+			break;
+		}
+		case SOLID: {
+			s->type = SOLID;
+			s->wtex = gzgetc(f);
+			s->vdelta = gzgetc(f);
+			if (hdr.version <= 2) {
+				gzgetc(f);
+				gzgetc(f);
+			}
+			s->ftex = DEFAULT_FLOOR;
+			s->ctex = DEFAULT_CEIL;
+			s->utex = s->wtex;
+			s->tag = 0;
+			s->floor = 0;
+			s->ceil = 16;
+			break;
+		}
+		default: {
+			if (type < 0 || type >= MAXTYPE) {
+				OFString *t = [OFString
+				    stringWithFormat:@"%d @ %d", type, k];
+				fatal(@"while reading map: type out of "
+				      @"range: ",
+				    t);
+			}
+			s->type = type;
+			s->floor = gzgetc(f);
+			s->ceil = gzgetc(f);
+			if (s->floor >= s->ceil)
+				s->floor = s->ceil - 1; // for pre 12_13
+			s->wtex = gzgetc(f);
+			s->ftex = gzgetc(f);
+			s->ctex = gzgetc(f);
+			if (hdr.version <= 2) {
+				gzgetc(f);
+				gzgetc(f);
+			}
+			s->vdelta = gzgetc(f);
+			s->utex = (hdr.version >= 2) ? gzgetc(f) : s->wtex;
+			s->tag = (hdr.version >= 5) ? gzgetc(f) : 0;
+			s->type = type;
+		}
+		}
+		s->defer = 0;
+		t = s;
+		texuse[s->wtex] = 1;
+		if (!SOLID(s))
+			texuse[s->utex] = texuse[s->ftex] = texuse[s->ctex] = 1;
+	}
+	gzclose(f);
+	calclight();
+	settagareas();
+	int xs, ys;
+	loopi(256) if (texuse) lookuptexture(i, &xs, &ys);
+	conoutf(@"read map %@ (%d milliseconds)", cgzname,
+	    SDL_GetTicks() - lastmillis);
+	conoutf(@"%s", hdr.maptitle);
+	startmap(mname);
+	loopl(256)
+	{
+		// can this be done smarter?
+		OFString *aliasname =
+		    [OFString stringWithFormat:@"level_trigger_%d", l];
+		if (identexists(aliasname))
+			alias(aliasname, @"");
+	}
+	OFIRI *gameDataIRI = Cube.sharedInstance.gameDataIRI;
+	execfile([gameDataIRI
+	    IRIByAppendingPathComponent:@"data/default_map_settings.cfg"]);
+	execfile([gameDataIRI IRIByAppendingPathComponent:pcfname]);
+	execfile([gameDataIRI IRIByAppendingPathComponent:mcfname]);
 }

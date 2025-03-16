@@ -42,15 +42,10 @@ renderentities()
 			MapModelInfo *mmi = getmminfo(e.attr2);
 			if (mmi == nil)
 				continue;
-			@autoreleasepool {
-				rendermodel(mmi.name, 0, 1, e.attr4,
-				    (float)mmi.rad, e.x,
-				    (float)S(e.x, e.y)->floor + mmi.zoff +
-				        e.attr3,
-				    e.y,
-				    (float)((e.attr1 + 7) - (e.attr1 + 7) % 15),
-				    0, false, 1.0f, 10.0f, mmi.snap);
-			}
+			rendermodel(mmi.name, 0, 1, e.attr4, (float)mmi.rad,
+			    e.x, (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
+			    e.y, (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
+			    false, 1.0f, 10.0f, mmi.snap);
 		} else {
 			if (OUTBORD(e.x, e.y))
 				continue;

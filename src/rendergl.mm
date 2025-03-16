@@ -78,40 +78,37 @@ cleangl()
 bool
 installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 {
-	@autoreleasepool {
-		SDL_Surface *s =
-		    IMG_Load(IRI.fileSystemRepresentation.UTF8String);
-		if (s == NULL) {
-			conoutf(@"couldn't load texture %@", IRI.string);
+	SDL_Surface *s = IMG_Load(IRI.fileSystemRepresentation.UTF8String);
+	if (s == NULL) {
+		conoutf(@"couldn't load texture %@", IRI.string);
+		return false;
+	}
+
+	if (s->format->BitsPerPixel != 24) {
+		SDL_PixelFormat *format =
+		    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
+		if (format == NULL) {
+			conoutf(@"texture cannot be converted to 24bpp: %@",
+			    IRI.string);
 			return false;
 		}
 
-		if (s->format->BitsPerPixel != 24) {
-			SDL_PixelFormat *format =
-			    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
-			if (format == NULL) {
-				conoutf(
-				    @"texture cannot be converted to 24bpp: %@",
+		@try {
+			SDL_Surface *converted =
+			    SDL_ConvertSurface(s, format, 0);
+			if (converted == NULL) {
+				conoutf(@"texture cannot be converted "
+				        @"to 24bpp: %@",
 				    IRI.string);
 				return false;
 			}
 
-			@try {
-				SDL_Surface *converted =
-				    SDL_ConvertSurface(s, format, 0);
-				if (converted == NULL) {
-					conoutf(@"texture cannot be converted "
-					        @"to 24bpp: %@",
-					    IRI.string);
-					return false;
-				}
-
-				SDL_FreeSurface(s);
-				s = converted;
-			} @finally {
-				SDL_FreeFormat(format);
-			}
+			SDL_FreeSurface(s);
+			s = converted;
+		} @finally {
+			SDL_FreeFormat(format);
 		}
+	}
 
 #if 0
 		loopi(s->w * s->h * 3)
@@ -120,46 +117,44 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 			*p = 255 - *p;
 		}
 #endif
-		glBindTexture(GL_TEXTURE_2D, tnum);
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
-		    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
-		    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
-		glTexParameteri(
-		    GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
-		    GL_LINEAR_MIPMAP_LINEAR); // NEAREST);
-		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glBindTexture(GL_TEXTURE_2D, tnum);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+	    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+	    clamp ? GL_CLAMP_TO_EDGE : GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER,
+	    GL_LINEAR_MIPMAP_LINEAR); // NEAREST);
+	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
-		*xs = s->w;
-		*ys = s->h;
-		while (*xs > glmaxtexsize || *ys > glmaxtexsize) {
-			*xs /= 2;
-			*ys /= 2;
-		}
-
-		void *scaledimg = s->pixels;
-
-		if (*xs != s->w) {
-			conoutf(@"warning: quality loss: scaling %@",
-			    IRI.string); // for voodoo cards under linux
-			scaledimg = OFAllocMemory(1, *xs * *ys * 3);
-			gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE,
-			    s->pixels, *xs, *ys, GL_UNSIGNED_BYTE, scaledimg);
-		}
-
-		if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, *xs, *ys, GL_RGB,
-		        GL_UNSIGNED_BYTE, scaledimg))
-			fatal(@"could not build mipmaps");
-
-		if (*xs != s->w)
-			free(scaledimg);
-
-		SDL_FreeSurface(s);
-
-		return true;
+	*xs = s->w;
+	*ys = s->h;
+	while (*xs > glmaxtexsize || *ys > glmaxtexsize) {
+		*xs /= 2;
+		*ys /= 2;
 	}
+
+	void *scaledimg = s->pixels;
+
+	if (*xs != s->w) {
+		conoutf(@"warning: quality loss: scaling %@",
+		    IRI.string); // for voodoo cards under linux
+		scaledimg = OFAllocMemory(1, *xs * *ys * 3);
+		gluScaleImage(GL_RGB, s->w, s->h, GL_UNSIGNED_BYTE, s->pixels,
+		    *xs, *ys, GL_UNSIGNED_BYTE, scaledimg);
+	}
+
+	if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, *xs, *ys, GL_RGB,
+	        GL_UNSIGNED_BYTE, scaledimg))
+		fatal(@"could not build mipmaps");
+
+	if (*xs != s->w)
+		free(scaledimg);
+
+	SDL_FreeSurface(s);
+
+	return true;
 }
 
 // management of texture slots
@@ -197,17 +192,14 @@ COMMAND(texturereset, ARG_NONE)
 void
 texture(OFString *aframe, OFString *name)
 {
-	@autoreleasepool {
-		int num = curtexnum++, frame = aframe.cube_intValue;
+	int num = curtexnum++, frame = aframe.cube_intValue;
 
-		if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
-			return;
+	if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
+		return;
 
-		mapping[num][frame] = 1;
-		mapname[num][frame] =
-		    [name stringByReplacingOccurrencesOfString:@"\\"
-		                                    withString:@"/"];
-	}
+	mapping[num][frame] = 1;
+	mapname[num][frame] = [name stringByReplacingOccurrencesOfString:@"\\"
+	                                                      withString:@"/"];
 }
 COMMAND(texture, ARG_2STR)
 
@@ -243,22 +235,20 @@ lookuptexture(int tex, int *xs, int *ys)
 	int tnum = curtex + FIRSTTEX;
 	texname[curtex] = mapname[tex][frame];
 
-	@autoreleasepool {
-		OFString *path =
-		    [OFString stringWithFormat:@"packages/%@", texname[curtex]];
+	OFString *path =
+	    [OFString stringWithFormat:@"packages/%@", texname[curtex]];
 
-		if (installtex(tnum,
-		        [Cube.sharedInstance.gameDataIRI
-		            IRIByAppendingPathComponent:path],
-		        xs, ys, false)) {
-			mapping[tex][frame] = tnum;
-			texx[curtex] = *xs;
-			texy[curtex] = *ys;
-			curtex++;
-			return tnum;
-		} else {
-			return mapping[tex][frame] = FIRSTTEX; // temp fix
-		}
+	if (installtex(tnum,
+	        [Cube.sharedInstance.gameDataIRI
+	            IRIByAppendingPathComponent:path],
+	        xs, ys, false)) {
+		mapping[tex][frame] = tnum;
+		texx[curtex] = *xs;
+		texy[curtex] = *ys;
+		curtex++;
+		return tnum;
+	} else {
+		return mapping[tex][frame] = FIRSTTEX; // temp fix
 	}
 }
 

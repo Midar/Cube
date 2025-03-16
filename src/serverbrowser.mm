@@ -180,17 +180,14 @@ getservername(int n)
 void
 addserver(OFString *servername)
 {
-	@autoreleasepool {
-		for (ServerInfo *si in servers)
-			if ([si.name isEqual:servername])
-				return;
+	for (ServerInfo *si in servers)
+		if ([si.name isEqual:servername])
+			return;
 
-		if (servers == nil)
-			servers = [[OFMutableArray alloc] init];
+	if (servers == nil)
+		servers = [[OFMutableArray alloc] init];
 
-		[servers
-		    addObject:[[ServerInfo alloc] initWithName:servername]];
-	}
+	[servers addObject:[[ServerInfo alloc] initWithName:servername]];
 }
 
 void
@@ -260,13 +257,9 @@ checkpings()
 				si.numplayers = getint(p);
 				si.minremain = getint(p);
 				sgetstr();
-				@autoreleasepool {
-					si.map = @(text);
-				}
+				si.map = @(text);
 				sgetstr();
-				@autoreleasepool {
-					si.sdesc = @(text);
-				}
+				si.sdesc = @(text);
 				break;
 			}
 		}
@@ -306,10 +299,8 @@ refreshservers()
 			    si.name];
 
 		// cut off too long server descriptions
-		@autoreleasepool {
-			if (si.full.length > 50)
-				si.full = [si.full substringToIndex:50];
-		}
+		if (si.full.length > 50)
+			si.full = [si.full substringToIndex:50];
 
 		menumanual(1, i, si.full);
 
@@ -348,9 +339,7 @@ updatefrommaster()
 		conoutf(@"master server not replying");
 	else {
 		[servers removeAllObjects];
-		@autoreleasepool {
-			execute(@((char *)reply));
-		}
+		execute(@((char *)reply));
 	}
 	servermenu();
 }
@@ -366,9 +355,7 @@ writeservercfg()
 	if (!f)
 		return;
 	fprintf(f, "// servers connected to are added here automatically\n\n");
-	@autoreleasepool {
-		for (ServerInfo *si in servers.reversedArray)
-			fprintf(f, "addserver %s\n", si.name.UTF8String);
-	}
+	for (ServerInfo *si in servers.reversedArray)
+		fprintf(f, "addserver %s\n", si.name.UTF8String);
 	fclose(f);
 }

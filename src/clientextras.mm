@@ -107,21 +107,19 @@ static OFMutableArray<OFString *> *scoreLines;
 void
 renderscore(DynamicEntity *d)
 {
-	@autoreleasepool {
-		OFString *lag = [OFString stringWithFormat:@"%d", d.plag];
-		OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
-		OFString *line =
-		    [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@", d.frags,
-		              (d.state == CS_LAGGED ? @"LAG" : lag), d.ping,
-		              d.team, (d.state == CS_DEAD ? name : d.name)];
+	OFString *lag = [OFString stringWithFormat:@"%d", d.plag];
+	OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
+	OFString *line =
+	    [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@", d.frags,
+	              (d.state == CS_LAGGED ? @"LAG" : lag), d.ping, d.team,
+	              (d.state == CS_DEAD ? name : d.name)];
 
-		if (scoreLines == nil)
-			scoreLines = [[OFMutableArray alloc] init];
+	if (scoreLines == nil)
+		scoreLines = [[OFMutableArray alloc] init];
 
-		[scoreLines addObject:line];
+	[scoreLines addObject:line];
 
-		menumanual(0, scoreLines.count - 1, line);
-	}
+	menumanual(0, scoreLines.count - 1, line);
 }
 
 static const int maxTeams = 4;
@@ -132,20 +130,18 @@ static size_t teamsUsed;
 void
 addteamscore(DynamicEntity *d)
 {
-	@autoreleasepool {
-		for (size_t i = 0; i < teamsUsed; i++) {
-			if ([teamName[i] isEqual:d.team]) {
-				teamScore[i] += d.frags;
-				return;
-			}
-		}
-
-		if (teamsUsed == maxTeams)
+	for (size_t i = 0; i < teamsUsed; i++) {
+		if ([teamName[i] isEqual:d.team]) {
+			teamScore[i] += d.frags;
 			return;
-
-		teamName[teamsUsed] = d.team;
-		teamScore[teamsUsed++] = d.frags;
+		}
 	}
+
+	if (teamsUsed == maxTeams)
+		return;
+
+	teamName[teamsUsed] = d.team;
+	teamScore[teamsUsed++] = d.frags;
 }
 
 void
@@ -172,9 +168,7 @@ renderscores()
 			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
 			            teamScore[j]];
 		menumanual(0, scoreLines.count, @"");
-		@autoreleasepool {
-			menumanual(0, scoreLines.count + 1, teamScores);
-		}
+		menumanual(0, scoreLines.count + 1, teamScores);
 	}
 }
 
@@ -183,38 +177,36 @@ renderscores()
 void
 sendmap(OFString *mapname)
 {
-	@autoreleasepool {
-		if (mapname.length > 0)
-			save_world(mapname);
-		changemap(mapname);
-		mapname = getclientmap();
-		OFData *mapdata = readmap(mapname);
-		if (mapdata == nil)
-			return;
-		ENetPacket *packet = enet_packet_create(
-		    NULL, MAXTRANS + mapdata.count, ENET_PACKET_FLAG_RELIABLE);
-		uchar *start = packet->data;
-		uchar *p = start + 2;
-		putint(p, SV_SENDMAP);
-		sendstring(mapname, p);
-		putint(p, mapdata.count);
-		if (65535 - (p - start) < mapdata.count) {
-			conoutf(@"map %@ is too large to send", mapname);
-			enet_packet_destroy(packet);
-			return;
-		}
-		memcpy(p, mapdata.items, mapdata.count);
-		p += mapdata.count;
-		*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
-		enet_packet_resize(packet, p - start);
-		sendpackettoserv(packet);
-		conoutf(@"sending map %@ to server...", mapname);
-		OFString *msg =
-		    [OFString stringWithFormat:@"[map %@ uploaded to server, "
-		                               @"\"getmap\" to receive it]",
-		              mapname];
-		toserver(msg);
+	if (mapname.length > 0)
+		save_world(mapname);
+	changemap(mapname);
+	mapname = getclientmap();
+	OFData *mapdata = readmap(mapname);
+	if (mapdata == nil)
+		return;
+	ENetPacket *packet = enet_packet_create(
+	    NULL, MAXTRANS + mapdata.count, ENET_PACKET_FLAG_RELIABLE);
+	uchar *start = packet->data;
+	uchar *p = start + 2;
+	putint(p, SV_SENDMAP);
+	sendstring(mapname, p);
+	putint(p, mapdata.count);
+	if (65535 - (p - start) < mapdata.count) {
+		conoutf(@"map %@ is too large to send", mapname);
+		enet_packet_destroy(packet);
+		return;
 	}
+	memcpy(p, mapdata.items, mapdata.count);
+	p += mapdata.count;
+	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	enet_packet_resize(packet, p - start);
+	sendpackettoserv(packet);
+	conoutf(@"sending map %@ to server...", mapname);
+	OFString *msg =
+	    [OFString stringWithFormat:@"[map %@ uploaded to server, "
+	                               @"\"getmap\" to receive it]",
+	              mapname];
+	toserver(msg);
 }
 
 void

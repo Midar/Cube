@@ -87,43 +87,37 @@ music(OFString *name)
 		return;
 	stopsound();
 	if (soundvol && musicvol) {
-		@autoreleasepool {
-			name = [name stringByReplacingOccurrencesOfString:@"\\"
-			                                       withString:@"/"];
-			OFString *path =
-			    [OFString stringWithFormat:@"packages/%@", name];
-			OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
-			    IRIByAppendingPathComponent:path];
+		name = [name stringByReplacingOccurrencesOfString:@"\\"
+		                                       withString:@"/"];
+		OFString *path =
+		    [OFString stringWithFormat:@"packages/%@", name];
+		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent:path];
 
 #ifdef USE_MIXER
-			if ((mod = Mix_LoadMUS(
-			         IRI.fileSystemRepresentation.UTF8String)) !=
-			    NULL) {
-				Mix_PlayMusic(mod, -1);
-				Mix_VolumeMusic((musicvol * MAXVOL) / 255);
-			}
-#else
-			if ((mod = FMUSIC_LoadSong(
-			         IRI.fileSystemRepresentation.UTF8String)) !=
-			    NULL) {
-				FMUSIC_PlaySong(mod);
-				FMUSIC_SetMasterVolume(mod, musicvol);
-			} else if (stream = FSOUND_Stream_Open(
-			               IRI.fileSystemRepresentation.UTF8String,
-			               FSOUND_LOOP_NORMAL, 0, 0)) {
-				int chan =
-				    FSOUND_Stream_Play(FSOUND_FREE, stream);
-				if (chan >= 0) {
-					FSOUND_SetVolume(
-					    chan, (musicvol * MAXVOL) / 255);
-					FSOUND_SetPaused(chan, false);
-				}
-			} else {
-				conoutf(
-				    @"could not play music: %@", IRI.string);
-			}
-#endif
+		if ((mod = Mix_LoadMUS(
+		         IRI.fileSystemRepresentation.UTF8String)) != NULL) {
+			Mix_PlayMusic(mod, -1);
+			Mix_VolumeMusic((musicvol * MAXVOL) / 255);
 		}
+#else
+		if ((mod = FMUSIC_LoadSong(
+		         IRI.fileSystemRepresentation.UTF8String)) != NULL) {
+			FMUSIC_PlaySong(mod);
+			FMUSIC_SetMasterVolume(mod, musicvol);
+		} else if (stream = FSOUND_Stream_Open(
+		               IRI.fileSystemRepresentation.UTF8String,
+		               FSOUND_LOOP_NORMAL, 0, 0)) {
+			int chan = FSOUND_Stream_Play(FSOUND_FREE, stream);
+			if (chan >= 0) {
+				FSOUND_SetVolume(
+				    chan, (musicvol * MAXVOL) / 255);
+				FSOUND_SetPaused(chan, false);
+			}
+		} else {
+			conoutf(@"could not play music: %@", IRI.string);
+		}
+#endif
 	}
 }
 COMMAND(music, ARG_1STR)
