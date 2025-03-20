@@ -5,6 +5,7 @@
 
 #import "Client.h"
 #import "Entity.h"
+#import "ServerEntity.h"
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
 
@@ -13,13 +14,7 @@ static OFMutableArray<Client *> *clients;
 int maxclients = 8;
 static OFString *smapname;
 
-// server side version of "entity" type
-struct server_entity {
-	bool spawned;
-	int spawnsecs;
-};
-
-vector<server_entity> sents;
+static OFMutableArray<ServerEntity *> *sents;
 
 // true when map has changed and waiting for clients to send item
 bool notgotitems = true;
@@ -29,11 +24,11 @@ int mode = 0;
 void
 restoreserverstate(OFArray<Entity *> *ents)
 {
-	loopv(sents)
-	{
-		sents[i].spawned = ents[i].spawned;
-		sents[i].spawnsecs = 0;
-	}
+	[sents enumerateObjectsUsingBlock:^(
+	    ServerEntity *e, size_t i, bool *stop) {
+		e.spawned = ents[i].spawned;
+		e.spawnsecs = 0;
+	}];
 }
 
 int interm = 0, minremain = 0, mapend = 0;
@@ -116,7 +111,7 @@ disconnect_client(int n, OFString *reason)
 void
 resetitems()
 {
-	sents.setsize(0);
+	[sents removeAllObjects];
 	notgotitems = true;
 }
 
@@ -124,7 +119,7 @@ void
 pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
                                     // first client that gets it
 {
-	if (i >= (uint)sents.length())
+	if (i >= (uint)sents.count)
 		return;
 	if (sents[i].spawned) {
 		sents[i].spawned = false;
@@ -230,9 +225,9 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			int n;
 			while ((n = getint(p)) != -1)
 				if (notgotitems) {
-					server_entity se = { false, 0 };
-					while (sents.length() <= n)
-						sents.add(se);
+					while (sents.count <= n)
+						[sents addObject:[ServerEntity
+						                     entity]];
 					sents[n].spawned = true;
 				}
 			notgotitems = false;
@@ -304,7 +299,7 @@ send_welcome(int n)
 	ENetPacket *packet =
 	    enet_packet_create(NULL, MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
 	uchar *start = packet->data;
-	uchar *p = start + 2;
+	__block uchar *p = start + 2;
 	putint(p, SV_INITS2C);
 	putint(p, n);
 	putint(p, PROTOCOL_VERSION);
@@ -316,7 +311,11 @@ send_welcome(int n)
 		sendstring(smapname, p);
 		putint(p, mode);
 		putint(p, SV_ITEMLIST);
-		loopv(sents) if (sents[i].spawned) putint(p, i);
+		[sents enumerateObjectsUsingBlock:^(
+		    ServerEntity *e, size_t i, bool *stop) {
+			if (e.spawned)
+				putint(p, i);
+		}];
 		putint(p, -1);
 	}
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
@@ -402,15 +401,15 @@ serverslice(int seconds,
     unsigned int timeout) // main server update, called from cube main loop in
                           // sp, or dedicated server loop
 {
-	loopv(sents) // spawn entities when timer reached
-	{
-		if (sents[i].spawnsecs &&
-		    (sents[i].spawnsecs -= seconds - lastsec) <= 0) {
-			sents[i].spawnsecs = 0;
-			sents[i].spawned = true;
+	// spawn entities when timer reached
+	[sents enumerateObjectsUsingBlock:^(
+	    ServerEntity *e, size_t i, bool *stop) {
+		if (e.spawnsecs && (e.spawnsecs -= seconds - lastsec) <= 0) {
+			e.spawnsecs = 0;
+			e.spawned = true;
 			send2(true, -1, SV_ITEMSPAWN, i);
 		}
-	}
+	}];
 
 	lastsec = seconds;
 
@@ -534,6 +533,7 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 {
 	serverpassword = passwd;
 	maxclients = maxcl;
+	sents = [[OFMutableArray alloc] init];
 	servermsinit(master ? master : @"wouter.fov120.com/cube/masterserver/",
 	    sdesc, dedicated);
 
