@@ -37,7 +37,7 @@ bool selset = false;
 			sqr *s = S(sel->x + x, sel->y + y); \
 			b;                                  \
 		}                                           \
-		remip(sel);                                 \
+		remip(sel, 0);                              \
 	}
 
 int cx, cy, ch;
@@ -440,7 +440,7 @@ replace()
 		}
 	}
 	block b = { 0, 0, ssize, ssize };
-	remip(&b);
+	remip(&b, 0);
 }
 
 void
@@ -518,7 +518,7 @@ void
 setvdeltaxy(int delta, const block *sel)
 {
 	loopselxy(s->vdelta = max(s->vdelta + delta, 0));
-	remipmore(sel);
+	remipmore(sel, 0);
 }
 
 void
@@ -563,7 +563,7 @@ arch(int sidedelta, int _a)
 	              (y == 0 || y == sel->ys - 1 ? sidedelta : 0))
 	        : (archverts[sel->ys - 1][y] +
 	              (x == 0 || x == sel->xs - 1 ? sidedelta : 0)));
-	remipmore(sel);
+	remipmore(sel, 0);
 }
 
 void
@@ -581,7 +581,7 @@ slope(int xd, int yd)
 	// Ugly hack to make the macro work.
 	block *sel = sel_;
 	loopselxy(s->vdelta = xd * x + yd * y + off);
-	remipmore(sel);
+	remipmore(sel, 0);
 }
 
 void
@@ -596,7 +596,7 @@ perlin(int scale, int seed, int psize)
 	perlinarea(&sel, scale, seed, psize);
 	sel.xs++;
 	sel.ys++;
-	remipmore(&sel);
+	remipmore(&sel, 0);
 	sel.xs--;
 	sel.ys--;
 }

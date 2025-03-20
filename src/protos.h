@@ -7,7 +7,7 @@ extern void setvar(OFString *name, int i);
 extern int getvar(OFString *name);
 extern bool identexists(OFString *name);
 extern bool addcommand(OFString *name, void (*fun)(), int narg);
-extern int execute(OFString *p, bool down = true);
+extern int execute(OFString *p, bool down);
 extern void exec(OFString *cfgfile);
 extern bool execfile(OFIRI *cfgfile);
 extern void resetcomplete();
@@ -71,7 +71,7 @@ extern void setarraypointers();
 // client
 extern void localservertoclient(uchar *buf, int len);
 extern void connects(OFString *servername);
-extern void disconnect(int onlyclean = 0, int async = 0);
+extern void disconnect(bool onlyclean, bool async);
 extern void toserver(OFString *text);
 extern void addmsg(int rel, int num, int type, ...);
 extern bool multiplayer();
@@ -114,10 +114,10 @@ extern void renderscores();
 // world
 extern void setupworld(int factor);
 extern void empty_world(int factor, bool force);
-extern void remip(const block *b, int level = 0);
-extern void remipmore(const block *b, int level = 0);
+extern void remip(const block *b, int level);
+extern void remipmore(const block *b, int level);
 extern int closestent();
-extern int findentity(int type, int index = 0);
+extern int findentity(int type, int index);
 extern void trigger(int tag, int type, bool savegame);
 extern void resettagareas();
 extern void settagareas();
@@ -141,7 +141,7 @@ extern void computeraytable(float vx, float vy);
 extern int isoccluded(float vx, float vy, float cx, float cy, float csize);
 
 // main
-extern void fatal(OFString *s, OFString *o = @"");
+extern void fatal(OFConstantString *s, ...);
 
 // rendertext
 extern void draw_text(OFString *string, int left, int top, int gl_num);
@@ -160,7 +160,7 @@ extern void edittypexy(int type, const block *sel);
 extern void edittexxy(int type, int t, const block *sel);
 extern void editheightxy(bool isfloor, int amount, const block *sel);
 extern bool noteditmode();
-extern void pruneundos(int maxremain = 0);
+extern void pruneundos(int maxremain);
 
 // renderextras
 extern void line(int x1, int y1, float z1, int x2, int y2, float z2);
@@ -188,7 +188,7 @@ extern void load_world(OFString *mname);
 extern void writemap(OFString *mname, int msize, uchar *mdata);
 extern OFData *readmap(OFString *mname);
 extern void loadgamerest();
-extern void incomingdemodata(uchar *buf, int len, bool extras = false);
+extern void incomingdemodata(uchar *buf, int len, bool extras);
 extern void demoplaybackstep();
 extern void stop();
 extern void stopifrecording();
@@ -203,7 +203,7 @@ extern void setentphysics(int mml, int mmr);
 extern void physicsframe();
 
 // sound
-extern void playsound(int n, const OFVector3D *loc = NULL);
+extern void playsound(int n, const OFVector3D *loc);
 extern void playsoundc(int n);
 extern void initsound();
 extern void cleansound();
@@ -211,7 +211,7 @@ extern void cleansound();
 // rendermd2
 extern void rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
     OFVector3D position, float yaw, float pitch, bool teammate, float scale,
-    float speed, int snap = 0, int basetime = 0);
+    float speed, int snap, int basetime);
 @class MapModelInfo;
 extern MapModelInfo *getmminfo(int i);
 
@@ -237,10 +237,10 @@ extern void sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata);
 extern ENetPacket *recvmap(int n);
 
 // weapon
-extern void selectgun(int a = -1, int b = -1, int c = -1);
+extern void selectgun(int a, int b, int c);
 extern void shoot(DynamicEntity *d, const OFVector3D *to);
 extern void shootv(int gun, const OFVector3D *from, const OFVector3D *to,
-    DynamicEntity *d = 0, bool local = false);
+    DynamicEntity *d, bool local);
 extern void createrays(const OFVector3D *from, const OFVector3D *to);
 extern void moveprojectiles(float time);
 extern void projreset();

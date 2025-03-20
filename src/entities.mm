@@ -54,7 +54,7 @@ renderentities()
 			        (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
 			        e.y),
 			    (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
-			    false, 1.0f, 10.0f, mmi.snap);
+			    false, 1.0f, 10.0f, mmi.snap, 0);
 		} else {
 			if (OUTBORD(e.x, e.y))
 				continue;

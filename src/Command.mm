@@ -124,14 +124,15 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
 			return ((int(__cdecl *)(int))_function)(
-			    execute(arguments[1]));
+			    execute(arguments[1], isDown));
 		}
 		break;
 	case ARG_2EXP:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
 			return ((int(__cdecl *)(int, int))_function)(
-			    execute(arguments[1]), execute(arguments[2]));
+			    execute(arguments[1], isDown),
+			    execute(arguments[2], isDown));
 		}
 		break;
 	case ARG_1EST:

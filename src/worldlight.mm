@@ -165,7 +165,7 @@ postlightarea(block &a) // median filter, smooths out random noise in light and
 		median(b);
 	}
 
-	remip(&a);
+	remip(&a, 0);
 }
 
 void
@@ -268,5 +268,5 @@ blockpaste(const block *b)
 	for (int x = b->x; x < b->xs + b->x; x++)
 		for (int y = b->y; y < b->ys + b->y; y++)
 			*S(x, y) = *q++;
-	remipmore(b);
+	remipmore(b, 0);
 }

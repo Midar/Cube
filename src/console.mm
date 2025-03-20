@@ -177,7 +177,7 @@ history(int n)
 
 	if (!rec && n >= 0 && n < vhistory.count) {
 		rec = true;
-		execute(vhistory[vhistory.count - n - 1]);
+		execute(vhistory[vhistory.count - n - 1], true);
 		rec = false;
 	}
 }

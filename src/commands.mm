@@ -123,7 +123,8 @@ parseexp(char *&p, int right)
 	if (left == '(') {
 		OFString *t;
 		@try {
-			t = [OFString stringWithFormat:@"%d", execute(@(s))];
+			t = [OFString
+			    stringWithFormat:@"%d", execute(@(s), true)];
 		} @finally {
 			free(s);
 		}
@@ -329,7 +330,7 @@ execfile(OFIRI *cfgfile)
 		return false;
 	}
 
-	execute(command);
+	execute(command, true);
 	return true;
 }
 
@@ -407,7 +408,7 @@ intset(OFString *name, int v)
 void
 ifthen(OFString *cond, OFString *thenp, OFString *elsep)
 {
-	execute((![cond hasPrefix:@"0"] ? thenp : elsep));
+	execute((![cond hasPrefix:@"0"] ? thenp : elsep), true);
 }
 
 void
@@ -418,22 +419,22 @@ loopa(OFString *times, OFString *body)
 	loopi(t)
 	{
 		intset(@"i", i);
-		execute(body);
+		execute(body, true);
 	}
 }
 
 void
 whilea(OFString *cond, OFString *body)
 {
-	while (execute(cond))
-		execute(body);
+	while (execute(cond, true))
+		execute(body, true);
 }
 
 void
 onrelease(bool on, OFString *body)
 {
 	if (!on)
-		execute(body);
+		execute(body, true);
 }
 
 void

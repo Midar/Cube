@@ -159,7 +159,7 @@ void
 playsoundc(int n)
 {
 	addmsg(0, 2, SV_SOUND, n);
-	playsound(n);
+	playsound(n, NULL);
 }
 
 int soundsatonce = 0, lastsoundmillis = 0;

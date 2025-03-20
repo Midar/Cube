@@ -140,10 +140,17 @@ localservertoclient(uchar *buf, int len)
 }
 
 void
-fatal(OFString *s, OFString *o)
+fatal(OFConstantString *s, ...)
 {
 	cleanupserver();
-	[OFStdOut writeFormat:@"servererror: %@\n", s];
+
+	va_list args;
+	va_start(args, s);
+	OFString *msg = [[OFString alloc] initWithFormat:s arguments:args];
+	va_end(args);
+
+	[OFStdOut writeFormat:@"servererror: %@\n", msg];
+
 	exit(1);
 }
 

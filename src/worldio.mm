@@ -262,7 +262,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 {
 	stopifrecording();
 	cleardlights();
-	pruneundos();
+	pruneundos(0);
 	setnames(mname);
 	gzFile f =
 	    gzopen([cgzname cStringWithEncoding:OFLocale.encoding], "rb9");
@@ -350,13 +350,10 @@ load_world(OFString *mname) // still supports all map formats that have existed
 			break;
 		}
 		default: {
-			if (type < 0 || type >= MAXTYPE) {
-				OFString *t = [OFString
-				    stringWithFormat:@"%d @ %d", type, k];
-				fatal(@"while reading map: type out of "
-				      @"range: ",
-				    t);
-			}
+			if (type < 0 || type >= MAXTYPE)
+				fatal(@"while reading map: type out of range: "
+				      @"%d @ %d",
+				    type, k);
 			s->type = type;
 			s->floor = gzgetc(f);
 			s->ceil = gzgetc(f);

@@ -23,7 +23,7 @@ delayedload(MD2 *m)
 
 		OFIRI *IRI1 = [baseIRI IRIByAppendingPathComponent:@"tris.md2"];
 		if (![m loadWithIRI:IRI1])
-			fatal(@"loadmodel: ", IRI1.string);
+			fatal(@"loadmodel: %@", IRI1.string);
 
 		OFIRI *IRI2 = [baseIRI IRIByAppendingPathComponent:@"skin.jpg"];
 		int xs, ys;

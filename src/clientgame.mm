@@ -251,7 +251,7 @@ updateworld(int millis) // main game update loop
 		curtime = millis - lastmillis;
 		if (sleepwait && lastmillis > sleepwait) {
 			sleepwait = 0;
-			execute(sleepcmd);
+			execute(sleepcmd, true);
 		}
 		physicsframe();
 		checkquad(curtime);
@@ -445,11 +445,11 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 		player1.state = CS_DEAD;
 		player1.pitch = 0;
 		player1.roll = 60;
-		playsound(S_DIE1 + rnd(2));
+		playsound(S_DIE1 + rnd(2), NULL);
 		spawnstate(player1);
 		player1.lastaction = lastmillis;
 	} else
-		playsound(S_PAIN6);
+		playsound(S_PAIN6, NULL);
 }
 
 void

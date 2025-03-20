@@ -296,7 +296,7 @@ VARP(minmillis, 0, 5, 1000);
 - (void)applicationWillTerminate:(OFNotification *)notification
 {
 	stop();
-	disconnect(true);
+	disconnect(true, false);
 	writecfg();
 	cleangl();
 	cleansound();
@@ -357,11 +357,17 @@ VARP(minmillis, 0, 5, 1000);
 }
 @end
 
+// failure exit
 void
-fatal(OFString *s, OFString *o) // failure exit
+fatal(OFConstantString *s, ...)
 {
-	OFString *msg =
-	    [OFString stringWithFormat:@"%@%@ (%s)\n", s, o, SDL_GetError()];
+	va_list args;
+	va_start(args, s);
+	OFMutableString *msg = [[OFMutableString alloc] initWithFormat:s
+	                                                     arguments:args];
+	va_end(args);
+
+	[msg appendFormat:@" (%s)\n", SDL_GetError()];
 
 	[Cube.sharedInstance showMessage:msg];
 	[OFApplication terminateWithStatus:1];

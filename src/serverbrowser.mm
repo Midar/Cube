@@ -273,7 +273,7 @@ updatefrommaster()
 		conoutf(@"master server not replying");
 	else {
 		[servers removeAllObjects];
-		execute(@((char *)reply));
+		execute(@((char *)reply), true);
 	}
 	servermenu();
 }

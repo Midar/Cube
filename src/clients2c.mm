@@ -14,7 +14,7 @@ void
 neterr(OFString *s)
 {
 	conoutf(@"illegal network message (%@)", s);
-	disconnect();
+	disconnect(false, false);
 }
 
 void
@@ -67,7 +67,7 @@ localservertoclient(uchar *buf, int len)
 {
 	if (ENET_NET_TO_HOST_16(*(ushort *)buf) != len)
 		neterr(@"packet length");
-	incomingdemodata(buf, len);
+	incomingdemodata(buf, len, false);
 
 	uchar *end = buf + len;
 	uchar *p = buf + 2;
@@ -86,7 +86,7 @@ localservertoclient(uchar *buf, int len)
 				conoutf(@"you are using a different game "
 				        @"protocol (you: %d, server: %d)",
 				    PROTOCOL_VERSION, prot);
-				disconnect();
+				disconnect(false, false);
 				return;
 			}
 			toservermap = @"";
@@ -100,7 +100,7 @@ localservertoclient(uchar *buf, int len)
 			    strcmp(text, clientpassword.UTF8String)) {
 				conoutf(@"you need to set the correct password "
 				        @"to join this server!");
-				disconnect();
+				disconnect(false, false);
 				return;
 			}
 			if (getint(&p) == 1)
@@ -221,7 +221,7 @@ localservertoclient(uchar *buf, int len)
 			e.z = getint(&p) / DMF;
 			if (gun == GUN_SG)
 				createrays(&s, &e);
-			shootv(gun, &s, &e, d);
+			shootv(gun, &s, &e, d, false);
 			break;
 		}
 

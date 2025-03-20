@@ -94,7 +94,7 @@ writeclientinfo(OFStream *stream)
 void
 connects(OFString *servername)
 {
-	disconnect(1); // reset state
+	disconnect(true, false); // reset state
 	addserver(servername);
 
 	conoutf(@"attempting to connect to %@", servername);
@@ -113,12 +113,12 @@ connects(OFString *servername)
 		connattempts = 0;
 	} else {
 		conoutf(@"could not connect to server");
-		disconnect();
+		disconnect(false, false);
 	}
 }
 
 void
-disconnect(int onlyclean, int async)
+disconnect(bool onlyclean, bool async)
 {
 	if (clienthost) {
 		if (!connecting && !disconnecting) {
@@ -162,7 +162,7 @@ trydisconnect()
 	}
 	if (connecting) {
 		conoutf(@"aborting connection attempt");
-		disconnect();
+		disconnect(false, false);
 		return;
 	}
 	conoutf(@"attempting to disconnect...");
@@ -233,7 +233,7 @@ void
 server_err()
 {
 	conoutf(@"server network error, disconnecting...");
-	disconnect();
+	disconnect(false, false);
 }
 
 int lastupdate = 0, lastping = 0;
@@ -382,7 +382,7 @@ gets2c() // get updates from the server
 		++connattempts;
 		if (connattempts > 3) {
 			conoutf(@"could not connect to server");
-			disconnect();
+			disconnect(false, false);
 			return;
 		}
 	}
@@ -406,7 +406,7 @@ gets2c() // get updates from the server
 
 		case ENET_EVENT_TYPE_DISCONNECT:
 			if (disconnecting)
-				disconnect();
+				disconnect(false, false);
 			else
 				server_err();
 			return;

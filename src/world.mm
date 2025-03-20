@@ -42,7 +42,7 @@ settag(int tag, int type)
 	}
 	block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
 	if (maxx)
-		remip(&b); // remip minimal area of changed geometry
+		remip(&b, 0); // remip minimal area of changed geometry
 }
 
 void
@@ -70,13 +70,13 @@ trigger(int tag, int type, bool savegame)
 	settag(tag, type);
 
 	if (!savegame && type != 3)
-		playsound(S_RUMBLE);
+		playsound(S_RUMBLE, NULL);
 
 	OFString *aliasname =
 	    [OFString stringWithFormat:@"level_trigger_%d", tag];
 
 	if (identexists(aliasname))
-		execute(aliasname);
+		execute(aliasname, true);
 
 	if (type == 2)
 		endsp(false);
@@ -457,7 +457,7 @@ empty_world(int factor, bool force)
 	if (!force && noteditmode())
 		return;
 	cleardlights();
-	pruneundos();
+	pruneundos(0);
 	sqr *oldworld = world;
 	bool copy = false;
 	if (oldworld && factor < 0) {
@@ -516,7 +516,7 @@ empty_world(int factor, bool force)
 	if (oldworld) {
 		OFFreeMemory(oldworld);
 		toggleedit();
-		execute(@"fullbright 1");
+		execute(@"fullbright 1", true);
 	}
 }
 

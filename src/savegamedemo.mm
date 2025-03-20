@@ -351,7 +351,7 @@ stopreset()
 	conoutf(@"demo stopped (%d msec elapsed)", lastmillis - starttime);
 	stop();
 	[players removeAllObjects];
-	disconnect(0, 0);
+	disconnect(false, false);
 }
 
 VAR(demoplaybackspeed, 10, 100, 1000);
