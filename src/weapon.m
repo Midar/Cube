@@ -7,7 +7,7 @@
 #import "Projectile.h"
 
 static const int MONSTERDAMAGEFACTOR = 4;
-static const int SGRAYS = 20;
+#define SGRAYS 20
 static const float SGSPREAD = 2;
 static OFVector3D sg[SGRAYS];
 
@@ -132,7 +132,7 @@ playerincrosshair()
 	return nil;
 }
 
-static const size_t MAXPROJ = 100;
+#define MAXPROJ 100
 static Projectile *projs[MAXPROJ];
 
 void

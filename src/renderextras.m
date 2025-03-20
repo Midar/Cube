@@ -81,7 +81,7 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glDepthMask(GL_TRUE);
 }
 
-const int MAXSPHERES = 50;
+#define MAXSPHERES 50
 struct sphere {
 	OFVector3D o;
 	float size, max;

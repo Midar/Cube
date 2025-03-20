@@ -4,7 +4,7 @@
 
 #import "DynamicEntity.h"
 
-const int MAXPARTICLES = 10500;
+#define MAXPARTICLES 10500
 const int NUMPARTCUTOFF = 20;
 struct particle {
 	OFVector3D o, d;

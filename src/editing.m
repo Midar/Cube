@@ -529,7 +529,7 @@ setvdelta(int delta)
 	addmsg(1, 6, SV_EDITD, sel.x, sel.y, sel.xs, sel.ys, delta);
 }
 
-const int MAXARCHVERT = 50;
+#define MAXARCHVERT 50
 int archverts[MAXARCHVERT][MAXARCHVERT];
 bool archvinit = false;
 

@@ -122,7 +122,7 @@ renderscore(DynamicEntity *d)
 	menumanual(0, scoreLines.count - 1, line);
 }
 
-static const int maxTeams = 4;
+#define maxTeams 4
 static OFString *teamName[maxTeams];
 static int teamScore[maxTeams];
 static size_t teamsUsed;

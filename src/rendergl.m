@@ -161,7 +161,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 // each texture slot can have multople texture frames, of which currently only
 // the first is used additional frames can be used for various shaders
 
-static const int MAXTEX = 1000;
+#define MAXTEX 1000
 static int texx[MAXTEX]; // ( loaded texture ) -> ( name, size )
 static int texy[MAXTEX];
 static OFString *texname[MAXTEX];
@@ -169,9 +169,10 @@ static int curtex = 0;
 static const int FIRSTTEX = 1000; // opengl id = loaded id + FIRSTTEX
 // std 1+, sky 14+, mdls 20+
 
-static const int MAXFRAMES = 2; // increase to allow more complex shader defs
-static int mapping[256]
-                  [MAXFRAMES]; // ( cube texture, frame ) -> ( opengl id, name )
+// increase to allow more complex shader defs
+#define MAXFRAMES 2
+// ( cube texture, frame ) -> ( opengl id, name )
+static int mapping[256][MAXFRAMES];
 static OFString *mapname[256][MAXFRAMES];
 
 void
