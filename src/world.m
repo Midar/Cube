@@ -129,10 +129,9 @@ remip(const struct block *b, int level)
 			r->type = SEMISOLID;
 			loopk(MAXTYPE) if (nums[k] == 4) r->type = k;
 			if (!SOLID(r)) {
-				int floor = 127, ceil = -128, num = 0;
+				int floor = 127, ceil = -128;
 				loopi(4) if (!SOLID(o[i]))
 				{
-					num++;
 					int fh = o[i]->floor;
 					int ch = o[i]->ceil;
 					if (r->type == SEMISOLID) {
@@ -332,7 +331,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 {
 	int type = findtype(what);
 
-	PersistentEntity *e = [PersistentEntity entity];
+	Entity *e = [Entity entity];
 	e.x = x;
 	e.y = y;
 	e.z = z;
@@ -351,7 +350,6 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 		if (!v2 && !v3 && !v4)
 			e.attr2 = 255;
 		break;
-
 	case MAPMODEL:
 		e.attr4 = e.attr3;
 		e.attr3 = e.attr2;
@@ -365,7 +363,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	addmsg(1, 10, SV_EDITENT, ents.count, type, e.x, e.y, e.z, e.attr1,
 	    e.attr2, e.attr3, e.attr4);
 
-	[ents addObject:e]; // unsafe!
+	[ents addObject:e];
 
 	if (type == LIGHT)
 		calclight();

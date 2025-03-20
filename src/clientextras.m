@@ -22,7 +22,8 @@ renderclient(
 	int n = 3;
 	float speed = 100.0f;
 	float mz = d.o.z - d.eyeheight + 1.55f * scale;
-	int basetime = -((intptr_t)d & 0xFFF);
+	intptr_t tmp = (intptr_t)d;
+	int basetime = -(tmp & 0xFFF);
 	if (d.state == CS_DEAD) {
 		int r;
 		if (hellpig) {

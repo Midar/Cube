@@ -372,27 +372,29 @@ void
 gets2c() // get updates from the server
 {
 	ENetEvent event;
+
 	if (!clienthost)
 		return;
+
 	if (connecting && lastmillis / 3000 > connecting / 3000) {
 		conoutf(@"attempting to connect...");
 		connecting = lastmillis;
-		++connattempts;
-		if (connattempts > 3) {
+
+		if (++connattempts > 3) {
 			conoutf(@"could not connect to server");
 			disconnect(false, false);
 			return;
 		}
 	}
-	while (
-	    clienthost != NULL && enet_host_service(clienthost, &event, 0) > 0)
+
+	while (clienthost != NULL &&
+	    enet_host_service(clienthost, &event, 0) > 0) {
 		switch (event.type) {
 		case ENET_EVENT_TYPE_CONNECT:
 			conoutf(@"connected to server");
 			connecting = 0;
 			throttle();
 			break;
-
 		case ENET_EVENT_TYPE_RECEIVE:
 			if (disconnecting)
 				conoutf(@"attempting to disconnect...");
@@ -401,12 +403,14 @@ gets2c() // get updates from the server
 				    event.packet->dataLength);
 			enet_packet_destroy(event.packet);
 			break;
-
 		case ENET_EVENT_TYPE_DISCONNECT:
 			if (disconnecting)
 				disconnect(false, false);
 			else
 				server_err();
 			return;
+		case ENET_EVENT_TYPE_NONE:
+			break;
 		}
+	}
 }

@@ -483,7 +483,6 @@ serverslice(int seconds,
 			if (event.packet->referenceCount == 0)
 				enet_packet_destroy(event.packet);
 			break;
-
 		case ENET_EVENT_TYPE_DISCONNECT:
 			if ((intptr_t)event.peer->data < 0)
 				break;
@@ -492,6 +491,8 @@ serverslice(int seconds,
 			clients[(size_t)event.peer->data].type = ST_EMPTY;
 			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);
 			event.peer->data = (void *)-1;
+			break;
+		case ENET_EVENT_TYPE_NONE:
 			break;
 		}
 

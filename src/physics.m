@@ -113,46 +113,46 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 			struct sqr *s = S(x, y);
 			float ceil = s->ceil;
 			float floor = s->floor;
+
 			switch (s->type) {
 			case SOLID:
 				return false;
-
 			case CORNER: {
 				int bx = x, by = y, bs = 1;
-				if (x == x1 && y == y1 &&
+				if ((x == x1 && y == y1 &&
 				        cornertest(
 				            0, x, y, -1, -1, &bx, &by, &bs) &&
-				        fx1 - bx + fy1 - by <= bs ||
-				    x == x2 && y == y1 &&
+				        fx1 - bx + fy1 - by <= bs) ||
+				    (x == x2 && y == y1 &&
 				        cornertest(
 				            0, x, y, 1, -1, &bx, &by, &bs) &&
-				        fx2 - bx >= fy1 - by ||
-				    x == x1 && y == y2 &&
+				        fx2 - bx >= fy1 - by) ||
+				    (x == x1 && y == y2 &&
 				        cornertest(
 				            0, x, y, -1, 1, &bx, &by, &bs) &&
-				        fx1 - bx <= fy2 - by ||
-				    x == x2 && y == y2 &&
+				        fx1 - bx <= fy2 - by) ||
+				    (x == x2 && y == y2 &&
 				        cornertest(
 				            0, x, y, 1, 1, &bx, &by, &bs) &&
-				        fx2 - bx + fy2 - by >= bs)
+				        fx2 - bx + fy2 - by >= bs))
 					return false;
 				break;
 			}
-
-			case FHF: // FIXME: too simplistic collision with
-			          // slopes, makes it feels like tiny stairs
+			// FIXME: too simplistic collision with slopes, makes
+			// it feels like tiny stairs
+			case FHF:
 				floor -= (s->vdelta + S(x + 1, y)->vdelta +
 				             S(x, y + 1)->vdelta +
 				             S(x + 1, y + 1)->vdelta) /
 				    16.0f;
 				break;
-
 			case CHF:
 				ceil += (s->vdelta + S(x + 1, y)->vdelta +
 				            S(x, y + 1)->vdelta +
 				            S(x + 1, y + 1)->vdelta) /
 				    16.0f;
 			}
+
 			if (ceil < hi)
 				hi = ceil;
 			if (floor > lo)

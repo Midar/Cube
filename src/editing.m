@@ -454,7 +454,7 @@ edittype(int type)
 {
 	EDITSEL;
 	if (type == CORNER &&
-	    (sel.xs != sel.ys || sel.xs == 3 || sel.xs > 4 && sel.xs != 8 ||
+	    (sel.xs != sel.ys || sel.xs == 3 || (sel.xs > 4 && sel.xs != 8) ||
 	        sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
 		conoutf(@"corner selection must be power of 2 aligned");
 		return;

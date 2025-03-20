@@ -4,7 +4,6 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
-#import "PersistentEntity.h"
 
 extern bool hasoverbright;
 
@@ -12,7 +11,7 @@ VAR(lightscale, 1, 4, 100);
 
 // done in realtime, needs to be fast
 void
-lightray(float bx, float by, PersistentEntity *light)
+lightray(float bx, float by, Entity *light)
 {
 	float lx = light.x + (rnd(21) - 10) * 0.1f;
 	float ly = light.y + (rnd(21) - 10) * 0.1f;
@@ -39,10 +38,9 @@ lightray(float bx, float by, PersistentEntity *light)
 		l /= lightscale;
 		stepl /= lightscale;
 
-		if (light.attr3 ||
-		    light.attr4) // coloured light version, special case because
-		                 // most lights are white
-		{
+		// coloured light version, special case because most lights are
+		// white
+		if (light.attr3 || light.attr4) {
 			int dimness = rnd(
 			    (255 -
 			        (light.attr2 + light.attr3 + light.attr4) / 3) /
@@ -123,7 +121,7 @@ lightray(float bx, float by, PersistentEntity *light)
 }
 
 void
-calclightsource(PersistentEntity *l)
+calclightsource(Entity *l)
 {
 	int reach = l.attr1;
 	int sx = l.x - reach;
@@ -235,7 +233,7 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 	struct block *copy = blockcopy(&b);
 	[dlights addItem:&copy];
 
-	PersistentEntity *l = [Entity entity];
+	Entity *l = [Entity entity];
 	l.x = v->x;
 	l.y = v->y;
 	l.z = v->z;
