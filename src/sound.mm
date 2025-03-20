@@ -2,35 +2,34 @@
 
 #import "DynamicEntity.h"
 
+#include <SDL_mixer.h>
+
 VARP(soundvol, 0, 255, 255);
 VARP(musicvol, 0, 128, 255);
 bool nosound = false;
 
 #define MAXCHAN 32
 #define SOUNDFREQ 22050
+#define MAXVOL MIX_MAX_VOLUME
 
 struct soundloc {
 	OFVector3D loc;
 	bool inuse;
 } soundlocs[MAXCHAN];
 
-#include <SDL_mixer.h>
-#define MAXVOL MIX_MAX_VOLUME
-Mix_Music *mod = NULL;
-void *stream = NULL;
+static Mix_Music *mod = NULL;
 
 void
 stopsound()
 {
 	if (nosound)
 		return;
-	if (mod) {
+
+	if (mod != NULL) {
 		Mix_HaltMusic();
 		Mix_FreeMusic(mod);
 		mod = NULL;
 	}
-	if (stream != NULL)
-		stream = NULL;
 }
 
 VAR(soundbufferlen, 128, 1024, 4096);
@@ -53,7 +52,9 @@ music(OFString *name)
 {
 	if (nosound)
 		return;
+
 	stopsound();
+
 	if (soundvol && musicvol) {
 		name = [name stringByReplacingOccurrencesOfString:@"\\"
 		                                       withString:@"/"];
@@ -71,8 +72,7 @@ music(OFString *name)
 }
 COMMAND(music, ARG_1STR)
 
-vector<Mix_Chunk *> samples;
-
+static OFMutableData *samples;
 static OFMutableArray<OFString *> *snames;
 
 int
@@ -88,12 +88,16 @@ registersound(OFString *name)
 
 	if (snames == nil)
 		snames = [[OFMutableArray alloc] init];
+	if (samples == nil)
+		samples = [[OFMutableData alloc]
+		    initWithItemSize:sizeof(Mix_Chunk *)];
 
 	[snames addObject:[name stringByReplacingOccurrencesOfString:@"\\"
 	                                                  withString:@"/"]];
-	samples.add(NULL);
+	Mix_Chunk *sample = NULL;
+	[samples addItem:&sample];
 
-	return samples.length() - 1;
+	return samples.count - 1;
 }
 COMMAND(registersound, ARG_1EST)
 
@@ -165,41 +169,48 @@ playsound(int n, const OFVector3D *loc)
 {
 	if (nosound)
 		return;
+
 	if (!soundvol)
 		return;
+
 	if (lastmillis == lastsoundmillis)
 		soundsatonce++;
 	else
 		soundsatonce = 1;
+
 	lastsoundmillis = lastmillis;
+
 	if (soundsatonce > 5)
-		return; // avoid bursts of sounds with heavy packetloss
-		        // and in sp
-	if (n < 0 || n >= samples.length()) {
+		// avoid bursts of sounds with heavy packetloss and in sp
+		return;
+
+	if (n < 0 || n >= samples.count) {
 		conoutf(@"unregistered sound: %d", n);
 		return;
 	}
 
-	if (!samples[n]) {
+	Mix_Chunk **sample = (Mix_Chunk **)[samples mutableItemAtIndex:n];
+	if (*sample == NULL) {
 		OFString *path = [OFString
 		    stringWithFormat:@"packages/sounds/%@.wav", snames[n]];
 		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
 		    IRIByAppendingPathComponent:path];
 
-		samples[n] =
-		    Mix_LoadWAV(IRI.fileSystemRepresentation.UTF8String);
+		*sample = Mix_LoadWAV(IRI.fileSystemRepresentation.UTF8String);
 
-		if (!samples[n]) {
+		if (*sample == NULL) {
 			conoutf(@"failed to load sample: %@", IRI.string);
 			return;
 		}
 	}
 
-	int chan = Mix_PlayChannel(-1, samples[n], 0);
+	int chan = Mix_PlayChannel(-1, *sample, 0);
 	if (chan < 0)
 		return;
+
 	if (loc)
 		newsoundloc(chan, loc);
+
 	updatechanvol(chan, loc);
 }
 

@@ -239,25 +239,33 @@ cursorupdate() // called every frame from hud
 	}
 }
 
-vector<block *> undos;    // unlimited undo
-VARP(undomegs, 0, 1, 10); // bounded by n megs
+static OFMutableData *undos; // unlimited undo
+VARP(undomegs, 0, 1, 10);    // bounded by n megs
 
 void
 pruneundos(int maxremain) // bound memory
 {
 	int t = 0;
-	loopvrev(undos)
-	{
-		t += undos[i]->xs * undos[i]->ys * sizeof(sqr);
-		if (t > maxremain)
-			OFFreeMemory(undos.remove(i));
+	for (ssize_t i = (ssize_t)undos.count - 1; i >= 0; i--) {
+		block *undo = *(block **)[undos itemAtIndex:i];
+
+		t += undo->xs * undo->ys * sizeof(sqr);
+		if (t > maxremain) {
+			OFFreeMemory(undo);
+			[undos removeItemAtIndex:i];
+		}
 	}
 }
 
 void
 makeundo()
 {
-	undos.add(blockcopy(sel));
+	if (undos == nil)
+		undos =
+		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
+
+	block *copy = blockcopy(sel);
+	[undos addItem:&copy];
 	pruneundos(undomegs << 20);
 }
 
@@ -265,11 +273,12 @@ void
 editundo()
 {
 	EDITMP;
-	if (undos.empty()) {
+	if (undos.count == 0) {
 		conoutf(@"nothing more to undo");
 		return;
 	}
-	block *p = undos.pop();
+	block *p = *(block **)undos.lastItem;
+	[undos removeLastItem];
 	blockpaste(*p);
 	OFFreeMemory(p);
 }

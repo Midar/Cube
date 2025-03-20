@@ -115,7 +115,7 @@ extern void renderscores();
 extern void setupworld(int factor);
 extern void empty_world(int factor, bool force);
 extern void remip(block &b, int level = 0);
-extern void remipmore(block &b, int level = 0);
+extern void remipmore(const block &b, int level = 0);
 extern int closestent();
 extern int findentity(int type, int index = 0);
 extern void trigger(int tag, int type, bool savegame);
@@ -130,7 +130,7 @@ extern void dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach,
     int strength, DynamicEntity *owner);
 extern void cleardlights();
 extern block *blockcopy(block &b);
-extern void blockpaste(block &b);
+extern void blockpaste(const block &b);
 
 // worldrender
 extern void render_world(float vx, float vy, float vh, int yaw, int pitch,

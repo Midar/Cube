@@ -262,7 +262,7 @@ blockcopy(block &s)
 }
 
 void
-blockpaste(block &b)
+blockpaste(const block &b)
 {
 	sqr *q = (sqr *)((&b) + 1);
 	for (int x = b.x; x < b.xs + b.x; x++)

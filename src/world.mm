@@ -242,7 +242,7 @@ remip(block &b, int level)
 }
 
 void
-remipmore(block &b, int level)
+remipmore(const block &b, int level)
 {
 	block bb = b;
 	if (bb.x > 1)

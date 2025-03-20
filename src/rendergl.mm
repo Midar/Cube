@@ -274,27 +274,37 @@ int skyoglid;
 struct strip {
 	int tex, start, num;
 };
-vector<strip> strips;
+static OFMutableData *strips;
 
 void
 renderstripssky()
 {
 	glBindTexture(GL_TEXTURE_2D, skyoglid);
-	loopv(strips) if (strips[i].tex == skyoglid)
-	    glDrawArrays(GL_TRIANGLE_STRIP, strips[i].start, strips[i].num);
+
+	const strip *items = (const strip *)strips.items;
+	size_t count = strips.count;
+	for (size_t i = 0; i < count; i++)
+		if (items[i].tex == skyoglid)
+			glDrawArrays(
+			    GL_TRIANGLE_STRIP, items[i].start, items[i].num);
 }
 
 void
 renderstrips()
 {
 	int lasttex = -1;
-	loopv(strips) if (strips[i].tex != skyoglid)
-	{
-		if (strips[i].tex != lasttex) {
-			glBindTexture(GL_TEXTURE_2D, strips[i].tex);
-			lasttex = strips[i].tex;
+	const strip *items = (const strip *)strips.items;
+	size_t count = strips.count;
+	for (size_t i = 0; i < count; i++) {
+		if (items[i].tex == skyoglid)
+			continue;
+
+		if (items[i].tex != lasttex) {
+			glBindTexture(GL_TEXTURE_2D, items[i].tex);
+			lasttex = items[i].tex;
 		}
-		glDrawArrays(GL_TRIANGLE_STRIP, strips[i].start, strips[i].num);
+
+		glDrawArrays(GL_TRIANGLE_STRIP, items[i].start, items[i].num);
 	}
 }
 
@@ -308,10 +318,11 @@ overbright(float amount)
 void
 addstrip(int tex, int start, int n)
 {
-	strip &s = strips.add();
-	s.tex = tex;
-	s.start = start;
-	s.num = n;
+	if (strips == nil)
+		strips = [[OFMutableData alloc] initWithItemSize:sizeof(strip)];
+
+	strip s = { .tex = tex, .start = start, .num = n };
+	[strips addItem:&s];
 }
 
 VARFP(gamma, 30, 100, 300, {
@@ -434,7 +445,7 @@ gl_drawframe(int w, int h, float curfps)
 	resetcubes();
 
 	curvert = 0;
-	strips.setsize(0);
+	[strips removeAllItems];
 
 	render_world(player1.o.x, player1.o.y, player1.o.z, (int)player1.yaw,
 	    (int)player1.pitch, (float)fov, w, h);
