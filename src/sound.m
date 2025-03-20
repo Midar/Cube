@@ -37,7 +37,7 @@ VAR(soundbufferlen, 128, 1024, 4096);
 void
 initsound()
 {
-	memset(soundlocs, 0, sizeof(soundloc) * MAXCHAN);
+	memset(soundlocs, 0, sizeof(struct soundloc) * MAXCHAN);
 	if (Mix_OpenAudio(SOUNDFREQ, MIX_DEFAULT_FORMAT, 2, soundbufferlen) <
 	    0) {
 		conoutf(@"sound init failed (SDL_mixer): %s",
@@ -125,7 +125,7 @@ updatechanvol(int chan, const OFVector3D *loc)
 			float yaw =
 			    -atan2(v.x, v.y) - player1.yaw * (PI / 180.0f);
 			// range is from 0 (left) to 255 (right)
-			pan = int(255.9f * (0.5 * sin(yaw) + 0.5f));
+			pan = (int)(255.9f * (0.5 * sin(yaw) + 0.5f));
 		}
 	}
 	vol = (vol * MAXVOL) / 255;

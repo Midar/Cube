@@ -46,8 +46,8 @@ void process(ENetPacket *packet, int sender);
 void multicast(ENetPacket *packet, int sender);
 void disconnect_client(int n, OFString *reason);
 
-void
-send(int n, ENetPacket *packet)
+static void
+send_(int n, ENetPacket *packet)
 {
 	if (!packet)
 		return;
@@ -77,7 +77,7 @@ send2(bool rel, int cn, int a, int b)
 	if (cn < 0)
 		process(packet, -1);
 	else
-		send(cn, packet);
+		send_(cn, packet);
 	if (packet->referenceCount == 0)
 		enet_packet_destroy(packet);
 }
@@ -115,9 +115,9 @@ resetitems()
 	notgotitems = true;
 }
 
-void
-pickup(uint i, int sec, int sender) // server side item pickup, acknowledge
-                                    // first client that gets it
+// server side item pickup, acknowledge first client that gets it
+static void
+pickup(uint i, int sec, int sender)
 {
 	if (i >= (uint)sents.count)
 		return;
@@ -265,7 +265,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		}
 
 		case SV_RECVMAP:
-			send(sender, recvmap(sender));
+			send_(sender, recvmap(sender));
 			return;
 
 		// allows for new features that require no server updates
@@ -320,7 +320,7 @@ send_welcome(int n)
 	}
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
-	send(n, packet);
+	send_(n, packet);
 }
 
 void
@@ -329,7 +329,7 @@ multicast(ENetPacket *packet, int sender)
 	size_t count = clients.count;
 	for (size_t i = 0; i < count; i++)
 		if (i != sender)
-			send(i, packet);
+			send_(i, packet);
 }
 
 void

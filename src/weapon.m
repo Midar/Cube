@@ -242,7 +242,7 @@ splash(Projectile *p, const OFVector3D *v, const OFVector3D *vold,
 	}
 }
 
-inline void
+static inline void
 projdamage(DynamicEntity *o, Projectile *p, const OFVector3D *v, int i, int im,
     int qdam)
 {

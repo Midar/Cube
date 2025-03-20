@@ -1,7 +1,6 @@
 // implementation of generic tools
 
 #include "tools.h"
-#include <new>
 
 ///////////////////////// misc tools ///////////////////////
 

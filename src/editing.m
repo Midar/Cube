@@ -29,15 +29,15 @@ OF_CONSTRUCTOR()
 int selh = 0;
 bool selset = false;
 
-#define loopselxy(b)                                        \
-	{                                                   \
-		makeundo();                                 \
-		loop(x, sel->xs) loop(y, sel->ys)           \
-		{                                           \
+#define loopselxy(b)                                               \
+	{                                                          \
+		makeundo();                                        \
+		loop(x, sel->xs) loop(y, sel->ys)                  \
+		{                                                  \
 			struct sqr *s = S(sel->x + x, sel->y + y); \
-			b;                                  \
-		}                                           \
-		remip(sel, 0);                              \
+			b;                                         \
+		}                                                  \
+		remip(sel, 0);                                     \
 	}
 
 int cx, cy, ch;
@@ -261,8 +261,8 @@ void
 makeundo()
 {
 	if (undos == nil)
-		undos =
-		    [[OFMutableData alloc] initWithItemSize:sizeof(struct block *)];
+		undos = [[OFMutableData alloc]
+		    initWithItemSize:sizeof(struct block *)];
 
 	struct block *copy = blockcopy(&sel);
 	[undos addItem:&copy];

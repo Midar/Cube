@@ -30,8 +30,8 @@ initEntities()
 }
 
 static void
-renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame/* = 0*/,
-    int numf/* = 1*/, int basetime/* = 0*/, float speed/* = 10.0f*/)
+renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame /* = 0*/,
+    int numf /* = 1*/, int basetime /* = 0*/, float speed /* = 10.0f*/)
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f,
 	    OFMakeVector3D(e.x, z + S(e.x, e.y)->floor, e.y), yaw, 0, false,
@@ -67,7 +67,7 @@ renderentities()
 				    (float)(1 +
 				        sin(lastmillis / 100.0 + e.x + e.y) /
 				            20),
-				    lastmillis / 10.0f, 0,1,0,10.0f);
+				    lastmillis / 10.0f, 0, 1, 0, 10.0f);
 			} else {
 				switch (e.attr2) {
 				case 1:
@@ -85,7 +85,7 @@ renderentities()
 					            20),
 					    lastmillis /
 					        (e.attr2 ? 1.0f : 10.0f),
-						0, 1, 0, 10.0f);
+					    0, 1, 0, 10.0f);
 					break;
 
 				case 4:

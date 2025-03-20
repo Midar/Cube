@@ -5,13 +5,13 @@
 static ENetSocket mssock = ENET_SOCKET_NULL;
 
 static void
-httpgetsend(ENetAddress &ad, OFString *hostname, OFString *req, OFString *ref,
+httpgetsend(ENetAddress *ad, OFString *hostname, OFString *req, OFString *ref,
     OFString *agent)
 {
-	if (ad.host == ENET_HOST_ANY) {
+	if (ad->host == ENET_HOST_ANY) {
 		[OFStdOut writeFormat:@"looking up %@...\n", hostname];
-		enet_address_set_host(&ad, hostname.UTF8String);
-		if (ad.host == ENET_HOST_ANY)
+		enet_address_set_host(ad, hostname.UTF8String);
+		if (ad->host == ENET_HOST_ANY)
 			return;
 	}
 	if (mssock != ENET_SOCKET_NULL)
@@ -21,7 +21,7 @@ httpgetsend(ENetAddress &ad, OFString *hostname, OFString *req, OFString *ref,
 		printf("could not open socket\n");
 		return;
 	}
-	if (enet_socket_connect(mssock, &ad) < 0) {
+	if (enet_socket_connect(mssock, ad) < 0) {
 		printf("could not connect\n");
 		return;
 	}
@@ -38,21 +38,21 @@ httpgetsend(ENetAddress &ad, OFString *hostname, OFString *req, OFString *ref,
 }
 
 static void
-httpgetrecieve(ENetBuffer &buf)
+httpgetrecieve(ENetBuffer *buf)
 {
 	if (mssock == ENET_SOCKET_NULL)
 		return;
 	enet_uint32 events = ENET_SOCKET_WAIT_RECEIVE;
 	if (enet_socket_wait(mssock, &events, 0) >= 0 && events) {
-		int len = enet_socket_receive(mssock, NULL, &buf, 1);
+		int len = enet_socket_receive(mssock, NULL, buf, 1);
 		if (len <= 0) {
 			enet_socket_destroy(mssock);
 			mssock = ENET_SOCKET_NULL;
 			return;
 		}
-		buf.data = ((char *)buf.data) + len;
-		((char *)buf.data)[0] = 0;
-		buf.dataLength -= len;
+		buf->data = ((char *)buf->data) + len;
+		((char *)buf->data)[0] = 0;
+		buf->dataLength -= len;
 	}
 }
 
@@ -79,7 +79,7 @@ updatemasterserver(int seconds)
 	if (seconds > updmaster) {
 		OFString *path = [OFString
 		    stringWithFormat:@"%@register.do?action=add", masterpath];
-		httpgetsend(masterserver, masterbase, path, @"cubeserver",
+		httpgetsend(&masterserver, masterbase, path, @"cubeserver",
 		    @"Cube Server");
 		masterrep[0] = 0;
 		masterb.data = masterrep;
@@ -92,7 +92,7 @@ static void
 checkmasterreply()
 {
 	bool busy = mssock != ENET_SOCKET_NULL;
-	httpgetrecieve(masterb);
+	httpgetrecieve(&masterb);
 	if (busy && mssock == ENET_SOCKET_NULL)
 		printf("masterserver reply: %s\n", stripheader(masterrep));
 }
@@ -103,13 +103,13 @@ retrieveservers(uchar *buf, int buflen)
 	OFString *path =
 	    [OFString stringWithFormat:@"%@retrieve.do?item=list", masterpath];
 	httpgetsend(
-	    masterserver, masterbase, path, @"cubeserver", @"Cube Server");
+	    &masterserver, masterbase, path, @"cubeserver", @"Cube Server");
 	ENetBuffer eb;
 	buf[0] = 0;
 	eb.data = buf;
 	eb.dataLength = buflen - 1;
 	while (mssock != ENET_SOCKET_NULL)
-		httpgetrecieve(eb);
+		httpgetrecieve(&eb);
 	return stripheader(buf);
 }
 

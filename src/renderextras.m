@@ -25,7 +25,7 @@ linestyle(float width, int r, int g, int b)
 }
 
 void
-box(const block *b, float z1, float z2, float z3, float z4)
+box(const struct block *b, float z1, float z2, float z3, float z4)
 {
 	glBegin(GL_POLYGON);
 	glVertex3f((float)b->x, z1, (float)b->y);
@@ -86,9 +86,9 @@ struct sphere {
 	OFVector3D o;
 	float size, max;
 	int type;
-	sphere *next;
+	struct sphere *next;
 };
-sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
+static struct sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
 bool sinit = false;
 
 void
@@ -103,7 +103,7 @@ newsphere(const OFVector3D *o, float max, int type)
 		sinit = true;
 	}
 	if (sempty) {
-		sphere *p = sempty;
+		struct sphere *p = sempty;
 		sempty = p->next;
 		p->o = *o;
 		p->max = max;
@@ -122,7 +122,7 @@ renderspheres(int time)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 	glBindTexture(GL_TEXTURE_2D, 4);
 
-	for (sphere *p, **pp = &slist; p = *pp;) {
+	for (struct sphere *p, **pp = &slist; (p = *pp) != NULL;) {
 		glPushMatrix();
 		float size = p->size / p->max;
 		glColor4f(1.0f, 1.0f, 1.0f, 1.0f - size);

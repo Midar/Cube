@@ -3,23 +3,23 @@
 
 #include "cube.h"
 
-vertex *verts = NULL;
+static struct vertex *verts = NULL;
 int curvert;
-int curmaxverts = 10000;
+static int curmaxverts = 10000;
 
 void
 setarraypointers()
 {
-	glVertexPointer(3, GL_FLOAT, sizeof(vertex), &verts[0].x);
-	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(vertex), &verts[0].r);
-	glTexCoordPointer(2, GL_FLOAT, sizeof(vertex), &verts[0].u);
+	glVertexPointer(3, GL_FLOAT, sizeof(struct vertex), &verts[0].x);
+	glColorPointer(4, GL_UNSIGNED_BYTE, sizeof(struct vertex), &verts[0].r);
+	glTexCoordPointer(2, GL_FLOAT, sizeof(struct vertex), &verts[0].u);
 }
 
 void
 reallocv()
 {
 	verts =
-	    (vertex *)OFResizeMemory(verts, (curmaxverts *= 2), sizeof(vertex));
+	    OFResizeMemory(verts, (curmaxverts *= 2), sizeof(struct vertex));
 	curmaxverts -= 10;
 	setarraypointers();
 }
@@ -34,18 +34,18 @@ reallocv()
 			reallocv();         \
 	}
 
-#define vertf(v1, v2, v3, ls, t1, t2)         \
-	{                                     \
-		vertex &v = verts[curvert++]; \
-		v.u = t1;                     \
-		v.v = t2;                     \
-		v.x = v1;                     \
-		v.y = v2;                     \
-		v.z = v3;                     \
-		v.r = ls->r;                  \
-		v.g = ls->g;                  \
-		v.b = ls->b;                  \
-		v.a = 255;                    \
+#define vertf(v1, v2, v3, ls, t1, t2)                 \
+	{                                             \
+		struct vertex *v = &verts[curvert++]; \
+		v->u = t1;                            \
+		v->v = t2;                            \
+		v->x = v1;                            \
+		v->y = v2;                            \
+		v->z = v3;                            \
+		v->r = ls->r;                         \
+		v->g = ls->g;                         \
+		v->b = ls->b;                         \
+		v->a = 255;                           \
 	}
 
 #define vert(v1, v2, v3, ls, t1, t2)                                      \
@@ -88,12 +88,13 @@ finishstrips()
 	stripend();
 }
 
-sqr sbright, sdark;
+static struct sqr sbright, sdark;
 VAR(lighterror, 1, 8, 100);
 
+// floor/ceil quads
 void
-render_flat(int wtex, int x, int y, int size, int h, sqr *l1, sqr *l2, sqr *l3,
-    sqr *l4, bool isceil) // floor/ceil quads
+render_flat(int wtex, int x, int y, int size, int h, struct sqr *l1,
+    struct sqr *l2, struct sqr *l3, struct sqr *l4, bool isceil)
 {
 	vertcheck();
 	if (showm) {
@@ -171,10 +172,11 @@ render_flat(int wtex, int x, int y, int size, int h, sqr *l1, sqr *l2, sqr *l3,
 	nquads++;
 }
 
+// floor/ceil quads on a slope
 void
 render_flatdelta(int wtex, int x, int y, int size, float h1, float h2, float h3,
-    float h4, sqr *l1, sqr *l2, sqr *l3, sqr *l4,
-    bool isceil) // floor/ceil quads on a slope
+    float h4, struct sqr *l1, struct sqr *l2, struct sqr *l3, struct sqr *l4,
+    bool isceil)
 {
 	vertcheck();
 	if (showm) {
@@ -229,9 +231,10 @@ render_flatdelta(int wtex, int x, int y, int size, float h1, float h2, float h3,
 	nquads++;
 }
 
+// floor/ceil tris on a corner cube
 void
-render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
-    sqr *l1, sqr *l2, sqr *l3) // floor/ceil tris on a corner cube
+render_2tris(struct sqr *h, struct sqr *s, int x1, int y1, int x2, int y2,
+    int x3, int y3, struct sqr *l1, struct sqr *l2, struct sqr *l3)
 {
 	stripend();
 	vertcheck();
@@ -258,8 +261,8 @@ render_2tris(sqr *h, sqr *s, int x1, int y1, int x2, int y2, int x3, int y3,
 }
 
 void
-render_tris(int x, int y, int size, bool topleft, sqr *h1, sqr *h2, sqr *s,
-    sqr *t, sqr *u, sqr *v)
+render_tris(int x, int y, int size, bool topleft, struct sqr *h1,
+    struct sqr *h2, struct sqr *s, struct sqr *t, struct sqr *u, struct sqr *v)
 {
 	if (topleft) {
 		if (h1)
@@ -280,7 +283,7 @@ render_tris(int x, int y, int size, bool topleft, sqr *h1, sqr *h2, sqr *s,
 
 void
 render_square(int wtex, float floor1, float floor2, float ceil1, float ceil2,
-    int x1, int y1, int x2, int y2, int size, sqr *l1, sqr *l2,
+    int x1, int y1, int x2, int y2, int size, struct sqr *l1, struct sqr *l2,
     bool flip) // wall quads
 {
 	stripend();
@@ -319,8 +322,8 @@ VAR(watersubdiv, 1, 4, 64);
 VARF(waterlevel, -128, -128, 127,
     if (!noteditmode()) hdr.waterlevel = waterlevel);
 
-inline void
-vertw(int v1, float v2, int v3, sqr *c, float t1, float t2, float t)
+static inline void
+vertw(int v1, float v2, int v3, struct sqr *c, float t1, float t2, float t)
 {
 	vertcheck();
 	vertf((float)v1, v2 - (float)sin(v1 * v3 * 0.1 + t) * 0.2f, (float)v3,
@@ -363,7 +366,7 @@ renderwater(float hf)
 	float t1 = lastmillis / 300.0f;
 	float t2 = lastmillis / 4000.0f;
 
-	sqr dl;
+	struct sqr dl;
 	dl.r = dl.g = dl.b = 255;
 
 	for (int xx = wx1; xx < wx2; xx += watersubdiv) {

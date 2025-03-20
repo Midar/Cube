@@ -3,8 +3,6 @@
 
 #include "cube.h"
 
-#include <memory>
-
 #import "Alias.h"
 #import "Command.h"
 #import "Identifier.h"
@@ -13,6 +11,12 @@
 
 // contains ALL vars/commands/aliases
 static OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
+
+static void
+cleanup(char **string)
+{
+	free(*string);
+}
 
 void
 alias(OFString *name, OFString *action)
@@ -100,26 +104,26 @@ addcommand(OFString *name, void (*function)(), int argumentsTypes)
 }
 
 // parse any nested set of () or []
-char *
-parseexp(char *&p, int right)
+static char *
+parseexp(char **p, int right)
 {
-	int left = *p++;
-	char *word = p;
+	int left = *(*p)++;
+	char *word = *p;
 	for (int brak = 1; brak;) {
-		int c = *p++;
+		int c = *(*p)++;
 		if (c == '\r')
-			*(p - 1) = ' '; // hack
+			*(*p - 1) = ' '; // hack
 		if (c == left)
 			brak++;
 		else if (c == right)
 			brak--;
 		else if (!c) {
-			p--;
+			(*p)--;
 			conoutf(@"missing \"%c\"", right);
 			return NULL;
 		}
 	}
-	char *s = strndup(word, p - word - 1);
+	char *s = strndup(word, *p - word - 1);
 	if (left == '(') {
 		OFString *t;
 		@try {
@@ -134,30 +138,30 @@ parseexp(char *&p, int right)
 }
 
 // parse single argument, including expressions
-char *
-parseword(char *&p)
+static char *
+parseword(char **p)
 {
-	p += strspn(p, " \t\r");
-	if (p[0] == '/' && p[1] == '/')
-		p += strcspn(p, "\n\0");
-	if (*p == '\"') {
-		p++;
-		char *word = p;
-		p += strcspn(p, "\"\r\n\0");
-		char *s = strndup(word, p - word);
-		if (*p == '\"')
-			p++;
+	(*p) += strspn(*p, " \t\r");
+	if ((*p)[0] == '/' && (*p)[1] == '/')
+		*p += strcspn(*p, "\n\0");
+	if (**p == '\"') {
+		(*p)++;
+		char *word = *p;
+		*p += strcspn(*p, "\"\r\n\0");
+		char *s = strndup(word, *p - word);
+		if (**p == '\"')
+			(*p)++;
 		return s;
 	}
-	if (*p == '(')
+	if (**p == '(')
 		return parseexp(p, ')');
-	if (*p == '[')
+	if (**p == '[')
 		return parseexp(p, ']');
-	char *word = p;
-	p += strcspn(p, "; \t\r\n\0");
-	if (p - word == 0)
+	char *word = *p;
+	*p += strcspn(*p, "; \t\r\n\0");
+	if (*p - word == 0)
 		return NULL;
-	return strndup(word, p - word);
+	return strndup(word, *p - word);
 }
 
 // find value of ident referenced with $ in exp
@@ -227,8 +231,9 @@ executeIdentifier(__kindof Identifier *identifier,
 int
 execute(OFString *string, bool isDown)
 {
-	std::unique_ptr<char> copy(strdup(string.UTF8String));
-	char *p = copy.get();
+	char *copy __attribute__((__cleanup__(cleanup))) =
+	    strdup(string.UTF8String);
+	char *p = copy;
 	const int MAXWORDS = 25; // limit, remove
 	OFString *w[MAXWORDS];
 	int val = 0;
@@ -242,7 +247,7 @@ execute(OFString *string, bool isDown)
 			if (i > numargs)
 				continue;
 			// parse and evaluate exps
-			char *s = parseword(p);
+			char *s = parseword(&p);
 			if (!s) {
 				numargs = i;
 				s = strdup("");
@@ -469,9 +474,14 @@ void
 at(OFString *s_, OFString *pos)
 {
 	int n = pos.cube_intValue;
-	std::unique_ptr<char> copy(strdup(s_.UTF8String));
-	char *s = copy.get();
-	loopi(n) s += strspn(s += strcspn(s, " \0"), " ");
+	char *copy __attribute__((__cleanup__(cleanup))) =
+	    strdup(s_.UTF8String);
+	char *s = copy;
+	loopi(n)
+	{
+		s += strcspn(s, " \0");
+		s += strspn(s, " ");
+	}
 	s[strcspn(s, " \0")] = 0;
 	concat(@(s));
 }

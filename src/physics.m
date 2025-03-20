@@ -11,36 +11,36 @@
 #import "MapModelInfo.h"
 
 // collide with player or monster
-bool
+static bool
 plcollide(
-    DynamicEntity *d, DynamicEntity *o, float &headspace, float &hi, float &lo)
+    DynamicEntity *d, DynamicEntity *o, float *headspace, float *hi, float *lo)
 {
 	if (o.state != CS_ALIVE)
 		return true;
 	const float r = o.radius + d.radius;
 	if (fabs(o.o.x - d.o.x) < r && fabs(o.o.y - d.o.y) < r) {
 		if (d.o.z - d.eyeheight < o.o.z - o.eyeheight) {
-			if (o.o.z - o.eyeheight < hi)
-				hi = o.o.z - o.eyeheight - 1;
-		} else if (o.o.z + o.aboveeye > lo)
-			lo = o.o.z + o.aboveeye + 1;
+			if (o.o.z - o.eyeheight < *hi)
+				*hi = o.o.z - o.eyeheight - 1;
+		} else if (o.o.z + o.aboveeye > *lo)
+			*lo = o.o.z + o.aboveeye + 1;
 
 		if (fabs(o.o.z - d.o.z) < o.aboveeye + d.eyeheight)
 			return false;
 		if (d.monsterstate)
 			return false; // hack
-		headspace = d.o.z - o.o.z - o.aboveeye - d.eyeheight;
-		if (headspace < 0)
-			headspace = 10;
+		*headspace = d.o.z - o.o.z - o.aboveeye - d.eyeheight;
+		if (*headspace < 0)
+			*headspace = 10;
 	}
 	return true;
 }
 
-bool
-cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
-    int &bs) // recursively collide with a mipmapped corner cube
+// recursively collide with a mipmapped corner cube
+static bool
+cornertest(int mip, int x, int y, int dx, int dy, int *bx, int *by, int *bs)
 {
-	sqr *w = wmip[mip];
+	struct sqr *w = wmip[mip];
 	int sz = ssize >> mip;
 	bool stest =
 	    SOLID(SWS(w, x + dx, y, sz)) && SOLID(SWS(w, x, y + dy, sz));
@@ -48,16 +48,17 @@ cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
 	x /= 2;
 	y /= 2;
 	if (SWS(wmip[mip], x, y, ssize >> mip)->type == CORNER) {
-		bx = x << mip;
-		by = y << mip;
-		bs = 1 << mip;
+		*bx = x << mip;
+		*by = y << mip;
+		*bs = 1 << mip;
 		return cornertest(mip, x, y, dx, dy, bx, by, bs);
 	}
 	return stest;
 }
 
-void
-mmcollide(DynamicEntity *d, float &hi, float &lo) // collide with a mapmodel
+// collide with a mapmodel
+static void
+mmcollide(DynamicEntity *d, float *hi, float *lo)
 {
 	for (Entity *e in ents) {
 		if (e.type != MAPMODEL)
@@ -73,10 +74,10 @@ mmcollide(DynamicEntity *d, float &hi, float &lo) // collide with a mapmodel
 			    (float)(S(e.x, e.y)->floor + mmi.zoff + e.attr3);
 
 			if (d.o.z - d.eyeheight < mmz) {
-				if (mmz < hi)
-					hi = mmz;
-			} else if (mmz + mmi.h > lo)
-				lo = mmz + mmi.h;
+				if (mmz < *hi)
+					*hi = mmz;
+			} else if (mmz + mmi.h > *lo)
+				*lo = mmz + mmi.h;
 		}
 	}
 }
@@ -109,7 +110,7 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 			// collide with map
 			if (OUTBORD(x, y))
 				return false;
-			sqr *s = S(x, y);
+			struct sqr *s = S(x, y);
 			float ceil = s->ceil;
 			float floor = s->floor;
 			switch (s->type) {
@@ -120,18 +121,19 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 				int bx = x, by = y, bs = 1;
 				if (x == x1 && y == y1 &&
 				        cornertest(
-				            0, x, y, -1, -1, bx, by, bs) &&
+				            0, x, y, -1, -1, &bx, &by, &bs) &&
 				        fx1 - bx + fy1 - by <= bs ||
 				    x == x2 && y == y1 &&
 				        cornertest(
-				            0, x, y, 1, -1, bx, by, bs) &&
+				            0, x, y, 1, -1, &bx, &by, &bs) &&
 				        fx2 - bx >= fy1 - by ||
 				    x == x1 && y == y2 &&
 				        cornertest(
-				            0, x, y, -1, 1, bx, by, bs) &&
+				            0, x, y, -1, 1, &bx, &by, &bs) &&
 				        fx1 - bx <= fy2 - by ||
 				    x == x2 && y == y2 &&
-				        cornertest(0, x, y, 1, 1, bx, by, bs) &&
+				        cornertest(
+				            0, x, y, 1, 1, &bx, &by, &bs) &&
 				        fx2 - bx + fy2 - by >= bs)
 					return false;
 				break;
@@ -166,21 +168,21 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 	for (id player in players) {
 		if (player == [OFNull null] || player == d)
 			continue;
-		if (!plcollide(d, player, headspace, hi, lo))
+		if (!plcollide(d, player, &headspace, &hi, &lo))
 			return false;
 	}
 	if (d != player1)
-		if (!plcollide(d, player1, headspace, hi, lo))
+		if (!plcollide(d, player1, &headspace, &hi, &lo))
 			return false;
 	// this loop can be a performance bottleneck with many monster on a slow
 	// cpu, should replace with a blockmap but seems mostly fast enough
 	for (DynamicEntity *monster in getmonsters())
 		if (!vreject(d.o, monster.o, 7.0f) && d != monster &&
-		    !plcollide(d, monster, headspace, hi, lo))
+		    !plcollide(d, monster, &headspace, &hi, &lo))
 			return false;
 	headspace -= 0.01f;
 
-	mmcollide(d, hi, lo); // collide with map models
+	mmcollide(d, &hi, &lo); // collide with map models
 
 	if (spawn) {
 		// just drop to floor (sideeffect)
@@ -246,8 +248,8 @@ physicsframe() // optimally schedule physics frames inside the graphics frames
 // moveres indicated the physics precision (which is lower for monsters and
 // multiplayer prediction) local is false for multiplayer prediction
 
-void
-moveplayer(DynamicEntity *pl, int moveres, bool local, int curtime)
+static void
+moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 {
 	const bool water = hdr.waterlevel > pl.o.z - 0.5f;
 	const bool floating = (editmode && local) || pl.state == CS_EDITING;
@@ -377,7 +379,7 @@ moveplayer(DynamicEntity *pl, int moveres, bool local, int curtime)
 	if (pl.o.x < 0 || pl.o.x >= ssize || pl.o.y < 0 || pl.o.y > ssize)
 		pl.outsidemap = true;
 	else {
-		sqr *s = S((int)pl.o.x, (int)pl.o.y);
+		struct sqr *s = S((int)pl.o.x, (int)pl.o.y);
 		pl.outsidemap = SOLID(s) ||
 		    pl.o.z < s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
 		    pl.o.z > s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
@@ -411,7 +413,7 @@ moveplayer(DynamicEntity *pl, int moveres, bool local, int curtime)
 void
 moveplayer(DynamicEntity *pl, int moveres, bool local)
 {
-	loopi(physicsrepeat) moveplayer(pl, moveres, local,
+	loopi(physicsrepeat) moveplayer4(pl, moveres, local,
 	    i ? curtime / physicsrepeat
 	      : curtime - curtime / physicsrepeat * (physicsrepeat - 1));
 }
