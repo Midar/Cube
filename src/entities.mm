@@ -26,8 +26,9 @@ void
 renderent(entity &e, OFString *mdlname, float z, float yaw, int frame = 0,
     int numf = 1, int basetime = 0, float speed = 10.0f)
 {
-	rendermodel(mdlname, frame, numf, 0, 1.1f, e.x, z + S(e.x, e.y)->floor,
-	    e.y, yaw, 0, false, 1.0f, speed, 0, basetime);
+	rendermodel(mdlname, frame, numf, 0, 1.1f,
+	    OFMakeVector3D(e.x, z + S(e.x, e.y)->floor, e.y), yaw, 0, false,
+	    1.0f, speed, 0, basetime);
 }
 
 void
@@ -43,8 +44,10 @@ renderentities()
 			if (mmi == nil)
 				continue;
 			rendermodel(mmi.name, 0, 1, e.attr4, (float)mmi.rad,
-			    e.x, (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
-			    e.y, (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
+			    OFMakeVector3D(e.x,
+			        (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
+			        e.y),
+			    (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
 			    false, 1.0f, 10.0f, mmi.snap);
 		} else {
 			if (OUTBORD(e.x, e.y))

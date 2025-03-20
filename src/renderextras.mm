@@ -192,11 +192,11 @@ renderents() // show sparkly thingies for map entities in edit mode
 	int e = closestent();
 	if (e >= 0) {
 		entity &c = ents[e];
-		closeent = [[OFString alloc]
-		    initWithFormat:@"closest entity = %@ (%d, %d, %d, %d), "
-		                   @"selection = (%d, %d)",
-		    entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
-		    getvar(@"selxs"), getvar(@"selys")];
+		closeent =
+		    [OFString stringWithFormat:@"closest entity = %@ (%d, %d, "
+		                               @"%d, %d), selection = (%d, %d)",
+		              entnames[c.type], c.attr1, c.attr2, c.attr3,
+		              c.attr4, getvar(@"selxs"), getvar(@"selys")];
 	}
 }
 

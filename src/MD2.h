@@ -10,13 +10,12 @@ OF_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int mdlnum;
 @property (nonatomic) bool loaded;
 
++ (instancetype)md2;
 - (bool)loadWithIRI:(OFIRI *)IRI;
 - (void)renderWithLight:(OFVector3D)light
                   frame:(int)frame
                   range:(int)range
-                      x:(float)x
-                      y:(float)y
-                      z:(float)z
+               position:(OFVector3D)position
                     yaw:(float)yaw
                   pitch:(float)pitch
                   scale:(float)scale

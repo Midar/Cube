@@ -4,79 +4,15 @@
 #include "SDL_thread.h"
 #include "cube.h"
 
+#import "ResolverResult.h"
+#import "ResolverThread.h"
 #import "ServerInfo.h"
 
-@interface ResolverThread: OFThread
-{
-	volatile bool _stop;
-}
-
-@property (copy, nonatomic) OFString *query;
-@property (nonatomic) int starttime;
-@end
-
-@interface ResolverResult: OFObject
-@property (readonly, nonatomic) OFString *query;
-@property (readonly, nonatomic) ENetAddress address;
-
-- (instancetype)init OF_UNAVAILABLE;
-- (instancetype)initWithQuery:(OFString *)query address:(ENetAddress)address;
-@end
-
 static OFMutableArray<ResolverThread *> *resolverthreads;
-static OFMutableArray<OFString *> *resolverqueries;
-static OFMutableArray<ResolverResult *> *resolverresults;
-static SDL_sem *resolversem;
+OFMutableArray<OFString *> *resolverqueries;
+OFMutableArray<ResolverResult *> *resolverresults;
+SDL_sem *resolversem;
 static int resolverlimit = 1000;
-
-@implementation ResolverThread
-- (id)main
-{
-	while (!_stop) {
-		SDL_SemWait(resolversem);
-
-		@synchronized(ResolverThread.class) {
-			if (resolverqueries.count == 0)
-				continue;
-
-			_query = resolverqueries.lastObject;
-			[resolverqueries removeLastObject];
-			_starttime = lastmillis;
-		}
-
-		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
-		enet_address_set_host(&address, _query.UTF8String);
-
-		@synchronized(ResolverThread.class) {
-			[resolverresults addObject:[[ResolverResult alloc]
-			                               initWithQuery:_query
-			                                     address:address]];
-
-			_query = NULL;
-			_starttime = 0;
-		}
-	}
-
-	return nil;
-}
-
-- (void)stop
-{
-	_stop = true;
-}
-@end
-
-@implementation ResolverResult
-- (instancetype)initWithQuery:(OFString *)query address:(ENetAddress)address
-{
-	self = [super init];
-
-	_query = query;
-	_address = address;
-
-	return self;
-}
-@end
 
 void
 resolverinit(int threads, int limit)
@@ -88,7 +24,7 @@ resolverinit(int threads, int limit)
 	resolversem = SDL_CreateSemaphore(0);
 
 	while (threads > 0) {
-		ResolverThread *rt = [[ResolverThread alloc] init];
+		ResolverThread *rt = [ResolverThread thread];
 		rt.name = @"resolverthread";
 		[resolverthreads addObject:rt];
 		[rt start];
@@ -104,7 +40,7 @@ resolverstop(size_t i, bool restart)
 		[rt stop];
 
 		if (restart) {
-			rt = [[ResolverThread alloc] init];
+			rt = [ResolverThread thread];
 			rt.name = @"resolverthread";
 
 			resolverthreads[i] = rt;
@@ -187,7 +123,7 @@ addserver(OFString *servername)
 	if (servers == nil)
 		servers = [[OFMutableArray alloc] init];
 
-	[servers addObject:[[ServerInfo alloc] initWithName:servername]];
+	[servers addObject:[ServerInfo infoWithName:servername]];
 }
 
 void
@@ -280,19 +216,19 @@ refreshservers()
 	    ServerInfo *si, size_t i, bool *stop) {
 		if (si.address.host != ENET_HOST_ANY && si.ping != 9999) {
 			if (si.protocol != PROTOCOL_VERSION)
-				si.full = [[OFString alloc]
-				    initWithFormat:
+				si.full = [OFString
+				    stringWithFormat:
 				        @"%@ [different cube protocol]",
 				    si.name];
 			else
-				si.full = [[OFString alloc]
-				    initWithFormat:@"%d\t%d\t%@, %@: %@ %@",
+				si.full = [OFString
+				    stringWithFormat:@"%d\t%d\t%@, %@: %@ %@",
 				    si.ping, si.numplayers,
 				    si.map.length > 0 ? si.map : @"[unknown]",
 				    modestr(si.mode), si.name, si.sdesc];
 		} else
-			si.full = [[OFString alloc]
-			    initWithFormat:
+			si.full = [OFString
+			    stringWithFormat:
 			        (si.address.host != ENET_HOST_ANY
 			                ? @"%@ [waiting for server response]"
 			                : @"%@ [unknown host]\t"),

@@ -8,6 +8,12 @@ OF_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) void (*__cdecl function)();
 @property (readonly, nonatomic) bool persisted;
 
++ (instancetype)variableWithName:(OFString *)name
+                             min:(int)min
+                             max:(int)max
+                         storage:(int *)storage
+                        function:(void (*__cdecl)())function
+                       persisted:(bool)persisted;
 - (instancetype)initWithName:(OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name
                          min:(int)min

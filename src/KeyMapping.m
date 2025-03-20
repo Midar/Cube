@@ -1,6 +1,11 @@
 #import "KeyMapping.h"
 
 @implementation KeyMapping
++ (instancetype)mappingWithCode:(int)code name:(OFString *)name
+{
+	return [[self alloc] initWithCode:code name:name];
+}
+
 - (instancetype)initWithCode:(int)code name:(OFString *)name
 {
 	self = [super init];

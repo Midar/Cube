@@ -158,8 +158,7 @@ servermsinit(OFString *master_, OFString *sdesc, bool listen)
 	if (!mid)
 		mid = master;
 	masterpath = @(mid);
-	masterbase = [[OFString alloc] initWithUTF8String:master
-	                                           length:mid - master];
+	masterbase = [OFString stringWithUTF8String:master length:mid - master];
 	serverdesc = sdesc;
 
 	if (listen) {

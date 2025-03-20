@@ -10,6 +10,8 @@ OF_ASSUME_NONNULL_BEGIN
 @property (nonatomic) int mwidth;
 @property (nonatomic) int menusel;
 
++ (instancetype)menuWithName:(OFString *)name;
+- (instancetype)init OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name;
 @end
 

@@ -4,34 +4,11 @@
 
 #include <ctype.h>
 
+#import "ConsoleLine.h"
 #import "KeyMapping.h"
 #import "OFString+Cube.h"
 
-@interface ConsoleLine: OFObject
-@property (readonly, copy) OFString *text;
-@property (readonly) int outtime;
-
-- (instancetype)initWithText:(OFString *)text outtime:(int)outtime;
-@end
-
 static OFMutableArray<ConsoleLine *> *conlines;
-
-@implementation ConsoleLine
-- (instancetype)initWithText:(OFString *)text outtime:(int)outtime
-{
-	self = [super init];
-
-	_text = [text copy];
-	_outtime = outtime;
-
-	return self;
-}
-
-- (OFString *)description
-{
-	return _text;
-}
-@end
 
 const int ndraw = 5;
 const int WORDWRAP = 80;
@@ -59,7 +36,7 @@ conline(OFString *sf, bool highlight) // add a line to the console buffer
 		text = [conlines.lastObject.text mutableCopy];
 		[conlines removeLastObject];
 	} else
-		text = [[OFMutableString alloc] init];
+		text = [OFMutableString string];
 
 	if (highlight)
 		// show line in a different colour, for chat etc.
@@ -70,8 +47,8 @@ conline(OFString *sf, bool highlight) // add a line to the console buffer
 	if (conlines == nil)
 		conlines = [[OFMutableArray alloc] init];
 
-	[conlines insertObject:[[ConsoleLine alloc] initWithText:text
-	                                                 outtime:lastmillis]
+	[conlines insertObject:[ConsoleLine lineWithText:text
+	                                         outtime:lastmillis]
 	               atIndex:0];
 
 	puts(text.UTF8String);
@@ -135,8 +112,8 @@ keymap(OFString *code, OFString *key, OFString *action)
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
-	KeyMapping *mapping =
-	    [[KeyMapping alloc] initWithCode:code.cube_intValue name:key];
+	KeyMapping *mapping = [KeyMapping mappingWithCode:code.cube_intValue
+	                                             name:key];
 	mapping.action = action;
 	[keyMappings addObject:mapping];
 }

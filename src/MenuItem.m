@@ -1,6 +1,11 @@
 #import "MenuItem.h"
 
 @implementation MenuItem
++ (instancetype)itemWithText:(OFString *)text action:(OFString *)action
+{
+	return [[self alloc] initWithText:text action:action];
+}
+
 - (instancetype)initWithText:(OFString *)text action:(OFString *)action
 {
 	self = [super init];

@@ -20,6 +20,15 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 }
 
 @implementation Command
++ (instancetype)commandWithName:(OFString *)name
+                       function:(void (*)())function
+                 argumentsTypes:(int)argumentsTypes
+{
+	return [[self alloc] initWithName:name
+	                         function:function
+	                   argumentsTypes:argumentsTypes];
+}
+
 - (instancetype)initWithName:(OFString *)name
                     function:(void (*)())function
               argumentsTypes:(int)argumentsTypes

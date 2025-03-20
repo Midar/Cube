@@ -41,9 +41,9 @@ loadmodel(OFString *name)
 	if (m != nil)
 		return m;
 
-	m = [[MD2 alloc] init];
+	m = [MD2 md2];
 	m.mdlnum = modelnum++;
-	m.mmi = [[MapModelInfo alloc] initWithRad:2 h:2 zoff:0 snap:0 name:@""];
+	m.mmi = [MapModelInfo infoWithRad:2 h:2 zoff:0 snap:0 name:@""];
 	m.loadname = name;
 
 	if (mdllookup == nil)
@@ -60,11 +60,11 @@ mapmodel(
 {
 	MD2 *m = loadmodel([name stringByReplacingOccurrencesOfString:@"\\"
 	                                                   withString:@"/"]);
-	m.mmi = [[MapModelInfo alloc] initWithRad:rad.cube_intValue
-	                                        h:h.cube_intValue
-	                                     zoff:zoff.cube_intValue
-	                                     snap:snap.cube_intValue
-	                                     name:m.loadname];
+	m.mmi = [MapModelInfo infoWithRad:rad.cube_intValue
+	                                h:h.cube_intValue
+	                             zoff:zoff.cube_intValue
+	                             snap:snap.cube_intValue
+	                             name:m.loadname];
 
 	if (mapmodels == nil)
 		mapmodels = [[OFMutableArray alloc] init];
@@ -87,13 +87,14 @@ getmminfo(int i)
 }
 
 void
-rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
-    float y, float z, float yaw, float pitch, bool teammate, float scale,
+rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
+    OFVector3D position, float yaw, float pitch, bool teammate, float scale,
     float speed, int snap, int basetime)
 {
 	MD2 *m = loadmodel(mdl);
 
-	if (isoccluded(player1.o.x, player1.o.y, x - rad, z - rad, rad * 2))
+	if (isoccluded(player1.o.x, player1.o.y, position.x - rad,
+	        position.z - rad, rad * 2))
 		return;
 
 	delayedload(m);
@@ -102,8 +103,8 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
 	glBindTexture(GL_TEXTURE_2D,
 	    tex ? lookuptexture(tex, &xs, &ys) : FIRSTMDL + m.mdlnum);
 
-	int ix = (int)x;
-	int iy = (int)z;
+	int ix = (int)position.x;
+	int iy = (int)position.z;
 	OFVector3D light = OFMakeVector3D(1, 1, 1);
 
 	if (!OUTBORD(ix, iy)) {
@@ -124,9 +125,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad, float x,
 	[m renderWithLight:light
 	             frame:frame
 	             range:range
-	                 x:x
-	                 y:y
-	                 z:z
+	          position:position
 	               yaw:yaw
 	             pitch:pitch
 	             scale:scale

@@ -8,4 +8,6 @@
 @property (nonatomic) DynamicEntity *owner;
 @property (nonatomic) int gun;
 @property (nonatomic) bool inuse, local;
+
++ (instancetype)projectile;
 @end

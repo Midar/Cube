@@ -71,8 +71,9 @@ renderclient(
 		scale *= 32;
 		mz -= 1.9f;
 	}
-	rendermodel(mdlname, frame[n], range[n], 0, 1.5f, d.o.x, mz, d.o.y,
-	    d.yaw + 90, d.pitch / 2, team, scale, speed, 0, basetime);
+	rendermodel(mdlname, frame[n], range[n], 0, 1.5f,
+	    OFMakeVector3D(d.o.x, mz, d.o.y), d.yaw + 90, d.pitch / 2, team,
+	    scale, speed, 0, basetime);
 }
 
 extern int democlientnum;
@@ -161,7 +162,7 @@ renderscores()
 				addteamscore(player);
 		if (!demoplayback)
 			addteamscore(player1);
-		OFMutableString *teamScores = [[OFMutableString alloc] init];
+		OFMutableString *teamScores = [OFMutableString string];
 		for (size_t j = 0; j < teamsUsed; j++)
 			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
 			            teamScore[j]];

@@ -95,7 +95,7 @@ newmenu(OFString *name)
 	if (menus == nil)
 		menus = [[OFMutableArray alloc] init];
 
-	[menus addObject:[[Menu alloc] initWithName:name]];
+	[menus addObject:[Menu menuWithName:name]];
 }
 COMMAND(newmenu, ARG_1STR)
 
@@ -105,7 +105,7 @@ menumanual(int m, int n, OFString *text)
 	if (n == 0)
 		[menus[m].items removeAllObjects];
 
-	MenuItem *item = [[MenuItem alloc] initWithText:text action:@""];
+	MenuItem *item = [MenuItem itemWithText:text action:@""];
 	[menus[m].items addObject:item];
 }
 
@@ -115,8 +115,8 @@ menuitem(OFString *text, OFString *action)
 	Menu *menu = menus.lastObject;
 
 	MenuItem *item =
-	    [[MenuItem alloc] initWithText:text
-	                            action:(action.length > 0 ? action : text)];
+	    [MenuItem itemWithText:text
+	                    action:(action.length > 0 ? action : text)];
 	[menu.items addObject:item];
 }
 COMMAND(menuitem, ARG_2STR)

@@ -44,6 +44,11 @@ snap(int sn, float f)
 	int _displaylistverts;
 }
 
++ (instancetype)md2
+{
+	return [[self alloc] init];
+}
+
 - (void)dealloc
 {
 	if (_glCommands)
@@ -126,9 +131,7 @@ snap(int sn, float f)
 - (void)renderWithLight:(OFVector3D)light
                   frame:(int)frame
                   range:(int)range
-                      x:(float)x
-                      y:(float)y
-                      z:(float)z
+               position:(OFVector3D)position
                     yaw:(float)yaw
                   pitch:(float)pitch
                   scale:(float)sc
@@ -141,7 +144,7 @@ snap(int sn, float f)
 	                                                     snap:sn];
 
 	glPushMatrix();
-	glTranslatef(x, y, z);
+	glTranslatef(position.x, position.y, position.z);
 	glRotatef(yaw + 180, 0, -1, 0);
 	glRotatef(pitch, 0, 0, 1);
 

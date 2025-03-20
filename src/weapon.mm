@@ -148,10 +148,8 @@ newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
 	for (size_t i = 0; i < MAXPROJ; i++) {
 		Projectile *p = projs[i];
 
-		if (p == nil) {
-			p = [[Projectile alloc] init];
-			projs[i] = p;
-		}
+		if (p == nil)
+			projs[i] = p = [Projectile projectile];
 
 		if (p.inuse)
 			continue;
@@ -354,8 +352,8 @@ hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
 }
 
 void
-raydamage(
-    DynamicEntity *o, const OFVector3D &from, const OFVector3D &to, DynamicEntity *d, int i)
+raydamage(DynamicEntity *o, const OFVector3D &from, const OFVector3D &to,
+    DynamicEntity *d, int i)
 {
 	if (o.state != CS_ALIVE)
 		return;

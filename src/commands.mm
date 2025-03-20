@@ -20,9 +20,7 @@ alias(OFString *name, OFString *action)
 	Alias *alias = identifiers[name];
 
 	if (alias == nil) {
-		alias = [[Alias alloc] initWithName:name
-		                             action:action
-		                          persisted:true];
+		alias = [Alias aliasWithName:name action:action persisted:true];
 
 		if (identifiers == nil)
 			identifiers = [[OFMutableDictionary alloc] init];
@@ -42,12 +40,12 @@ int
 variable(OFString *name, int min, int cur, int max, int *storage,
     void (*function)(), bool persisted)
 {
-	Variable *variable = [[Variable alloc] initWithName:name
-	                                                min:min
-	                                                max:max
-	                                            storage:storage
-	                                           function:function
-	                                          persisted:persisted];
+	Variable *variable = [Variable variableWithName:name
+	                                            min:min
+	                                            max:max
+	                                        storage:storage
+	                                       function:function
+	                                      persisted:persisted];
 
 	if (identifiers == nil)
 		identifiers = [[OFMutableDictionary alloc] init];
@@ -89,9 +87,9 @@ getalias(OFString *name)
 bool
 addcommand(OFString *name, void (*function)(), int argumentsTypes)
 {
-	Command *command = [[Command alloc] initWithName:name
-	                                        function:function
-	                                  argumentsTypes:argumentsTypes];
+	Command *command = [Command commandWithName:name
+	                                   function:function
+	                             argumentsTypes:argumentsTypes];
 
 	if (identifiers == nil)
 		identifiers = [[OFMutableDictionary alloc] init];

@@ -210,8 +210,8 @@ extern void cleansound();
 
 // rendermd2
 extern void rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
-    float x, float y, float z, float yaw, float pitch, bool teammate,
-    float scale, float speed, int snap = 0, int basetime = 0);
+    OFVector3D position, float yaw, float pitch, bool teammate, float scale,
+    float speed, int snap = 0, int basetime = 0);
 @class MapModelInfo;
 extern MapModelInfo *getmminfo(int i);
 

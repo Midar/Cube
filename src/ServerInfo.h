@@ -10,6 +10,7 @@
 @property (nonatomic) int mode, numplayers, ping, protocol, minremain;
 @property (nonatomic) ENetAddress address;
 
++ (instancetype)infoWithName:(OFString *)name;
 - (instancetype)init OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name;
 @end

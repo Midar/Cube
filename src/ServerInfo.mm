@@ -3,6 +3,11 @@
 #include "cube.h"
 
 @implementation ServerInfo
++ (instancetype)infoWithName:(OFString *)name;
+{
+	return [[self alloc] initWithName:name];
+}
+
 - (instancetype)initWithName:(OFString *)name
 {
 	self = [super init];

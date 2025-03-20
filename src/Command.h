@@ -6,6 +6,9 @@ OF_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) void (*function)();
 @property (readonly, nonatomic) int argumentsTypes;
 
++ (instancetype)commandWithName:(OFString *)name
+                       function:(void (*)())function
+                 argumentsTypes:(int)argumentsTypes;
 - (instancetype)initWithName:(OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name
                     function:(void (*)())function

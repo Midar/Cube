@@ -3,20 +3,9 @@
 
 #include "cube.h"
 
+#import "Client.h"
+
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
-
-// server side version of "dynent" type
-@interface Client: OFObject
-@property (nonatomic) int type;
-@property (nonatomic) ENetPeer *peer;
-@property (copy, nonatomic) OFString *hostname;
-@property (copy, nonatomic) OFString *mapvote;
-@property (copy, nonatomic) OFString *name;
-@property (nonatomic) int modevote;
-@end
-
-@implementation Client
-@end
 
 static OFMutableArray<Client *> *clients;
 
@@ -359,7 +348,7 @@ addclient()
 		if (client.type == ST_EMPTY)
 			return client;
 
-	Client *client = [[Client alloc] init];
+	Client *client = [Client client];
 
 	if (clients == nil)
 		clients = [[OFMutableArray alloc] init];

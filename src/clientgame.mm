@@ -471,8 +471,6 @@ getclient(int cn) // ensure valid entity
 		neterr(@"clientnum");
 		return nil;
 	}
-	if (players == nil)
-		players = [[OFMutableArray alloc] init];
 	while (cn >= players.count)
 		[players addObject:[OFNull null]];
 	return (players[cn] != [OFNull null] ? players[cn]
@@ -484,8 +482,6 @@ setclient(int cn, id client)
 {
 	if (cn < 0 || cn >= MAXCLIENTS)
 		neterr(@"clientnum");
-	if (players == nil)
-		players = [[OFMutableArray alloc] init];
 	while (cn >= players.count)
 		[players addObject:[OFNull null]];
 	players[cn] = client;
