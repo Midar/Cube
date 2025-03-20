@@ -29,15 +29,15 @@ OF_CONSTRUCTOR()
 int selh = 0;
 bool selset = false;
 
-#define loopselxy(b)                                      \
-	{                                                 \
-		makeundo();                               \
-		loop(x, sel.xs) loop(y, sel.ys)           \
-		{                                         \
-			sqr *s = S(sel.x + x, sel.y + y); \
-			b;                                \
-		}                                         \
-		remip(sel);                               \
+#define loopselxy(b)                                        \
+	{                                                   \
+		makeundo();                                 \
+		loop(x, sel->xs) loop(y, sel->ys)           \
+		{                                           \
+			sqr *s = S(sel->x + x, sel->y + y); \
+			b;                                  \
+		}                                           \
+		remip(sel);                                 \
 	}
 
 int cx, cy, ch;
@@ -208,7 +208,7 @@ cursorupdate() // called every frame from hud
 			else
 				linestyle(GRIDW, 0x80, 0x80, 0x80);
 			block b = { ix, iy, 1, 1 };
-			box(b, h1, h2, h3, h4);
+			box(&b, h1, h2, h3, h4);
 			linestyle(GRID8, 0x40, 0x40, 0xFF);
 			if (!(ix & GRIDM))
 				line(ix, iy, h1, ix, iy + 1, h4);
@@ -225,7 +225,7 @@ cursorupdate() // called every frame from hud
 		float ih = sheight(s, s, z);
 		linestyle(GRIDS, 0xFF, 0xFF, 0xFF);
 		block b = { cx, cy, 1, 1 };
-		box(b, ih, sheight(s, SWS(s, 1, 0, ssize), z),
+		box(&b, ih, sheight(s, SWS(s, 1, 0, ssize), z),
 		    sheight(s, SWS(s, 1, 1, ssize), z),
 		    sheight(s, SWS(s, 0, 1, ssize), z));
 		linestyle(GRIDS, 0xFF, 0x00, 0x00);
@@ -235,7 +235,7 @@ cursorupdate() // called every frame from hud
 
 	if (selset) {
 		linestyle(GRIDS, 0xFF, 0x40, 0x40);
-		box(sel, (float)selh, (float)selh, (float)selh, (float)selh);
+		box(&sel, (float)selh, (float)selh, (float)selh, (float)selh);
 	}
 }
 
@@ -264,7 +264,7 @@ makeundo()
 		undos =
 		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
 
-	block *copy = blockcopy(sel);
+	block *copy = blockcopy(&sel);
 	[undos addItem:&copy];
 	pruneundos(undomegs << 20);
 }
@@ -279,7 +279,7 @@ editundo()
 	}
 	block *p = *(block **)undos.lastItem;
 	[undos removeLastItem];
-	blockpaste(*p);
+	blockpaste(p);
 	OFFreeMemory(p);
 }
 
@@ -291,7 +291,7 @@ copy()
 	EDITSELMP;
 	if (copybuf)
 		OFFreeMemory(copybuf);
-	copybuf = blockcopy(sel);
+	copybuf = blockcopy(&sel);
 }
 
 void
@@ -312,7 +312,7 @@ paste()
 	makeundo();
 	copybuf->x = sel.x;
 	copybuf->y = sel.y;
-	blockpaste(*copybuf);
+	blockpaste(copybuf);
 }
 
 void
@@ -351,7 +351,7 @@ editdrag(bool isDown)
 // strictly triggered locally. They all have very similar structure.
 
 void
-editheightxy(bool isfloor, int amount, block &sel)
+editheightxy(bool isfloor, int amount, const block *sel)
 {
 	loopselxy(
 	    if (isfloor) {
@@ -370,13 +370,13 @@ editheight(int flr, int amount)
 {
 	EDITSEL;
 	bool isfloor = flr == 0;
-	editheightxy(isfloor, amount, sel);
+	editheightxy(isfloor, amount, &sel);
 	addmsg(1, 7, SV_EDITH, sel.x, sel.y, sel.xs, sel.ys, isfloor, amount);
 }
 COMMAND(editheight, ARG_2INT)
 
 void
-edittexxy(int type, int t, block &sel)
+edittexxy(int type, int t, const block *sel)
 {
 	loopselxy(switch (type) {
 	        case 0:
@@ -409,7 +409,7 @@ edittex(int type, int dir)
 	i = i < 0 ? 0 : i + dir;
 	curedittex[atype] = i = min(max(i, 0), 255);
 	int t = lasttex = hdr.texlists[atype][i];
-	edittexxy(type, t, sel);
+	edittexxy(type, t, &sel);
 	addmsg(1, 7, SV_EDITT, sel.x, sel.y, sel.xs, sel.ys, type, t);
 }
 
@@ -440,11 +440,11 @@ replace()
 		}
 	}
 	block b = { 0, 0, ssize, ssize };
-	remip(b);
+	remip(&b);
 }
 
 void
-edittypexy(int type, block &sel)
+edittypexy(int type, const block *sel)
 {
 	loopselxy(s->type = type);
 }
@@ -459,7 +459,7 @@ edittype(int type)
 		conoutf(@"corner selection must be power of 2 aligned");
 		return;
 	}
-	edittypexy(type, sel);
+	edittypexy(type, &sel);
 	addmsg(1, 6, SV_EDITS, sel.x, sel.y, sel.xs, sel.ys, type);
 }
 
@@ -485,7 +485,7 @@ corner()
 COMMAND(corner, ARG_NONE)
 
 void
-editequalisexy(bool isfloor, block &sel)
+editequalisexy(bool isfloor, const block *sel)
 {
 	int low = 127, hi = -128;
 	loopselxy({
@@ -509,13 +509,13 @@ equalize(int flr)
 {
 	bool isfloor = flr == 0;
 	EDITSEL;
-	editequalisexy(isfloor, sel);
+	editequalisexy(isfloor, &sel);
 	addmsg(1, 6, SV_EDITE, sel.x, sel.y, sel.xs, sel.ys, isfloor);
 }
 COMMAND(equalize, ARG_1INT)
 
 void
-setvdeltaxy(int delta, block &sel)
+setvdeltaxy(int delta, const block *sel)
 {
 	loopselxy(s->vdelta = max(s->vdelta + delta, 0));
 	remipmore(sel);
@@ -525,7 +525,7 @@ void
 setvdelta(int delta)
 {
 	EDITSEL;
-	setvdeltaxy(delta, sel);
+	setvdeltaxy(delta, &sel);
 	addmsg(1, 6, SV_EDITD, sel.x, sel.y, sel.xs, sel.ys, delta);
 }
 
@@ -555,11 +555,14 @@ arch(int sidedelta, int _a)
 		sel.xs = MAXARCHVERT;
 	if (sel.ys > MAXARCHVERT)
 		sel.ys = MAXARCHVERT;
-	loopselxy(s->vdelta = sel.xs > sel.ys
-	        ? (archverts[sel.xs - 1][x] +
-	              (y == 0 || y == sel.ys - 1 ? sidedelta : 0))
-	        : (archverts[sel.ys - 1][y] +
-	              (x == 0 || x == sel.xs - 1 ? sidedelta : 0)));
+	block *sel_ = &sel;
+	// Ugly hack to make the macro work.
+	block *sel = sel_;
+	loopselxy(s->vdelta = sel->xs > sel->ys
+	        ? (archverts[sel->xs - 1][x] +
+	              (y == 0 || y == sel->ys - 1 ? sidedelta : 0))
+	        : (archverts[sel->ys - 1][y] +
+	              (x == 0 || x == sel->xs - 1 ? sidedelta : 0)));
 	remipmore(sel);
 }
 
@@ -574,6 +577,9 @@ slope(int xd, int yd)
 		off -= yd * sel.ys;
 	sel.xs++;
 	sel.ys++;
+	block *sel_ = &sel;
+	// Ugly hack to make the macro work.
+	block *sel = sel_;
 	loopselxy(s->vdelta = xd * x + yd * y + off);
 	remipmore(sel);
 }
@@ -587,10 +593,10 @@ perlin(int scale, int seed, int psize)
 	makeundo();
 	sel.xs--;
 	sel.ys--;
-	perlinarea(sel, scale, seed, psize);
+	perlinarea(&sel, scale, seed, psize);
 	sel.xs++;
 	sel.ys++;
-	remipmore(sel);
+	remipmore(&sel);
 	sel.xs--;
 	sel.ys--;
 }
@@ -606,6 +612,9 @@ void
 edittag(int tag)
 {
 	EDITSELMP;
+	block *sel_ = &sel;
+	// Ugly hack to make the macro work.
+	block *sel = sel_;
 	loopselxy(s->tag = tag);
 }
 

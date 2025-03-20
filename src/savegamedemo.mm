@@ -291,10 +291,10 @@ record(OFString *name)
 COMMAND(record, ARG_1STR)
 
 void
-demodamage(int damage, const OFVector3D &o)
+demodamage(int damage, const OFVector3D *o)
 {
 	ddamage = damage;
-	dorig = o;
+	dorig = *o;
 }
 
 void
@@ -454,7 +454,7 @@ demoplaybackstep()
 				damageblend(bdamage);
 			if ((ddamage = gzgeti())) {
 				gzgetv(dorig);
-				particle_splash(3, ddamage, 1000, dorig);
+				particle_splash(3, ddamage, 1000, &dorig);
 			}
 			// FIXME: set more client state here
 		}

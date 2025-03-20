@@ -283,7 +283,8 @@ monsteraction(DynamicEntity *m)
 		if (m.trigger < lastmillis) {
 			m.lastaction = 0;
 			m.attacking = true;
-			shoot(m, m.attacktarget);
+			OFVector3D attacktarget = m.attacktarget;
+			shoot(m, &attacktarget);
 			transition(m, M_ATTACKING, 0, 600, 0);
 		}
 		break;

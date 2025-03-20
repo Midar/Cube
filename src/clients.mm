@@ -293,67 +293,67 @@ c2sinfo(DynamicEntity *d)
 		// do this exclusively as map change may invalidate rest of
 		// update
 		packet->flags = ENET_PACKET_FLAG_RELIABLE;
-		putint(p, SV_MAPCHANGE);
-		sendstring(toservermap, p);
+		putint(&p, SV_MAPCHANGE);
+		sendstring(toservermap, &p);
 		toservermap = @"";
-		putint(p, nextmode);
+		putint(&p, nextmode);
 	} else {
-		putint(p, SV_POS);
-		putint(p, clientnum);
+		putint(&p, SV_POS);
+		putint(&p, clientnum);
 		// quantize coordinates to 1/16th of a cube, between 1 and 3
 		// bytes
-		putint(p, (int)(d.o.x * DMF));
-		putint(p, (int)(d.o.y * DMF));
-		putint(p, (int)(d.o.z * DMF));
-		putint(p, (int)(d.yaw * DAF));
-		putint(p, (int)(d.pitch * DAF));
-		putint(p, (int)(d.roll * DAF));
+		putint(&p, (int)(d.o.x * DMF));
+		putint(&p, (int)(d.o.y * DMF));
+		putint(&p, (int)(d.o.z * DMF));
+		putint(&p, (int)(d.yaw * DAF));
+		putint(&p, (int)(d.pitch * DAF));
+		putint(&p, (int)(d.roll * DAF));
 		// quantize to 1/100, almost always 1 byte
-		putint(p, (int)(d.vel.x * DVF));
-		putint(p, (int)(d.vel.y * DVF));
-		putint(p, (int)(d.vel.z * DVF));
+		putint(&p, (int)(d.vel.x * DVF));
+		putint(&p, (int)(d.vel.y * DVF));
+		putint(&p, (int)(d.vel.z * DVF));
 		// pack rest in 1 byte: strafe:2, move:2, onfloor:1, state:3
-		putint(p,
+		putint(&p,
 		    (d.strafe & 3) | ((d.move & 3) << 2) |
 		        (((int)d.onfloor) << 4) |
 		        ((editmode ? CS_EDITING : d.state) << 5));
 
 		if (senditemstoserver) {
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			putint(p, SV_ITEMLIST);
+			putint(&p, SV_ITEMLIST);
 			if (!m_noitems)
-				putitems(p);
-			putint(p, -1);
+				putitems(&p);
+			putint(&p, -1);
 			senditemstoserver = false;
 			serveriteminitdone = true;
 		}
 		// player chat, not flood protected for now
 		if (ctext.length > 0) {
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			putint(p, SV_TEXT);
-			sendstring(ctext, p);
+			putint(&p, SV_TEXT);
+			sendstring(ctext, &p);
 			ctext = @"";
 		}
 		// tell other clients who I am
 		if (!c2sinit) {
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
 			c2sinit = true;
-			putint(p, SV_INITC2S);
-			sendstring(player1.name, p);
-			sendstring(player1.team, p);
-			putint(p, player1.lifesequence);
+			putint(&p, SV_INITC2S);
+			sendstring(player1.name, &p);
+			sendstring(player1.team, &p);
+			putint(&p, player1.lifesequence);
 		}
 		for (OFData *msg in messages) {
 			// send messages collected during the previous frames
 			if (*(int *)[msg itemAtIndex:1])
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
 			loopi(*(int *)[msg itemAtIndex:0])
-			    putint(p, *(int *)[msg itemAtIndex:i + 2]);
+			    putint(&p, *(int *)[msg itemAtIndex:i + 2]);
 		}
 		[messages removeAllObjects];
 		if (lastmillis - lastping > 250) {
-			putint(p, SV_PING);
-			putint(p, lastmillis);
+			putint(&p, SV_PING);
+			putint(&p, lastmillis);
 			lastping = lastmillis;
 		}
 	}

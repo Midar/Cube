@@ -336,7 +336,7 @@ checkquad(int time)
 }
 
 void
-putitems(uchar *&p) // puts items in network stream and also spawns them locally
+putitems(uchar **p) // puts items in network stream and also spawns them locally
 {
 	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
 		if ((e.type >= I_SHELLS && e.type <= I_QUAD) ||

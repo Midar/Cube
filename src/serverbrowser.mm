@@ -138,7 +138,7 @@ pingservers()
 			continue;
 
 		p = ping;
-		putint(p, lastmillis);
+		putint(&p, lastmillis);
 		buf.data = ping;
 		buf.dataLength = p - ping;
 		ENetAddress address = si.address;
@@ -185,13 +185,13 @@ checkpings()
 		for (ServerInfo *si in servers) {
 			if (addr.host == si.address.host) {
 				p = ping;
-				si.ping = lastmillis - getint(p);
-				si.protocol = getint(p);
+				si.ping = lastmillis - getint(&p);
+				si.protocol = getint(&p);
 				if (si.protocol != PROTOCOL_VERSION)
 					si.ping = 9998;
-				si.mode = getint(p);
-				si.numplayers = getint(p);
-				si.minremain = getint(p);
+				si.mode = getint(&p);
+				si.numplayers = getint(&p);
+				si.minremain = getint(&p);
 				sgetstr();
 				si.map = @(text);
 				sgetstr();

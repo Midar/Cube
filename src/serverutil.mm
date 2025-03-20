@@ -6,44 +6,44 @@
 // following simple scheme (assumes that most values are small).
 
 void
-putint(uchar *&p, int n)
+putint(uchar **p, int n)
 {
 	if (n < 128 && n > -127) {
-		*p++ = n;
+		*(*p)++ = n;
 	} else if (n < 0x8000 && n >= -0x8000) {
-		*p++ = 0x80;
-		*p++ = n;
-		*p++ = n >> 8;
+		*(*p)++ = 0x80;
+		*(*p)++ = n;
+		*(*p)++ = n >> 8;
 	} else {
-		*p++ = 0x81;
-		*p++ = n;
-		*p++ = n >> 8;
-		*p++ = n >> 16;
-		*p++ = n >> 24;
+		*(*p)++ = 0x81;
+		*(*p)++ = n;
+		*(*p)++ = n >> 8;
+		*(*p)++ = n >> 16;
+		*(*p)++ = n >> 24;
 	}
 }
 
 int
-getint(uchar *&p)
+getint(uchar **p)
 {
-	int c = *((char *)p);
-	p++;
+	int c = *((char *)*p);
+	(*p)++;
 	if (c == -128) {
-		int n = *p++;
-		n |= *((char *)p) << 8;
-		p++;
+		int n = *(*p)++;
+		n |= *((char *)*p) << 8;
+		(*p)++;
 		return n;
 	} else if (c == -127) {
-		int n = *p++;
-		n |= *p++ << 8;
-		n |= *p++ << 16;
-		return n | (*p++ << 24);
+		int n = *(*p)++;
+		n |= *(*p)++ << 8;
+		n |= *(*p)++ << 16;
+		return n | (*(*p)++ << 24);
 	} else
 		return c;
 }
 
 void
-sendstring(OFString *t_, uchar *&p)
+sendstring(OFString *t_, uchar **p)
 {
 	const char *t = t_.UTF8String;
 
@@ -122,9 +122,9 @@ recvmap(int n)
 	    NULL, MAXTRANS + copysize, ENET_PACKET_FLAG_RELIABLE);
 	uchar *start = packet->data;
 	uchar *p = start + 2;
-	putint(p, SV_RECVMAP);
-	sendstring(copyname, p);
-	putint(p, copysize);
+	putint(&p, SV_RECVMAP);
+	sendstring(copyname, &p);
+	putint(&p, copysize);
 	memcpy(p, copydata, copysize);
 	p += copysize;
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);

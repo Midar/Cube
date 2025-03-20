@@ -77,11 +77,11 @@ localservertoclient(uchar *buf, int len)
 	bool mapchanged = false;
 
 	while (p < end)
-		switch (type = getint(p)) {
+		switch (type = getint(&p)) {
 		case SV_INITS2C: // welcome messsage from the server
 		{
-			cn = getint(p);
-			int prot = getint(p);
+			cn = getint(&p);
+			int prot = getint(&p);
 			if (prot != PROTOCOL_VERSION) {
 				conoutf(@"you are using a different game "
 				        @"protocol (you: %d, server: %d)",
@@ -91,7 +91,7 @@ localservertoclient(uchar *buf, int len)
 			}
 			toservermap = @"";
 			clientnum = cn; // we are now fully connected
-			if (!getint(p))
+			if (!getint(&p))
 				// we are the first client on this server, set
 				// map
 				toservermap = getclientmap();
@@ -103,25 +103,30 @@ localservertoclient(uchar *buf, int len)
 				disconnect();
 				return;
 			}
-			if (getint(p) == 1)
+			if (getint(&p) == 1)
 				conoutf(@"server is FULL, disconnecting..");
 			break;
 		}
 
 		case SV_POS: {
 			// position of another client
-			cn = getint(p);
+			cn = getint(&p);
 			d = getclient(cn);
 			if (d == nil)
 				return;
-			d.o = OFMakeVector3D(
-			    getint(p) / DMF, getint(p) / DMF, getint(p) / DMF);
-			d.yaw = getint(p) / DAF;
-			d.pitch = getint(p) / DAF;
-			d.roll = getint(p) / DAF;
-			d.vel = OFMakeVector3D(
-			    getint(p) / DVF, getint(p) / DVF, getint(p) / DVF);
-			int f = getint(p);
+			OFVector3D tmp;
+			tmp.x = getint(&p) / DMF;
+			tmp.y = getint(&p) / DMF;
+			tmp.z = getint(&p) / DMF;
+			d.o = tmp;
+			d.yaw = getint(&p) / DAF;
+			d.pitch = getint(&p) / DAF;
+			d.roll = getint(&p) / DAF;
+			tmp.x = getint(&p) / DVF;
+			tmp.y = getint(&p) / DVF;
+			tmp.z = getint(&p) / DVF;
+			d.vel = tmp;
+			int f = getint(&p);
 			d.strafe = (f & 3) == 3 ? -1 : f & 3;
 			f >>= 2;
 			d.move = (f & 3) == 3 ? -1 : f & 3;
@@ -137,7 +142,7 @@ localservertoclient(uchar *buf, int len)
 
 		case SV_SOUND: {
 			OFVector3D loc = d.o;
-			playsound(getint(p), &loc);
+			playsound(getint(&p), &loc);
 			break;
 		}
 
@@ -148,7 +153,7 @@ localservertoclient(uchar *buf, int len)
 
 		case SV_MAPCHANGE:
 			sgetstr();
-			changemapserv(@(text), getint(p));
+			changemapserv(@(text), getint(&p));
 			mapchanged = true;
 			break;
 
@@ -158,15 +163,14 @@ localservertoclient(uchar *buf, int len)
 				senditemstoserver = false;
 				resetspawns();
 			}
-			while ((n = getint(p)) != -1)
+			while ((n = getint(&p)) != -1)
 				if (mapchanged)
 					setspawn(n, true);
 			break;
 		}
-
-		case SV_MAPRELOAD: // server requests next map
-		{
-			getint(p);
+		// server requests next map
+		case SV_MAPRELOAD: {
+			getint(&p);
 			OFString *nextmapalias = [OFString
 			    stringWithFormat:@"nextmap_%@", getclientmap()];
 			OFString *map =
@@ -193,12 +197,12 @@ localservertoclient(uchar *buf, int len)
 			d.name = @(text);
 			sgetstr();
 			d.team = @(text);
-			d.lifesequence = getint(p);
+			d.lifesequence = getint(&p);
 			break;
 		}
 
 		case SV_CDIS:
-			cn = getint(p);
+			cn = getint(&p);
 			if ((d = getclient(cn)) == nil)
 				break;
 			conoutf(@"player %@ disconnected",
@@ -207,24 +211,24 @@ localservertoclient(uchar *buf, int len)
 			break;
 
 		case SV_SHOT: {
-			int gun = getint(p);
+			int gun = getint(&p);
 			OFVector3D s, e;
-			s.x = getint(p) / DMF;
-			s.y = getint(p) / DMF;
-			s.z = getint(p) / DMF;
-			e.x = getint(p) / DMF;
-			e.y = getint(p) / DMF;
-			e.z = getint(p) / DMF;
+			s.x = getint(&p) / DMF;
+			s.y = getint(&p) / DMF;
+			s.z = getint(&p) / DMF;
+			e.x = getint(&p) / DMF;
+			e.y = getint(&p) / DMF;
+			e.z = getint(&p) / DMF;
 			if (gun == GUN_SG)
-				createrays(s, e);
-			shootv(gun, s, e, d);
+				createrays(&s, &e);
+			shootv(gun, &s, &e, d);
 			break;
 		}
 
 		case SV_DAMAGE: {
-			int target = getint(p);
-			int damage = getint(p);
-			int ls = getint(p);
+			int target = getint(&p);
+			int damage = getint(&p);
+			int ls = getint(&p);
 			if (target == clientnum) {
 				if (ls == player1.lifesequence)
 					selfdamage(damage, cn, d);
@@ -236,7 +240,7 @@ localservertoclient(uchar *buf, int len)
 		}
 
 		case SV_DIED: {
-			int actor = getint(p);
+			int actor = getint(&p);
 			if (actor == cn) {
 				conoutf(@"%@ suicided", d.name);
 			} else if (actor == clientnum) {
@@ -270,16 +274,16 @@ localservertoclient(uchar *buf, int len)
 		}
 
 		case SV_FRAGS:
-			[players[cn] setFrags:getint(p)];
+			[players[cn] setFrags:getint(&p)];
 			break;
 
 		case SV_ITEMPICKUP:
-			setspawn(getint(p), false);
-			getint(p);
+			setspawn(getint(&p), false);
+			getint(&p);
 			break;
 
 		case SV_ITEMSPAWN: {
-			uint i = getint(p);
+			uint i = getint(&p);
 			setspawn(i, true);
 			if (i >= (uint)ents.count)
 				break;
@@ -288,10 +292,9 @@ localservertoclient(uchar *buf, int len)
 			playsound(S_ITEMSPAWN, &v);
 			break;
 		}
-
-		case SV_ITEMACC: // server acknowledges that I picked up this
-		                 // item
-			realpickup(getint(p), player1);
+		// server acknowledges that I picked up this item
+		case SV_ITEMACC:
+			realpickup(getint(&p), player1);
 			break;
 
 		case SV_EDITH: // coop editing messages, should be extended to
@@ -300,27 +303,27 @@ localservertoclient(uchar *buf, int len)
 		case SV_EDITS:
 		case SV_EDITD:
 		case SV_EDITE: {
-			int x = getint(p);
-			int y = getint(p);
-			int xs = getint(p);
-			int ys = getint(p);
-			int v = getint(p);
+			int x = getint(&p);
+			int y = getint(&p);
+			int xs = getint(&p);
+			int ys = getint(&p);
+			int v = getint(&p);
 			block b = { x, y, xs, ys };
 			switch (type) {
 			case SV_EDITH:
-				editheightxy(v != 0, getint(p), b);
+				editheightxy(v != 0, getint(&p), &b);
 				break;
 			case SV_EDITT:
-				edittexxy(v, getint(p), b);
+				edittexxy(v, getint(&p), &b);
 				break;
 			case SV_EDITS:
-				edittypexy(v, b);
+				edittypexy(v, &b);
 				break;
 			case SV_EDITD:
-				setvdeltaxy(v, b);
+				setvdeltaxy(v, &b);
 				break;
 			case SV_EDITE:
-				editequalisexy(v != 0, b);
+				editequalisexy((v != 0), &b);
 				break;
 			}
 			break;
@@ -328,7 +331,7 @@ localservertoclient(uchar *buf, int len)
 
 		case SV_EDITENT: // coop edit of ent
 		{
-			uint i = getint(p);
+			uint i = getint(&p);
 
 			while ((uint)ents.count <= i) {
 				Entity *e = [Entity entity];
@@ -337,14 +340,14 @@ localservertoclient(uchar *buf, int len)
 			}
 
 			int to = ents[i].type;
-			ents[i].type = getint(p);
-			ents[i].x = getint(p);
-			ents[i].y = getint(p);
-			ents[i].z = getint(p);
-			ents[i].attr1 = getint(p);
-			ents[i].attr2 = getint(p);
-			ents[i].attr3 = getint(p);
-			ents[i].attr4 = getint(p);
+			ents[i].type = getint(&p);
+			ents[i].x = getint(&p);
+			ents[i].y = getint(&p);
+			ents[i].z = getint(&p);
+			ents[i].attr1 = getint(&p);
+			ents[i].attr2 = getint(&p);
+			ents[i].attr3 = getint(&p);
+			ents[i].attr4 = getint(&p);
 			ents[i].spawned = false;
 			if (ents[i].type == LIGHT || to == LIGHT)
 				calclight();
@@ -352,33 +355,33 @@ localservertoclient(uchar *buf, int len)
 		}
 
 		case SV_PING:
-			getint(p);
+			getint(&p);
 			break;
 
 		case SV_PONG:
 			addmsg(0, 2, SV_CLIENTPING,
 			    player1.ping =
-			        (player1.ping * 5 + lastmillis - getint(p)) /
+			        (player1.ping * 5 + lastmillis - getint(&p)) /
 			        6);
 			break;
 
 		case SV_CLIENTPING:
-			[players[cn] setPing:getint(p)];
+			[players[cn] setPing:getint(&p)];
 			break;
 
 		case SV_GAMEMODE:
-			nextmode = getint(p);
+			nextmode = getint(&p);
 			break;
 
 		case SV_TIMEUP:
-			timeupdate(getint(p));
+			timeupdate(getint(&p));
 			break;
 
 		case SV_RECVMAP: {
 			sgetstr();
 			conoutf(@"received map \"%s\" from server, reloading..",
 			    text);
-			int mapsize = getint(p);
+			int mapsize = getint(&p);
 			OFString *string = @(text);
 			writemap(string, mapsize, p);
 			p += mapsize;
@@ -394,8 +397,8 @@ localservertoclient(uchar *buf, int len)
 		case SV_EXT: // so we can messages without breaking previous
 		             // clients/servers, if necessary
 		{
-			for (int n = getint(p); n; n--)
-				getint(p);
+			for (int n = getint(&p); n; n--)
+				getint(&p);
 			break;
 		}
 

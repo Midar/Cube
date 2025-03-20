@@ -25,13 +25,13 @@ linestyle(float width, int r, int g, int b)
 }
 
 void
-box(block &b, float z1, float z2, float z3, float z4)
+box(const block *b, float z1, float z2, float z3, float z4)
 {
 	glBegin(GL_POLYGON);
-	glVertex3f((float)b.x, z1, (float)b.y);
-	glVertex3f((float)b.x + b.xs, z2, (float)b.y);
-	glVertex3f((float)b.x + b.xs, z3, (float)b.y + b.ys);
-	glVertex3f((float)b.x, z4, (float)b.y + b.ys);
+	glVertex3f((float)b->x, z1, (float)b->y);
+	glVertex3f((float)b->x + b->xs, z2, (float)b->y);
+	glVertex3f((float)b->x + b->xs, z3, (float)b->y + b->ys);
+	glVertex3f((float)b->x, z4, (float)b->y + b->ys);
 	glEnd();
 	xtraverts += 4;
 }
@@ -92,7 +92,7 @@ sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
 bool sinit = false;
 
 void
-newsphere(const OFVector3D &o, float max, int type)
+newsphere(const OFVector3D *o, float max, int type)
 {
 	if (!sinit) {
 		loopi(MAXSPHERES)
@@ -105,7 +105,7 @@ newsphere(const OFVector3D &o, float max, int type)
 	if (sempty) {
 		sphere *p = sempty;
 		sempty = p->next;
-		p->o = o;
+		p->o = *o;
 		p->max = max;
 		p->size = 1;
 		p->type = type;
@@ -190,7 +190,7 @@ renderents()
 			continue;
 
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
-		particle_splash(2, 2, 40, v);
+		particle_splash(2, 2, 40, &v);
 	}
 
 	int e = closestent();
@@ -276,7 +276,7 @@ readdepth(int w, int h)
 	worldpos.z = (float)worldz;
 	OFVector3D r = OFMakeVector3D(mm[0], mm[4], mm[8]);
 	OFVector3D u = OFMakeVector3D(mm[1], mm[5], mm[9]);
-	setorient(r, u);
+	setorient(&r, &u);
 }
 
 void

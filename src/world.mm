@@ -42,7 +42,7 @@ settag(int tag, int type)
 	}
 	block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
 	if (maxx)
-		remip(b); // remip minimal area of changed geometry
+		remip(&b); // remip minimal area of changed geometry
 }
 
 void
@@ -90,16 +90,17 @@ COMMAND(trigger, ARG_2INT)
 // rendering time if this is possible).
 
 void
-remip(block &b, int level)
+remip(const block *b, int level)
 {
 	if (level >= SMALLEST_FACTOR)
 		return;
+
 	int lighterr = getvar(@"lighterror") * 3;
 	sqr *w = wmip[level];
 	sqr *v = wmip[level + 1];
 	int ws = ssize >> level;
 	int vs = ssize >> (level + 1);
-	block s = b;
+	block s = *b;
 	if (s.x & 1) {
 		s.x--;
 		s.xs++;
@@ -117,15 +118,15 @@ remip(block &b, int level)
 			o[1] = SWS(w, x + 1, y, ws);
 			o[2] = SWS(w, x + 1, y + 1, ws);
 			o[3] = SWS(w, x, y + 1, ws);
-			sqr *r = SWS(v, x / 2, y / 2,
-			    vs); // the target cube in the higher mip level
+			// the target cube in the higher mip level
+			sqr *r = SWS(v, x / 2, y / 2, vs);
 			*r = *o[0];
 			uchar nums[MAXTYPE];
 			loopi(MAXTYPE) nums[i] = 0;
 			loopj(4) nums[o[j]->type]++;
-			r->type =
-			    SEMISOLID; // cube contains both solid and space,
-			               // treated specially in the renderer
+			// cube contains both solid and space, treated
+			// specially in the renderer
+			r->type = SEMISOLID;
 			loopk(MAXTYPE) if (nums[k] == 4) r->type = k;
 			if (!SOLID(r)) {
 				int floor = 127, ceil = -128, num = 0;
@@ -136,28 +137,26 @@ remip(block &b, int level)
 					int ch = o[i]->ceil;
 					if (r->type == SEMISOLID) {
 						if (o[i]->type == FHF)
+							// crap hack, needed
+							// for rendering large
+							// mips next to hfs
 							fh -= o[i]->vdelta / 4 +
-							    2; // crap hack,
-							       // needed for
-							       // rendering
-							       // large mips
-							       // next to hfs
+							    2;
 						if (o[i]->type == CHF)
+							// FIXME: needs to
+							// somehow take into
+							// account middle
+							// vertices on higher
+							// mips
 							ch += o[i]->vdelta / 4 +
-							    2; // FIXME: needs
-							       // to somehow
-							       // take into
-							       // account middle
-							       // vertices on
-							       // higher mips
+							    2;
 					}
 					if (fh < floor)
-						floor =
-						    fh; // take lowest floor and
-						        // highest ceil, so we
-						        // never have to see
-						        // missing lower/upper
-						        // from the side
+						// take lowest floor and
+						// highest ceil, so we never
+						// have to see missing
+						// lower/upper from the side
+						floor = fh;
 					if (ch > ceil)
 						ceil = ch;
 				}
@@ -165,32 +164,33 @@ remip(block &b, int level)
 				r->ceil = ceil;
 			}
 			if (r->type == CORNER)
-				goto mip; // special case: don't ever split even
-				          // if textures etc are different
+				// special case: don't ever split even if
+				// textures etc are different
+				goto mip;
 			r->defer = 1;
 			if (SOLID(r)) {
 				loopi(3)
 				{
 					if (o[i]->wtex != o[3]->wtex)
-						goto c; // on an all solid cube,
-						        // only thing that needs
-						        // to be equal for a
-						        // perfect mip is the
-						        // wall texture
+						// on an all solid cube, only
+						// thing that needs to be equal
+						// for a perfect mip is the
+						// wall texture
+						goto c;
 				}
 			} else {
 				loopi(3)
 				{
+					// perfect mip even if light is not
+					// exactly equal
 					if (o[i]->type != o[3]->type ||
 					    o[i]->floor != o[3]->floor ||
 					    o[i]->ceil != o[3]->ceil ||
 					    o[i]->ftex != o[3]->ftex ||
 					    o[i]->ctex != o[3]->ctex ||
 					    abs(o[i + 1]->r - o[0]->r) >
-					        lighterr // perfect mip even if
-					                 // light is not exactly
-					                 // equal
-					    || abs(o[i + 1]->g - o[0]->g) >
+					        lighterr ||
+					    abs(o[i + 1]->g - o[0]->g) >
 					        lighterr ||
 					    abs(o[i + 1]->b - o[0]->b) >
 					        lighterr ||
@@ -198,11 +198,10 @@ remip(block &b, int level)
 					    o[i]->wtex != o[3]->wtex)
 						goto c;
 				}
-				if (r->type == CHF ||
-				    r->type ==
-				        FHF) // can make a perfect mip out of a
-				             // hf if slopes lie on one line
-				{
+
+				// can make a perfect mip out of a hf if slopes
+				// lie on one line
+				if (r->type == CHF || r->type == FHF) {
 					if (o[0]->vdelta - o[1]->vdelta !=
 					        o[1]->vdelta -
 					            SWS(w, x + 2, y, ws)
@@ -227,9 +226,10 @@ remip(block &b, int level)
 				}
 			}
 			{
+				// if any of the constituents is not perfect,
+				// then this one isn't either
 				loopi(4) if (o[i]->defer) goto c;
-			} // if any of the constituents is not perfect, then
-			  // this one isn't either
+			}
 		mip:
 			r->defer = 0;
 		c:;
@@ -238,13 +238,14 @@ remip(block &b, int level)
 	s.y /= 2;
 	s.xs /= 2;
 	s.ys /= 2;
-	remip(s, level + 1);
+	remip(&s, level + 1);
 }
 
 void
-remipmore(const block &b, int level)
+remipmore(const block *b, int level)
 {
-	block bb = b;
+	block bb = *b;
+
 	if (bb.x > 1)
 		bb.x--;
 	if (bb.y > 1)
@@ -253,7 +254,8 @@ remipmore(const block &b, int level)
 		bb.xs++;
 	if (bb.ys < ssize - 3)
 		bb.ys++;
-	remip(bb, level);
+
+	remip(&bb, level);
 }
 
 int
@@ -506,7 +508,7 @@ empty_world(int factor, bool force)
 		loopk(3) loopi(256) hdr.texlists[k][i] = i;
 		[ents removeAllObjects];
 		block b = { 8, 8, ssize - 16, ssize - 16 };
-		edittypexy(SPACE, b);
+		edittypexy(SPACE, &b);
 	}
 
 	calclight();

@@ -18,7 +18,7 @@ bool parinit = false;
 VARP(maxparticles, 100, 2000, MAXPARTICLES - 500);
 
 static void
-newparticle(const OFVector3D &o, const OFVector3D &d, int fade, int type)
+newparticle(const OFVector3D *o, const OFVector3D *d, int fade, int type)
 {
 	if (!parinit) {
 		loopi(MAXPARTICLES)
@@ -31,8 +31,8 @@ newparticle(const OFVector3D &o, const OFVector3D &d, int fade, int type)
 	if (parempty) {
 		particle *p = parempty;
 		parempty = p->next;
-		p->o = o;
-		p->d = d;
+		p->o = *o;
+		p->d = *d;
 		p->fade = fade;
 		p->type = type;
 		p->millis = lastmillis;
@@ -47,18 +47,19 @@ VARP(particlesize, 20, 100, 500);
 OFVector3D right, up;
 
 void
-setorient(OFVector3D &r, OFVector3D &u)
+setorient(const OFVector3D *r, const OFVector3D *u)
 {
-	right = r;
-	up = u;
+	right = *r;
+	up = *u;
 }
 
 void
 render_particles(int time)
 {
 	if (demoplayback && demotracking) {
+		OFVector3D o = player1.o;
 		OFVector3D nom = OFMakeVector3D(0, 0, 0);
-		newparticle(player1.o, nom, 100000000, 8);
+		newparticle(&o, &nom, 100000000, 8);
 	}
 
 	glDepthMask(GL_FALSE);
@@ -135,7 +136,7 @@ render_particles(int time)
 }
 
 void
-particle_splash(int type, int num, int fade, const OFVector3D &p)
+particle_splash(int type, int num, int fade, const OFVector3D *p)
 {
 	loopi(num)
 	{
@@ -146,21 +147,22 @@ particle_splash(int type, int num, int fade, const OFVector3D &p)
 			y = rnd(radius * 2) - radius;
 			z = rnd(radius * 2) - radius;
 		} while (x * x + y * y + z * z > radius * radius);
-		newparticle(p, OFMakeVector3D(x, y, z), rnd(fade * 3), type);
+		OFVector3D d = OFMakeVector3D(x, y, z);
+		newparticle(p, &d, rnd(fade * 3), type);
 	}
 }
 
 void
-particle_trail(int type, int fade, OFVector3D &s, OFVector3D &e)
+particle_trail(int type, int fade, const OFVector3D *s, const OFVector3D *e)
 {
-	vdist(d, v, s, e);
+	vdist(d, v, *s, *e);
 	vdiv(v, d * 2 + 0.1f);
-	OFVector3D p = s;
+	OFVector3D p = *s;
 	loopi((int)d * 2)
 	{
 		vadd(p, v);
 		OFVector3D d =
 		    OFMakeVector3D(rnd(11) - 5, rnd(11) - 5, rnd(11) - 5);
-		newparticle(p, d, rnd(fade) + fade, type);
+		newparticle(&p, &d, rnd(fade) + fade, type);
 	}
 }

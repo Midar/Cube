@@ -70,8 +70,8 @@ send2(bool rel, int cn, int a, int b)
 	    enet_packet_create(NULL, 32, rel ? ENET_PACKET_FLAG_RELIABLE : 0);
 	uchar *start = packet->data;
 	uchar *p = start + 2;
-	putint(p, a);
-	putint(p, b);
+	putint(&p, a);
+	putint(&p, b);
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	if (cn < 0)
@@ -89,8 +89,8 @@ sendservmsg(OFString *msg)
 	    NULL, _MAXDEFSTR + 10, ENET_PACKET_FLAG_RELIABLE);
 	uchar *start = packet->data;
 	uchar *p = start + 2;
-	putint(p, SV_SERVMSG);
-	sendstring(msg, p);
+	putint(&p, SV_SERVMSG);
+	sendstring(msg, &p);
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	multicast(packet, -1);
@@ -190,7 +190,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 	int cn = -1, type;
 
 	while (p < end) {
-		switch ((type = getint(p))) {
+		switch ((type = getint(&p))) {
 		case SV_TEXT:
 			sgetstr();
 			break;
@@ -199,12 +199,12 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			sgetstr();
 			clients[cn].name = @(text);
 			sgetstr();
-			getint(p);
+			getint(&p);
 			break;
 
 		case SV_MAPCHANGE: {
 			sgetstr();
-			int reqmode = getint(p);
+			int reqmode = getint(&p);
 			if (reqmode < 0)
 				reqmode = 0;
 			if (smapname.length > 0 && !mapreload &&
@@ -223,7 +223,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 
 		case SV_ITEMLIST: {
 			int n;
-			while ((n = getint(p)) != -1)
+			while ((n = getint(&p)) != -1)
 				if (notgotitems) {
 					while (sents.count <= n)
 						[sents addObject:[ServerEntity
@@ -235,17 +235,17 @@ process(ENetPacket *packet, int sender) // sender may be -1
 		}
 
 		case SV_ITEMPICKUP: {
-			int n = getint(p);
-			pickup(n, getint(p), sender);
+			int n = getint(&p);
+			pickup(n, getint(&p), sender);
 			break;
 		}
 
 		case SV_PING:
-			send2(false, cn, SV_PONG, getint(p));
+			send2(false, cn, SV_PONG, getint(&p));
 			break;
 
 		case SV_POS: {
-			cn = getint(p);
+			cn = getint(&p);
 			if (cn < 0 || cn >= clients.count ||
 			    clients[cn].type == ST_EMPTY) {
 				disconnect_client(sender, @"client num");
@@ -253,13 +253,13 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			}
 			int size = msgsizelookup(type);
 			assert(size != -1);
-			loopi(size - 2) getint(p);
+			loopi(size - 2) getint(&p);
 			break;
 		}
 
 		case SV_SENDMAP: {
 			sgetstr();
-			int mapsize = getint(p);
+			int mapsize = getint(&p);
 			sendmaps(sender, @(text), mapsize, p);
 			return;
 		}
@@ -270,8 +270,8 @@ process(ENetPacket *packet, int sender) // sender may be -1
 
 		// allows for new features that require no server updates
 		case SV_EXT:
-			for (int n = getint(p); n; n--)
-				getint(p);
+			for (int n = getint(&p); n; n--)
+				getint(&p);
 			break;
 
 		default: {
@@ -280,7 +280,7 @@ process(ENetPacket *packet, int sender) // sender may be -1
 				disconnect_client(sender, @"tag type");
 				return;
 			}
-			loopi(size - 1) getint(p);
+			loopi(size - 1) getint(&p);
 		}
 		}
 	}
@@ -300,23 +300,23 @@ send_welcome(int n)
 	    enet_packet_create(NULL, MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
 	uchar *start = packet->data;
 	__block uchar *p = start + 2;
-	putint(p, SV_INITS2C);
-	putint(p, n);
-	putint(p, PROTOCOL_VERSION);
-	putint(p, *smapname.UTF8String);
-	sendstring(serverpassword, p);
-	putint(p, clients.count > maxclients);
+	putint(&p, SV_INITS2C);
+	putint(&p, n);
+	putint(&p, PROTOCOL_VERSION);
+	putint(&p, *smapname.UTF8String);
+	sendstring(serverpassword, &p);
+	putint(&p, clients.count > maxclients);
 	if (smapname.length > 0) {
-		putint(p, SV_MAPCHANGE);
-		sendstring(smapname, p);
-		putint(p, mode);
-		putint(p, SV_ITEMLIST);
+		putint(&p, SV_MAPCHANGE);
+		sendstring(smapname, &p);
+		putint(&p, mode);
+		putint(&p, SV_ITEMLIST);
 		[sents enumerateObjectsUsingBlock:^(
 		    ServerEntity *e, size_t i, bool *stop) {
 			if (e.spawned)
-				putint(p, i);
+				putint(&p, i);
 		}];
-		putint(p, -1);
+		putint(&p, -1);
 	}
 	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);

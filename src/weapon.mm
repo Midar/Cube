@@ -70,41 +70,41 @@ weapon(OFString *a1, OFString *a2, OFString *a3)
 }
 COMMAND(weapon, ARG_3STR)
 
+// create random spread of rays for the shotgun
 void
-createrays(OFVector3D &from,
-    OFVector3D &to) // create random spread of rays for the shotgun
+createrays(const OFVector3D *from, const OFVector3D *to)
 {
-	vdist(dist, dvec, from, to);
+	vdist(dist, dvec, *from, *to);
 	float f = dist * SGSPREAD / 1000;
 	loopi(SGRAYS)
 	{
 #define RNDD (rnd(101) - 50) * f
 		OFVector3D r = OFMakeVector3D(RNDD, RNDD, RNDD);
-		sg[i] = to;
+		sg[i] = *to;
 		vadd(sg[i], r);
 	}
 }
 
 // if lineseg hits entity bounding box
-bool
-intersect(DynamicEntity *d, const OFVector3D &from, const OFVector3D &to)
+static bool
+intersect(DynamicEntity *d, const OFVector3D *from, const OFVector3D *to)
 {
-	OFVector3D v = to, w = d.o;
+	OFVector3D v = *to, w = d.o;
 	const OFVector3D *p;
-	vsub(v, from);
-	vsub(w, from);
+	vsub(v, *from);
+	vsub(w, *from);
 	float c1 = dotprod(w, v);
 
 	if (c1 <= 0)
-		p = &from;
+		p = from;
 	else {
 		float c2 = dotprod(v, v);
 		if (c2 <= c1)
-			p = &to;
+			p = to;
 		else {
 			float f = c1 / c2;
 			vmul(v, f);
-			vadd(v, from);
+			vadd(v, *from);
 			p = &v;
 		}
 	}
@@ -124,7 +124,8 @@ playerincrosshair()
 		if (player == [OFNull null])
 			continue;
 
-		if (intersect(player, player1.o, worldpos))
+		OFVector3D o = player1.o;
+		if (intersect(player, &o, &worldpos))
 			return [player name];
 	}
 
@@ -142,8 +143,8 @@ projreset()
 }
 
 void
-newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
-    DynamicEntity *owner, int gun)
+newprojectile(const OFVector3D *from, const OFVector3D *to, float speed,
+    bool local, DynamicEntity *owner, int gun)
 {
 	for (size_t i = 0; i < MAXPROJ; i++) {
 		Projectile *p = projs[i];
@@ -155,8 +156,8 @@ newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
 			continue;
 
 		p.inuse = true;
-		p.o = from;
-		p.to = to;
+		p.o = *from;
+		p.to = *to;
 		p.speed = speed;
 		p.local = local;
 		p.owner = owner;
@@ -168,17 +169,17 @@ newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
 void
 hit(int target, int damage, DynamicEntity *d, DynamicEntity *at)
 {
+	OFVector3D o = d.o;
 	if (d == player1)
 		selfdamage(damage, at == player1 ? -1 : -2, at);
 	else if (d.monsterstate)
 		monsterpain(d, damage, at);
 	else {
 		addmsg(1, 4, SV_DAMAGE, target, damage, d.lifesequence);
-		OFVector3D loc = d.o;
-		playsound(S_PAIN1 + rnd(5), &loc);
+		playsound(S_PAIN1 + rnd(5), &o);
 	}
-	particle_splash(3, damage, 1000, d.o);
-	demodamage(damage, d.o);
+	particle_splash(3, damage, 1000, &o);
+	demodamage(damage, &o);
 }
 
 const float RL_RADIUS = 5;
@@ -186,11 +187,11 @@ const float RL_DAMRAD = 7; // hack
 
 static void
 radialeffect(
-    DynamicEntity *o, const OFVector3D &v, int cn, int qdam, DynamicEntity *at)
+    DynamicEntity *o, const OFVector3D *v, int cn, int qdam, DynamicEntity *at)
 {
 	if (o.state != CS_ALIVE)
 		return;
-	vdist(dist, temp, v, o.o);
+	vdist(dist, temp, *v, o.o);
 	dist -= 2; // account for eye distance imprecision
 	if (dist < RL_DAMRAD) {
 		if (dist < 0)
@@ -203,17 +204,17 @@ radialeffect(
 }
 
 void
-splash(Projectile *p, const OFVector3D &v, const OFVector3D &vold,
+splash(Projectile *p, const OFVector3D *v, const OFVector3D *vold,
     int notthisplayer, int notthismonster, int qdam)
 {
 	particle_splash(0, 50, 300, v);
 	p.inuse = false;
 
 	if (p.gun != GUN_RL) {
-		playsound(S_FEXPLODE, &v);
+		playsound(S_FEXPLODE, v);
 		// no push?
 	} else {
-		playsound(S_RLHIT, &v);
+		playsound(S_RLHIT, v);
 		newsphere(v, RL_RADIUS, 0);
 		dodynlight(vold, v, 0, 0, p.owner);
 
@@ -242,14 +243,15 @@ splash(Projectile *p, const OFVector3D &v, const OFVector3D &vold,
 }
 
 inline void
-projdamage(
-    DynamicEntity *o, Projectile *p, OFVector3D &v, int i, int im, int qdam)
+projdamage(DynamicEntity *o, Projectile *p, const OFVector3D *v, int i, int im,
+    int qdam)
 {
 	if (o.state != CS_ALIVE)
 		return;
 
-	if (intersect(o, p.o, v)) {
-		splash(p, v, p.o, i, im, qdam);
+	OFVector3D po = p.o;
+	if (intersect(o, &po, v)) {
+		splash(p, v, &po, i, im, qdam);
 		hit(i, qdam, o, p.owner);
 	}
 }
@@ -275,27 +277,29 @@ moveprojectiles(float time)
 		if (p.local) {
 			for (id player in players)
 				if (player != [OFNull null])
-					projdamage(player, p, v, i, -1, qdam);
+					projdamage(player, p, &v, i, -1, qdam);
 
 			if (p.owner != player1)
-				projdamage(player1, p, v, -1, -1, qdam);
+				projdamage(player1, p, &v, -1, -1, qdam);
 
 			for (DynamicEntity *monster in getmonsters())
 				if (!vreject(monster.o, v, 10.0f) &&
 				    monster != p.owner)
-					projdamage(monster, p, v, -1, i, qdam);
+					projdamage(monster, p, &v, -1, i, qdam);
 		}
 		if (p.inuse) {
+			OFVector3D po = p.o;
+
 			if (time == dtime)
-				splash(p, v, p.o, -1, -1, qdam);
+				splash(p, &v, &po, -1, -1, qdam);
 			else {
 				if (p.gun == GUN_RL) {
-					dodynlight(p.o, v, 0, 255, p.owner);
-					particle_splash(5, 2, 200, v);
+					dodynlight(&po, &v, 0, 255, p.owner);
+					particle_splash(5, 2, 200, &v);
 				} else {
-					particle_splash(1, 1, 200, v);
+					particle_splash(1, 1, 200, &v);
 					particle_splash(
-					    guns[p.gun].part, 1, 1, v);
+					    guns[p.gun].part, 1, 1, &v);
 				}
 			}
 		}
@@ -305,7 +309,8 @@ moveprojectiles(float time)
 
 // create visual effect from a shot
 void
-shootv(int gun, OFVector3D &from, OFVector3D &to, DynamicEntity *d, bool local)
+shootv(int gun, const OFVector3D *from, const OFVector3D *to, DynamicEntity *d,
+    bool local)
 {
 	OFVector3D loc = d.o;
 	playsound(guns[gun].sound, d == player1 ? NULL : &loc);
@@ -315,7 +320,7 @@ shootv(int gun, OFVector3D &from, OFVector3D &to, DynamicEntity *d, bool local)
 		break;
 
 	case GUN_SG: {
-		loopi(SGRAYS) particle_splash(0, 5, 200, sg[i]);
+		loopi(SGRAYS) particle_splash(0, 5, 200, &sg[i]);
 		break;
 	}
 
@@ -343,16 +348,16 @@ shootv(int gun, OFVector3D &from, OFVector3D &to, DynamicEntity *d, bool local)
 
 void
 hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
-    const OFVector3D &from, const OFVector3D &to)
+    const OFVector3D *from, const OFVector3D *to)
 {
 	hit(target, damage, d, at);
-	vdist(dist, v, from, to);
+	vdist(dist, v, *from, *to);
 	vmul(v, damage / dist / 50);
 	vadd(d.vel, v);
 }
 
 void
-raydamage(DynamicEntity *o, const OFVector3D &from, const OFVector3D &to,
+raydamage(DynamicEntity *o, const OFVector3D *from, const OFVector3D *to,
     DynamicEntity *d, int i)
 {
 	if (o.state != CS_ALIVE)
@@ -364,7 +369,7 @@ raydamage(DynamicEntity *o, const OFVector3D &from, const OFVector3D &to,
 		qdam /= MONSTERDAMAGEFACTOR;
 	if (d.gunselect == GUN_SG) {
 		int damage = 0;
-		loop(r, SGRAYS) if (intersect(o, from, sg[r])) damage += qdam;
+		loop(r, SGRAYS) if (intersect(o, from, &sg[r])) damage += qdam;
 		if (damage)
 			hitpush(i, damage, o, d, from, to);
 	} else if (intersect(o, from, to))
@@ -372,7 +377,7 @@ raydamage(DynamicEntity *o, const OFVector3D &from, const OFVector3D &to,
 }
 
 void
-shoot(DynamicEntity *d, const OFVector3D &targ)
+shoot(DynamicEntity *d, const OFVector3D *targ)
 {
 	int attacktime = lastmillis - d.lastaction;
 	if (attacktime < d.gunwait)
@@ -391,7 +396,7 @@ shoot(DynamicEntity *d, const OFVector3D &targ)
 	if (d.gunselect)
 		d.ammo[d.gunselect]--;
 	OFVector3D from = d.o;
-	OFVector3D to = targ;
+	OFVector3D to = *targ;
 	from.z -= 0.2f; // below eye
 
 	vdist(dist, unitv, from, to);
@@ -408,11 +413,11 @@ shoot(DynamicEntity *d, const OFVector3D &targ)
 		vadd(to, unitv);
 	}
 	if (d.gunselect == GUN_SG)
-		createrays(from, to);
+		createrays(&from, &to);
 
 	if (d.quadmillis && attacktime > 200)
 		playsoundc(S_ITEMPUP);
-	shootv(d.gunselect, from, to, d, true);
+	shootv(d.gunselect, &from, &to, d, true);
 	if (!d.monsterstate)
 		addmsg(1, 8, SV_SHOT, d.gunselect, (int)(from.x * DMF),
 		    (int)(from.y * DMF), (int)(from.z * DMF), (int)(to.x * DMF),
@@ -424,13 +429,13 @@ shoot(DynamicEntity *d, const OFVector3D &targ)
 
 	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
 		if (player != [OFNull null])
-			raydamage(player, from, to, d, i);
+			raydamage(player, &from, &to, d, i);
 	}];
 
 	for (DynamicEntity *monster in getmonsters())
 		if (monster != d)
-			raydamage(monster, from, to, d, -2);
+			raydamage(monster, &from, &to, d, -2);
 
 	if (d.monsterstate)
-		raydamage(player1, from, to, d, -1);
+		raydamage(player1, &from, &to, d, -1);
 }

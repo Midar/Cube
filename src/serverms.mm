@@ -136,15 +136,15 @@ serverms(int mode, int numplayers, int minremain, OFString *smapname,
 		if (len < 0)
 			return;
 		p = &pong[len];
-		putint(p, PROTOCOL_VERSION);
-		putint(p, mode);
-		putint(p, numplayers);
-		putint(p, minremain);
+		putint(&p, PROTOCOL_VERSION);
+		putint(&p, mode);
+		putint(&p, numplayers);
+		putint(&p, minremain);
 		OFString *mname =
 		    [OFString stringWithFormat:@"%@%@",
 		              (isfull ? @"[FULL] " : @""), smapname];
-		sendstring(mname, p);
-		sendstring(serverdesc, p);
+		sendstring(mname, &p);
+		sendstring(serverdesc, &p);
 		buf.dataLength = p - pong;
 		enet_socket_send(pongsock, &addr, &buf, 1);
 	}

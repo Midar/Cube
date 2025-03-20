@@ -165,7 +165,7 @@ postlightarea(block &a) // median filter, smooths out random noise in light and
 		median(b);
 	}
 
-	remip(a);
+	remip(&a);
 }
 
 void
@@ -196,13 +196,13 @@ cleardlights()
 	while (dlights.count > 0) {
 		block *backup = *(block **)[dlights lastItem];
 		[dlights removeLastItem];
-		blockpaste(*backup);
+		blockpaste(backup);
 		OFFreeMemory(backup);
 	}
 }
 
 void
-dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
+dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
     DynamicEntity *owner)
 {
 	if (!reach)
@@ -211,11 +211,11 @@ dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
 		reach = reach / 2;
 	if (!reach)
 		return;
-	if (v.x < 0 || v.y < 0 || v.x > ssize || v.y > ssize)
+	if (v->x < 0 || v->y < 0 || v->x > ssize || v->y > ssize)
 		return;
 
 	int creach = reach + 16; // dependant on lightray random offsets!
-	block b = { (int)v.x - creach, (int)v.y - creach, creach * 2 + 1,
+	block b = { (int)v->x - creach, (int)v->y - creach, creach * 2 + 1,
 		creach * 2 + 1 };
 
 	if (b.x < 1)
@@ -232,13 +232,13 @@ dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
 		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
 
 	// backup area before rendering in dynlight
-	block *copy = blockcopy(b);
+	block *copy = blockcopy(&b);
 	[dlights addItem:&copy];
 
 	PersistentEntity *l = [Entity entity];
-	l.x = v.x;
-	l.y = v.y;
-	l.z = v.z;
+	l.x = v->x;
+	l.y = v->y;
+	l.z = v->z;
 	l.attr1 = reach;
 	l.type = LIGHT;
 	l.attr2 = strength;
@@ -249,24 +249,24 @@ dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
 // utility functions also used by editing code
 
 block *
-blockcopy(block &s)
+blockcopy(const block *s)
 {
 	block *b = (block *)OFAllocZeroedMemory(
-	    1, sizeof(block) + s.xs * s.ys * sizeof(sqr));
-	*b = s;
+	    1, sizeof(block) + s->xs * s->ys * sizeof(sqr));
+	*b = *s;
 	sqr *q = (sqr *)(b + 1);
-	for (int x = s.x; x < s.xs + s.x; x++)
-		for (int y = s.y; y < s.ys + s.y; y++)
+	for (int x = s->x; x < s->xs + s->x; x++)
+		for (int y = s->y; y < s->ys + s->y; y++)
 			*q++ = *S(x, y);
 	return b;
 }
 
 void
-blockpaste(const block &b)
+blockpaste(const block *b)
 {
-	sqr *q = (sqr *)((&b) + 1);
-	for (int x = b.x; x < b.xs + b.x; x++)
-		for (int y = b.y; y < b.ys + b.y; y++)
+	sqr *q = (sqr *)(b + 1);
+	for (int x = b->x; x < b->xs + b->x; x++)
+		for (int y = b->y; y < b->ys + b->y; y++)
 			*S(x, y) = *q++;
 	remipmore(b);
 }

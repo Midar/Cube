@@ -114,8 +114,8 @@ extern void renderscores();
 // world
 extern void setupworld(int factor);
 extern void empty_world(int factor, bool force);
-extern void remip(block &b, int level = 0);
-extern void remipmore(const block &b, int level = 0);
+extern void remip(const block *b, int level = 0);
+extern void remipmore(const block *b, int level = 0);
 extern int closestent();
 extern int findentity(int type, int index = 0);
 extern void trigger(int tag, int type, bool savegame);
@@ -126,11 +126,11 @@ extern Entity *newentity(
 
 // worldlight
 extern void calclight();
-extern void dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach,
+extern void dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach,
     int strength, DynamicEntity *owner);
 extern void cleardlights();
-extern block *blockcopy(block &b);
-extern void blockpaste(const block &b);
+extern block *blockcopy(const block *b);
+extern void blockpaste(const block *b);
 
 // worldrender
 extern void render_world(float vx, float vy, float vh, int yaw, int pitch,
@@ -154,20 +154,20 @@ extern void draw_envbox(int t, int fogdist);
 extern void cursorupdate();
 extern void toggleedit();
 extern void editdrag(bool isdown);
-extern void setvdeltaxy(int delta, block &sel);
-extern void editequalisexy(bool isfloor, block &sel);
-extern void edittypexy(int type, block &sel);
-extern void edittexxy(int type, int t, block &sel);
-extern void editheightxy(bool isfloor, int amount, block &sel);
+extern void setvdeltaxy(int delta, const block *sel);
+extern void editequalisexy(bool isfloor, const block *sel);
+extern void edittypexy(int type, const block *sel);
+extern void edittexxy(int type, int t, const block *sel);
+extern void editheightxy(bool isfloor, int amount, const block *sel);
 extern bool noteditmode();
 extern void pruneundos(int maxremain = 0);
 
 // renderextras
 extern void line(int x1, int y1, float z1, int x2, int y2, float z2);
-extern void box(block &b, float z1, float z2, float z3, float z4);
+extern void box(const block *b, float z1, float z2, float z3, float z4);
 extern void dot(int x, int y, float z);
 extern void linestyle(float width, int r, int g, int b);
-extern void newsphere(const OFVector3D &o, float max, int type);
+extern void newsphere(const OFVector3D *o, float max, int type);
 extern void renderspheres(int time);
 extern void gl_drawhud(
     int w, int h, int curfps, int nquads, int curvert, bool underwater);
@@ -176,10 +176,10 @@ extern void blendbox(int x1, int y1, int x2, int y2, bool border);
 extern void damageblend(int n);
 
 // renderparticles
-extern void setorient(OFVector3D &r, OFVector3D &u);
-extern void particle_splash(int type, int num, int fade, const OFVector3D &p);
+extern void setorient(const OFVector3D *r, const OFVector3D *u);
+extern void particle_splash(int type, int num, int fade, const OFVector3D *p);
 extern void particle_trail(
-    int type, int fade, OFVector3D &from, OFVector3D &to);
+    int type, int fade, const OFVector3D *from, const OFVector3D *to);
 extern void render_particles(int time);
 
 // worldio
@@ -192,7 +192,7 @@ extern void incomingdemodata(uchar *buf, int len, bool extras = false);
 extern void demoplaybackstep();
 extern void stop();
 extern void stopifrecording();
-extern void demodamage(int damage, const OFVector3D &o);
+extern void demodamage(int damage, const OFVector3D *o);
 extern void demoblend(int damage);
 
 // physics
@@ -223,9 +223,9 @@ extern void localconnect();
 extern void localdisconnect();
 extern void localclienttoserver(struct _ENetPacket *);
 extern void serverslice(int seconds, unsigned int timeout);
-extern void putint(uchar *&p, int n);
-extern int getint(uchar *&p);
-extern void sendstring(OFString *t, uchar *&p);
+extern void putint(uchar **p, int n);
+extern int getint(uchar **p);
+extern void sendstring(OFString *t, uchar **p);
 extern void startintermission();
 extern void restoreserverstate(OFArray<Entity *> *ents);
 extern uchar *retrieveservers(uchar *buf, int buflen);
@@ -238,10 +238,10 @@ extern ENetPacket *recvmap(int n);
 
 // weapon
 extern void selectgun(int a = -1, int b = -1, int c = -1);
-extern void shoot(DynamicEntity *d, const OFVector3D &to);
-extern void shootv(int gun, OFVector3D &from, OFVector3D &to,
+extern void shoot(DynamicEntity *d, const OFVector3D *to);
+extern void shootv(int gun, const OFVector3D *from, const OFVector3D *to,
     DynamicEntity *d = 0, bool local = false);
-extern void createrays(OFVector3D &from, OFVector3D &to);
+extern void createrays(const OFVector3D *from, const OFVector3D *to);
 extern void moveprojectiles(float time);
 extern void projreset();
 extern OFString *playerincrosshair();
@@ -259,7 +259,7 @@ extern void endsp(bool allkilled);
 // entities
 extern void initEntities();
 extern void renderents();
-extern void putitems(uchar *&p);
+extern void putitems(uchar **p);
 extern void checkquad(int time);
 extern void checkitems();
 extern void realpickup(int n, DynamicEntity *d);
@@ -270,4 +270,4 @@ extern void teleport(int n, DynamicEntity *d);
 extern void baseammo(int gun);
 
 // rndmap
-extern void perlinarea(block &b, int scale, int seed, int psize);
+extern void perlinarea(const block *b, int scale, int seed, int psize);

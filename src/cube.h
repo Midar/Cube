@@ -315,12 +315,12 @@ extern bool demoplayback;
 		(v).z = (v).z * f + (u).z * g; \
 	}
 
-#define sgetstr()                       \
-	{                               \
-		char *t = text;         \
-		do {                    \
-			*t = getint(p); \
-		} while (*t++);         \
+#define sgetstr()                        \
+	{                                \
+		char *t = text;          \
+		do {                     \
+			*t = getint(&p); \
+		} while (*t++);          \
 	} // used by networking
 
 #define m_noitems (gamemode >= 4)
