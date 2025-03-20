@@ -80,15 +80,13 @@ extern int democlientnum;
 void
 renderclients()
 {
-	size_t i = 0;
-	for (id player in players) {
+	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
 		if (player != [OFNull null] &&
 		    (!demoplayback || i != democlientnum))
 			renderclient(player,
 			    isteam(player1.team, [player team]),
 			    @"monster/ogro", false, 1.0f);
-		i++;
-	}
+	}];
 }
 
 // creation of scoreboard pseudo-menu

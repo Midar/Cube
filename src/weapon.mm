@@ -345,7 +345,7 @@ shootv(int gun, OFVector3D &from, OFVector3D &to, DynamicEntity *d, bool local)
 
 void
 hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
-    OFVector3D &from, OFVector3D &to)
+    const OFVector3D &from, const OFVector3D &to)
 {
 	hit(target, damage, d, at);
 	vdist(dist, v, from, to);
@@ -355,7 +355,7 @@ hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
 
 void
 raydamage(
-    DynamicEntity *o, OFVector3D &from, OFVector3D &to, DynamicEntity *d, int i)
+    DynamicEntity *o, const OFVector3D &from, const OFVector3D &to, DynamicEntity *d, int i)
 {
 	if (o.state != CS_ALIVE)
 		return;
@@ -424,12 +424,10 @@ shoot(DynamicEntity *d, const OFVector3D &targ)
 	if (guns[d.gunselect].projspeed)
 		return;
 
-	size_t i = 0;
-	for (id player in players) {
+	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
 		if (player != [OFNull null])
 			raydamage(player, from, to, d, i);
-		i++;
-	}
+	}];
 
 	for (DynamicEntity *monster in getmonsters())
 		if (monster != d)

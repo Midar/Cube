@@ -429,17 +429,16 @@ serverslice(int seconds,
 		checkintermission();
 	if (interm && seconds > interm) {
 		interm = 0;
-		size_t i = 0;
-		for (Client *client in clients) {
+		[clients enumerateObjectsUsingBlock:^(
+		    Client *client, size_t i, bool *stop) {
 			if (client.type != ST_EMPTY) {
 				// ask a client to trigger map reload
 				send2(true, i, SV_MAPRELOAD, 0);
 				mapreload = true;
-				break;
+				*stop = true;
+				return;
 			}
-
-			i++;
-		}
+		}];
 	}
 
 	resetserverifempty();

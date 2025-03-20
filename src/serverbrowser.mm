@@ -274,10 +274,10 @@ refreshservers()
 	if (lastmillis - lastinfo >= 5000)
 		pingservers();
 	[servers sort];
-	int maxmenu = 16;
 
-	size_t i = 0;
-	for (ServerInfo *si in servers) {
+	__block int maxmenu = 16;
+	[servers enumerateObjectsUsingBlock:^(
+	    ServerInfo *si, size_t i, bool *stop) {
 		if (si.address.host != ENET_HOST_ANY && si.ping != 9999) {
 			if (si.protocol != PROTOCOL_VERSION)
 				si.full = [[OFString alloc]
@@ -306,9 +306,7 @@ refreshservers()
 
 		if (!--maxmenu)
 			return;
-
-		i++;
-	}
+	}];
 }
 
 void

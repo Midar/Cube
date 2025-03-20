@@ -198,22 +198,21 @@ extern int democlientnum;
 void
 otherplayers()
 {
-	size_t i = 0;
-	for (id player in players) {
-		if (player != [OFNull null]) {
-			const int lagtime = lastmillis - [player lastupdate];
-			if (lagtime > 1000 && [player state] == CS_ALIVE) {
-				[player setState:CS_LAGGED];
-				i++;
-				continue;
-			}
-			if (lagtime && [player state] != CS_DEAD &&
-			    (!demoplayback || i != democlientnum))
-				// use physics to extrapolate player position
-				moveplayer(player, 2, false);
+	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
+		if (player == [OFNull null])
+			return;
+
+		const int lagtime = lastmillis - [player lastupdate];
+		if (lagtime > 1000 && [player state] == CS_ALIVE) {
+			[player setState:CS_LAGGED];
+			return;
 		}
-		i++;
-	}
+
+		if (lagtime && [player state] != CS_DEAD &&
+		    (!demoplayback || i != democlientnum))
+			// use physics to extrapolate player position
+			moveplayer(player, 2, false);
+	}];
 }
 
 void
