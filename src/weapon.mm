@@ -148,6 +148,11 @@ newprojectile(OFVector3D &from, OFVector3D &to, float speed, bool local,
 	for (size_t i = 0; i < MAXPROJ; i++) {
 		Projectile *p = projs[i];
 
+		if (p == nil) {
+			p = [[Projectile alloc] init];
+			projs[i] = p;
+		}
+
 		if (p.inuse)
 			continue;
 
@@ -205,6 +210,7 @@ splash(Projectile *p, const OFVector3D &v, const OFVector3D &vold,
 {
 	particle_splash(0, 50, 300, v);
 	p.inuse = false;
+
 	if (p.gun != GUN_RL) {
 		playsound(S_FEXPLODE, &v);
 		// no push?
@@ -212,27 +218,28 @@ splash(Projectile *p, const OFVector3D &v, const OFVector3D &vold,
 		playsound(S_RLHIT, &v);
 		newsphere(v, RL_RADIUS, 0);
 		dodynlight(vold, v, 0, 0, p.owner);
+
 		if (!p.local)
 			return;
+
 		radialeffect(player1, v, -1, qdam, p.owner);
 
-		size_t i = 0;
-		for (id player in players) {
-			if (i == notthisplayer) {
-				i++;
-				continue;
-			}
+		[players enumerateObjectsUsingBlock:^(
+		    id player, size_t i, bool *stop) {
+			if (i == notthisplayer)
+				return;
 
-			if (player != [OFNull null])
-				radialeffect(player, v, i, qdam, p.owner);
+			if (player == [OFNull null])
+				return;
 
-			i++;
-		}
+			radialeffect(player, v, i, qdam, p.owner);
+		}];
 
-		i = 0;
-		for (DynamicEntity *monster in getmonsters())
+		[getmonsters() enumerateObjectsUsingBlock:^(
+		    DynamicEntity *monster, size_t i, bool *stop) {
 			if (i != notthismonster)
 				radialeffect(monster, v, i, qdam, p.owner);
+		}];
 	}
 }
 
@@ -242,6 +249,7 @@ projdamage(
 {
 	if (o.state != CS_ALIVE)
 		return;
+
 	if (intersect(o, p.o, v)) {
 		splash(p, v, p.o, i, im, qdam);
 		hit(i, qdam, o, p.owner);
@@ -265,8 +273,8 @@ moveprojectiles(float time)
 		if (time > dtime)
 			dtime = time;
 		vmul(v, time / dtime);
-		vadd(v, p.o) if (p.local)
-		{
+		vadd(v, p.o);
+		if (p.local) {
 			for (id player in players)
 				if (player != [OFNull null])
 					projdamage(player, p, v, i, -1, qdam);
