@@ -9,7 +9,7 @@
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
-void
+static void
 mode(int n)
 {
 	addmsg(1, 2, SV_GAMEMODE, nextmode = n);
@@ -144,17 +144,17 @@ respawnself()
 	showscores(false);
 }
 
-void
+static void
 arenacount(
-    DynamicEntity *d, int &alive, int &dead, OFString **lastteam, bool &oneteam)
+    DynamicEntity *d, int *alive, int *dead, OFString **lastteam, bool *oneteam)
 {
 	if (d.state != CS_DEAD) {
-		alive++;
+		(*alive)++;
 		if (![*lastteam isEqual:d.team])
-			oneteam = false;
+			*oneteam = false;
 		*lastteam = d.team;
 	} else
-		dead++;
+		(*dead)++;
 }
 
 int arenarespawnwait = 0;
@@ -177,8 +177,8 @@ arenarespawn()
 		for (id player in players)
 			if (player != [OFNull null])
 				arenacount(
-				    player, alive, dead, &lastteam, oneteam);
-		arenacount(player1, alive, dead, &lastteam, oneteam);
+				    player, &alive, &dead, &lastteam, &oneteam);
+		arenacount(player1, &alive, &dead, &lastteam, &oneteam);
 		if (dead > 0 && (alive <= 1 || (m_teammode && oneteam))) {
 			conoutf(
 			    @"arena round is over! next round in 5 seconds...");
@@ -332,7 +332,7 @@ spawnplayer(DynamicEntity *d)
 // movement input code
 
 #define dir(name, v, d, s, os)                                    \
-	void name(bool isdown)                                    \
+	static void name(bool isdown)                             \
 	{                                                         \
 		player1.s = isdown;                               \
 		player1.v = isdown ? d : (player1.os ? -(d) : 0); \

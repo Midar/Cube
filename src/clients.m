@@ -197,11 +197,9 @@ addmsg(int rel, int num, int type, ...)
 {
 	if (demoplayback)
 		return;
-	if (num != msgsizelookup(type)) {
-		fatal([OFString
-		    stringWithFormat:@"inconsistant msg size for %d (%d != %d)",
-		    type, num, msgsizelookup(type)]);
-	}
+	if (num != msgsizelookup(type))
+		fatal(@"inconsistant msg size for %d (%d != %d)", type, num,
+		    msgsizelookup(type));
 	if (messages.count == 100) {
 		conoutf(@"command flood protection (type %d)", type);
 		return;

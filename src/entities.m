@@ -29,9 +29,9 @@ initEntities()
 	ents = [[OFMutableArray alloc] init];
 }
 
-void
-renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame = 0,
-    int numf = 1, int basetime = 0, float speed = 10.0f)
+static void
+renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame/* = 0*/,
+    int numf/* = 1*/, int basetime/* = 0*/, float speed/* = 10.0f*/)
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f,
 	    OFMakeVector3D(e.x, z + S(e.x, e.y)->floor, e.y), yaw, 0, false,
@@ -67,7 +67,7 @@ renderentities()
 				    (float)(1 +
 				        sin(lastmillis / 100.0 + e.x + e.y) /
 				            20),
-				    lastmillis / 10.0f);
+				    lastmillis / 10.0f, 0,1,0,10.0f);
 			} else {
 				switch (e.attr2) {
 				case 1:
@@ -84,7 +84,8 @@ renderentities()
 					            e.y) /
 					            20),
 					    lastmillis /
-					        (e.attr2 ? 1.0f : 10.0f));
+					        (e.attr2 ? 1.0f : 10.0f),
+						0, 1, 0, 10.0f);
 					break;
 
 				case 4:
@@ -136,12 +137,12 @@ baseammo(int gun)
 static int
 radditem(int i, int v)
 {
-	itemstat &is = itemstats[ents[i].type - I_SHELLS];
+	struct itemstat *is = &itemstats[ents[i].type - I_SHELLS];
 	ents[i].spawned = false;
-	v += is.add;
-	if (v > is.max)
-		v = is.max;
-	playsoundc(is.sound);
+	v += is->add;
+	if (v > is->max)
+		v = is->max;
+	playsoundc(is->sound);
 	return v;
 }
 

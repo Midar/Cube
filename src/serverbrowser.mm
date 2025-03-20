@@ -202,7 +202,7 @@ checkpings()
 	}
 }
 
-void
+extern "C" void
 refreshservers()
 {
 	checkresolver();

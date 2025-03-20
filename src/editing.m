@@ -12,12 +12,12 @@ bool editmode = false;
 // invariant: all code assumes that these are kept inside MINBORD distance of
 // the edge of the map
 
-block sel;
+struct block sel;
 
 OF_CONSTRUCTOR()
 {
 	enqueueInit(^{
-		sel = (block) {
+		sel = (struct block) {
 			variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
 			variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
 			variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),
@@ -34,7 +34,7 @@ bool selset = false;
 		makeundo();                                 \
 		loop(x, sel->xs) loop(y, sel->ys)           \
 		{                                           \
-			sqr *s = S(sel->x + x, sel->y + y); \
+			struct sqr *s = S(sel->x + x, sel->y + y); \
 			b;                                  \
 		}                                           \
 		remip(sel, 0);                              \
@@ -48,7 +48,7 @@ bool dragging = false;
 int lastx, lasty, lasth;
 
 int lasttype = 0, lasttex = 0;
-sqr rtex;
+static struct sqr rtex;
 
 VAR(editing, 0, 0, 1);
 
@@ -121,7 +121,7 @@ noselection()
 void
 selectpos(int x, int y, int xs, int ys)
 {
-	block s = { x, y, xs, ys };
+	struct block s = { x, y, xs, ys };
 	sel = s;
 	selh = 0;
 	correctsel();
@@ -130,7 +130,7 @@ selectpos(int x, int y, int xs, int ys)
 void
 makesel()
 {
-	block s = { min(lastx, cx), min(lasty, cy), abs(lastx - cx) + 1,
+	struct block s = { min(lastx, cx), min(lasty, cy), abs(lastx - cx) + 1,
 		abs(lasty - cy) + 1 };
 	sel = s;
 	selh = max(lasth, ch);
@@ -141,9 +141,9 @@ makesel()
 
 VAR(flrceil, 0, 0, 2);
 
+// finds out z height when cursor points at wall
 float
-sheight(
-    sqr *s, sqr *t, float z) // finds out z height when cursor points at wall
+sheight(struct sqr *s, struct sqr *t, float z)
 {
 	return !flrceil // z-s->floor<s->ceil-z
 	    ? (s->type == FHF ? s->floor - t->vdelta / 4.0f : (float)s->floor)
@@ -165,7 +165,7 @@ cursorupdate() // called every frame from hud
 
 	if (OUTBORD(cx, cy))
 		return;
-	sqr *s = S(cx, cy);
+	struct sqr *s = S(cx, cy);
 
 	// selected wall
 	if (fabs(sheight(s, s, z) - z) > 1) {
@@ -194,7 +194,7 @@ cursorupdate() // called every frame from hud
 		for (int iy = cy - GRIDSIZE; iy <= cy + GRIDSIZE; iy++) {
 			if (OUTBORD(ix, iy))
 				continue;
-			sqr *s = S(ix, iy);
+			struct sqr *s = S(ix, iy);
 			if (SOLID(s))
 				continue;
 			float h1 = sheight(s, s, z);
@@ -207,7 +207,7 @@ cursorupdate() // called every frame from hud
 				linestyle(GRIDW, 0x80, 0xFF, 0x80);
 			else
 				linestyle(GRIDW, 0x80, 0x80, 0x80);
-			block b = { ix, iy, 1, 1 };
+			struct block b = { ix, iy, 1, 1 };
 			box(&b, h1, h2, h3, h4);
 			linestyle(GRID8, 0x40, 0x40, 0xFF);
 			if (!(ix & GRIDM))
@@ -224,7 +224,7 @@ cursorupdate() // called every frame from hud
 	if (!SOLID(s)) {
 		float ih = sheight(s, s, z);
 		linestyle(GRIDS, 0xFF, 0xFF, 0xFF);
-		block b = { cx, cy, 1, 1 };
+		struct block b = { cx, cy, 1, 1 };
 		box(&b, ih, sheight(s, SWS(s, 1, 0, ssize), z),
 		    sheight(s, SWS(s, 1, 1, ssize), z),
 		    sheight(s, SWS(s, 0, 1, ssize), z));
@@ -247,9 +247,9 @@ pruneundos(int maxremain) // bound memory
 {
 	int t = 0;
 	for (ssize_t i = (ssize_t)undos.count - 1; i >= 0; i--) {
-		block *undo = *(block **)[undos itemAtIndex:i];
+		struct block *undo = [undos mutableItemAtIndex:i];
 
-		t += undo->xs * undo->ys * sizeof(sqr);
+		t += undo->xs * undo->ys * sizeof(struct sqr);
 		if (t > maxremain) {
 			OFFreeMemory(undo);
 			[undos removeItemAtIndex:i];
@@ -262,9 +262,9 @@ makeundo()
 {
 	if (undos == nil)
 		undos =
-		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
+		    [[OFMutableData alloc] initWithItemSize:sizeof(struct block *)];
 
-	block *copy = blockcopy(&sel);
+	struct block *copy = blockcopy(&sel);
 	[undos addItem:&copy];
 	pruneundos(undomegs << 20);
 }
@@ -277,13 +277,13 @@ editundo()
 		conoutf(@"nothing more to undo");
 		return;
 	}
-	block *p = *(block **)undos.lastItem;
+	struct block *p = undos.mutableLastItem;
 	[undos removeLastItem];
 	blockpaste(p);
 	OFFreeMemory(p);
 }
 
-block *copybuf = NULL;
+static struct block *copybuf = NULL;
 
 void
 copy()
@@ -351,7 +351,7 @@ editdrag(bool isDown)
 // strictly triggered locally. They all have very similar structure.
 
 void
-editheightxy(bool isfloor, int amount, const block *sel)
+editheightxy(bool isfloor, int amount, const struct block *sel)
 {
 	loopselxy(
 	    if (isfloor) {
@@ -376,7 +376,7 @@ editheight(int flr, int amount)
 COMMAND(editheight, ARG_2INT)
 
 void
-edittexxy(int type, int t, const block *sel)
+edittexxy(int type, int t, const struct block *sel)
 {
 	loopselxy(switch (type) {
 	        case 0:
@@ -419,7 +419,7 @@ replace()
 	EDITSELMP;
 	loop(x, ssize) loop(y, ssize)
 	{
-		sqr *s = S(x, y);
+		struct sqr *s = S(x, y);
 		switch (lasttype) {
 		case 0:
 			if (s->ftex == rtex.ftex)
@@ -439,12 +439,12 @@ replace()
 			break;
 		}
 	}
-	block b = { 0, 0, ssize, ssize };
+	struct block b = { 0, 0, ssize, ssize };
 	remip(&b, 0);
 }
 
 void
-edittypexy(int type, const block *sel)
+edittypexy(int type, const struct block *sel)
 {
 	loopselxy(s->type = type);
 }
@@ -485,7 +485,7 @@ corner()
 COMMAND(corner, ARG_NONE)
 
 void
-editequalisexy(bool isfloor, const block *sel)
+editequalisexy(bool isfloor, const struct block *sel)
 {
 	int low = 127, hi = -128;
 	loopselxy({
@@ -515,7 +515,7 @@ equalize(int flr)
 COMMAND(equalize, ARG_1INT)
 
 void
-setvdeltaxy(int delta, const block *sel)
+setvdeltaxy(int delta, const struct block *sel)
 {
 	loopselxy(s->vdelta = max(s->vdelta + delta, 0));
 	remipmore(sel, 0);
@@ -555,9 +555,9 @@ arch(int sidedelta, int _a)
 		sel.xs = MAXARCHVERT;
 	if (sel.ys > MAXARCHVERT)
 		sel.ys = MAXARCHVERT;
-	block *sel_ = &sel;
+	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
-	block *sel = sel_;
+	struct block *sel = sel_;
 	loopselxy(s->vdelta = sel->xs > sel->ys
 	        ? (archverts[sel->xs - 1][x] +
 	              (y == 0 || y == sel->ys - 1 ? sidedelta : 0))
@@ -577,9 +577,9 @@ slope(int xd, int yd)
 		off -= yd * sel.ys;
 	sel.xs++;
 	sel.ys++;
-	block *sel_ = &sel;
+	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
-	block *sel = sel_;
+	struct block *sel = sel_;
 	loopselxy(s->vdelta = xd * x + yd * y + off);
 	remipmore(sel, 0);
 }
@@ -612,9 +612,9 @@ void
 edittag(int tag)
 {
 	EDITSELMP;
-	block *sel_ = &sel;
+	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
-	block *sel = sel_;
+	struct block *sel = sel_;
 	loopselxy(s->tag = tag);
 }
 

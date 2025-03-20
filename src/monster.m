@@ -63,7 +63,7 @@ basicmonster(int type, int yaw, int state, int trigger, int move)
 		type = 0;
 	}
 	DynamicEntity *m = newdynent();
-	monstertype *t = &monstertypes[(m.mtype = type)];
+	struct monstertype *t = &monstertypes[(m.mtype = type)];
 	m.eyeheight = 2.0f;
 	m.aboveeye = 1.9f;
 	m.radius *= t->bscale / 10.0f;
@@ -138,7 +138,7 @@ monsterclear()
 
 // height-correct line of sight for monster shooting/seeing
 bool
-los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D &v)
+los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D *v)
 {
 	if (OUTBORD((int)lx, (int)ly) || OUTBORD((int)bx, (int)by))
 		return false;
@@ -151,7 +151,7 @@ los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D &v)
 	float y = ly;
 	int i = 0;
 	for (;;) {
-		sqr *s = S(fast_f2nat(x), fast_f2nat(y));
+		struct sqr *s = S(fast_f2nat(x), fast_f2nat(y));
 		if (SOLID(s))
 			break;
 		float floor = s->floor;
@@ -163,9 +163,9 @@ los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D &v)
 		float rz = lz - ((lz - bz) * (i / (float)steps));
 		if (rz < floor || rz > ceil)
 			break;
-		v.x = x;
-		v.y = y;
-		v.z = rz;
+		v->x = x;
+		v->y = y;
+		v->z = rz;
 		x += dx / (float)steps;
 		y += dy / (float)steps;
 		i++;
@@ -174,9 +174,9 @@ los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D &v)
 }
 
 bool
-enemylos(DynamicEntity *m, OFVector3D &v)
+enemylos(DynamicEntity *m, OFVector3D *v)
 {
-	v = m.o;
+	*v = m.o;
 	return los(
 	    m.o.x, m.o.y, m.o.z, m.enemy.o.x, m.enemy.o.y, m.enemy.o.z, v);
 }
@@ -261,7 +261,7 @@ monsteraction(DynamicEntity *m)
 	              // contact
 	{
 		OFVector3D target;
-		if (editmode || !enemylos(m, target))
+		if (editmode || !enemylos(m, &target))
 			return; // skip running physics
 		normalise(m, enemyyaw);
 		float angle = (float)fabs(enemyyaw - m.yaw);
@@ -295,7 +295,7 @@ monsteraction(DynamicEntity *m)
 		m.targetyaw = enemyyaw;
 		if (m.trigger < lastmillis) {
 			OFVector3D target;
-			if (!enemylos(m, target)) {
+			if (!enemylos(m, &target)) {
 				// no visual contact anymore, let monster get
 				// as close as possible then search for player
 				transition(m, M_HOME, 1, 800, 500);
