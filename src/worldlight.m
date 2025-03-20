@@ -64,7 +64,7 @@ lightray(float bx, float by, PersistentEntity *light)
 			stepb /= lightscale;
 			loopi(steps)
 			{
-				sqr *s = S(x >> PRECBITS, y >> PRECBITS);
+				struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 				int tl = (l >> PRECBITS) + s->r;
 				s->r = tl > 255 ? 255 : tl;
 				tl = (g >> PRECBITS) + s->g;
@@ -93,7 +93,7 @@ lightray(float bx, float by, PersistentEntity *light)
 
 			loopi(steps)
 			{
-				sqr *s = S(x >> PRECBITS, y >> PRECBITS);
+				struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 				int tl = (l >> PRECBITS) + s->r;
 				s->r = s->g = s->b = tl > 255 ? 255 : tl;
 				if (SOLID(s))
@@ -109,7 +109,7 @@ lightray(float bx, float by, PersistentEntity *light)
 	{
 		loopi(steps)
 		{
-			sqr *s = S(x >> PRECBITS, y >> PRECBITS);
+			struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 			int light = l >> PRECBITS;
 			if (light > s->r)
 				s->r = s->g = s->b = (uchar)light;
@@ -147,13 +147,13 @@ calclightsource(PersistentEntity *l)
 	rndtime();
 }
 
+// median filter, smooths out random noise in light and makes it more mipable
 void
-postlightarea(block &a) // median filter, smooths out random noise in light and
-                        // makes it more mipable
+postlightarea(const struct block *a)
 {
-	loop(x, a.xs) loop(y, a.ys) // assumes area not on edge of world
+	loop(x, a->xs) loop(y, a->ys) // assumes area not on edge of world
 	{
-		sqr *s = S(x + a.x, y + a.y);
+		struct sqr *s = S(x + a->x, y + a->y);
 #define median(m)                                                            \
 	s->m =                                                               \
 	    (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +            \
@@ -165,7 +165,7 @@ postlightarea(block &a) // median filter, smooths out random noise in light and
 		median(b);
 	}
 
-	remip(&a, 0);
+	remip(a, 0);
 }
 
 void
@@ -173,7 +173,7 @@ calclight()
 {
 	loop(x, ssize) loop(y, ssize)
 	{
-		sqr *s = S(x, y);
+		struct sqr *s = S(x, y);
 		s->r = s->g = s->b = 10;
 	}
 
@@ -181,8 +181,8 @@ calclight()
 		if (e.type == LIGHT)
 			calclightsource(e);
 
-	block b = { 1, 1, ssize - 2, ssize - 2 };
-	postlightarea(b);
+	struct block b = { 1, 1, ssize - 2, ssize - 2 };
+	postlightarea(&b);
 	setvar(@"fullbright", 0);
 }
 
@@ -194,7 +194,7 @@ void
 cleardlights()
 {
 	while (dlights.count > 0) {
-		block *backup = *(block **)[dlights lastItem];
+		struct block *backup = *(struct block **)[dlights lastItem];
 		[dlights removeLastItem];
 		blockpaste(backup);
 		OFFreeMemory(backup);
@@ -215,8 +215,8 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 		return;
 
 	int creach = reach + 16; // dependant on lightray random offsets!
-	block b = { (int)v->x - creach, (int)v->y - creach, creach * 2 + 1,
-		creach * 2 + 1 };
+	struct block b = { (int)v->x - creach, (int)v->y - creach,
+		creach * 2 + 1, creach * 2 + 1 };
 
 	if (b.x < 1)
 		b.x = 1;
@@ -228,11 +228,11 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 		b.ys = ssize - 2 - b.y;
 
 	if (dlights == nil)
-		dlights =
-		    [[OFMutableData alloc] initWithItemSize:sizeof(block *)];
+		dlights = [[OFMutableData alloc]
+		    initWithItemSize:sizeof(struct block *)];
 
 	// backup area before rendering in dynlight
-	block *copy = blockcopy(&b);
+	struct block *copy = blockcopy(&b);
 	[dlights addItem:&copy];
 
 	PersistentEntity *l = [Entity entity];
@@ -243,18 +243,18 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 	l.type = LIGHT;
 	l.attr2 = strength;
 	calclightsource(l);
-	postlightarea(b);
+	postlightarea(&b);
 }
 
 // utility functions also used by editing code
 
-block *
-blockcopy(const block *s)
+struct block *
+blockcopy(const struct block *s)
 {
-	block *b = (block *)OFAllocZeroedMemory(
-	    1, sizeof(block) + s->xs * s->ys * sizeof(sqr));
+	struct block *b = OFAllocZeroedMemory(
+	    1, sizeof(struct block) + s->xs * s->ys * sizeof(struct sqr));
 	*b = *s;
-	sqr *q = (sqr *)(b + 1);
+	struct sqr *q = (struct sqr *)(b + 1);
 	for (int x = s->x; x < s->xs + s->x; x++)
 		for (int y = s->y; y < s->ys + s->y; y++)
 			*q++ = *S(x, y);
@@ -262,9 +262,9 @@ blockcopy(const block *s)
 }
 
 void
-blockpaste(const block *b)
+blockpaste(const struct block *b)
 {
-	sqr *q = (sqr *)(b + 1);
+	struct sqr *q = (struct sqr *)(b + 1);
 	for (int x = b->x; x < b->xs + b->x; x++)
 		for (int y = b->y; y < b->ys + b->y; y++)
 			*S(x, y) = *q++;

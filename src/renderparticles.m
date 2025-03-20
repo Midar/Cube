@@ -10,9 +10,9 @@ struct particle {
 	OFVector3D o, d;
 	int fade, type;
 	int millis;
-	particle *next;
+	struct particle *next;
 };
-particle particles[MAXPARTICLES], *parlist = NULL, *parempty = NULL;
+struct particle particles[MAXPARTICLES], *parlist = NULL, *parempty = NULL;
 bool parinit = false;
 
 VARP(maxparticles, 100, 2000, MAXPARTICLES - 500);
@@ -29,7 +29,7 @@ newparticle(const OFVector3D *o, const OFVector3D *d, int fade, int type)
 		parinit = true;
 	}
 	if (parempty) {
-		particle *p = parempty;
+		struct particle *p = parempty;
 		parempty = p->next;
 		p->o = *o;
 		p->d = *d;
@@ -86,8 +86,8 @@ render_particles(int time)
 
 	int numrender = 0;
 
-	for (particle *p, **pp = &parlist; p = *pp;) {
-		parttype *pt = &parttypes[p->type];
+	for (struct particle *p, **pp = &parlist; (p = *pp) != NULL;) {
+		struct parttype *pt = &parttypes[p->type];
 
 		glBindTexture(GL_TEXTURE_2D, pt->tex);
 		glBegin(GL_QUADS);

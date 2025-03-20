@@ -7,10 +7,10 @@
 
 extern OFString *entnames[]; // lookup from map entities above to strings
 
-sqr *world = NULL;
+struct sqr *world = NULL;
 int sfactor, ssize, cubicsize, mipsize;
 
-header hdr;
+struct header hdr;
 
 // set all cubes with "tag" to space, if tag is 0 then reset ALL tagged cubes
 // according to type
@@ -20,7 +20,7 @@ settag(int tag, int type)
 	int maxx = 0, maxy = 0, minx = ssize, miny = ssize;
 	loop(x, ssize) loop(y, ssize)
 	{
-		sqr *s = S(x, y);
+		struct sqr *s = S(x, y);
 		if (s->tag) {
 			if (tag) {
 				if (tag == s->tag)
@@ -40,7 +40,7 @@ settag(int tag, int type)
 				miny = y;
 		}
 	}
-	block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
+	struct block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
 	if (maxx)
 		remip(&b, 0); // remip minimal area of changed geometry
 }
@@ -90,17 +90,17 @@ COMMAND(trigger, ARG_2INT)
 // rendering time if this is possible).
 
 void
-remip(const block *b, int level)
+remip(const struct block *b, int level)
 {
 	if (level >= SMALLEST_FACTOR)
 		return;
 
 	int lighterr = getvar(@"lighterror") * 3;
-	sqr *w = wmip[level];
-	sqr *v = wmip[level + 1];
+	struct sqr *w = wmip[level];
+	struct sqr *v = wmip[level + 1];
 	int ws = ssize >> level;
 	int vs = ssize >> (level + 1);
-	block s = *b;
+	struct block s = *b;
 	if (s.x & 1) {
 		s.x--;
 		s.xs++;
@@ -113,13 +113,13 @@ remip(const block *b, int level)
 	s.ys = (s.ys + 1) & ~1;
 	for (int x = s.x; x < s.x + s.xs; x += 2)
 		for (int y = s.y; y < s.y + s.ys; y += 2) {
-			sqr *o[4];
+			struct sqr *o[4];
 			o[0] = SWS(w, x, y, ws); // the 4 constituent cubes
 			o[1] = SWS(w, x + 1, y, ws);
 			o[2] = SWS(w, x + 1, y + 1, ws);
 			o[3] = SWS(w, x, y + 1, ws);
 			// the target cube in the higher mip level
-			sqr *r = SWS(v, x / 2, y / 2, vs);
+			struct sqr *r = SWS(v, x / 2, y / 2, vs);
 			*r = *o[0];
 			uchar nums[MAXTYPE];
 			loopi(MAXTYPE) nums[i] = 0;
@@ -242,9 +242,9 @@ remip(const block *b, int level)
 }
 
 void
-remipmore(const block *b, int level)
+remipmore(const struct block *b, int level)
 {
-	block bb = *b;
+	struct block bb = *b;
 
 	if (bb.x > 1)
 		bb.x--;
@@ -433,7 +433,7 @@ findentity(int type, int index)
 	return -1;
 }
 
-sqr *wmip[LARGEST_FACTOR * 2];
+struct sqr *wmip[LARGEST_FACTOR * 2];
 
 void
 setupworld(int factor)
@@ -441,7 +441,8 @@ setupworld(int factor)
 	ssize = 1 << (sfactor = factor);
 	cubicsize = ssize * ssize;
 	mipsize = cubicsize * 134 / 100;
-	sqr *w = world = (sqr *)OFAllocZeroedMemory(mipsize, sizeof(sqr));
+	struct sqr *w = world =
+	    OFAllocZeroedMemory(mipsize, sizeof(struct sqr));
 	loopi(LARGEST_FACTOR * 2)
 	{
 		wmip[i] = w;
@@ -458,7 +459,7 @@ empty_world(int factor, bool force)
 		return;
 	cleardlights();
 	pruneundos(0);
-	sqr *oldworld = world;
+	struct sqr *oldworld = world;
 	bool copy = false;
 	if (oldworld && factor < 0) {
 		factor = sfactor + 1;
@@ -472,7 +473,7 @@ empty_world(int factor, bool force)
 
 	loop(x, ssize) loop(y, ssize)
 	{
-		sqr *s = S(x, y);
+		struct sqr *s = S(x, y);
 		s->r = s->g = s->b = 150;
 		s->ftex = DEFAULT_FLOOR;
 		s->ctex = DEFAULT_CEIL;
@@ -486,7 +487,7 @@ empty_world(int factor, bool force)
 
 	strncpy(hdr.head, "CUBE", 4);
 	hdr.version = MAPVERSION;
-	hdr.headersize = sizeof(header);
+	hdr.headersize = sizeof(struct header);
 	hdr.sfactor = sfactor;
 
 	if (copy) {
@@ -507,7 +508,7 @@ empty_world(int factor, bool force)
 		loopi(15) hdr.reserved[i] = 0;
 		loopk(3) loopi(256) hdr.texlists[k][i] = i;
 		[ents removeAllObjects];
-		block b = { 8, 8, ssize - 16, ssize - 16 };
+		struct block b = { 8, 8, ssize - 16, ssize - 16 };
 		edittypexy(SPACE, &b);
 	}
 

@@ -19,41 +19,41 @@ bool demoloading = false;
 static OFMutableArray<DynamicEntity *> *playerhistory;
 int democlientnum = 0;
 
-void startdemo();
+extern void startdemo();
 
-void
+static void
 gzput(int i)
 {
 	gzputc(f, i);
 }
 
-void
+static void
 gzputi(int i)
 {
 	gzwrite(f, &i, sizeof(int));
 }
 
-void
-gzputv(OFVector3D &v)
+static void
+gzputv(const OFVector3D *v)
 {
-	gzwrite(f, &v, sizeof(OFVector3D));
+	gzwrite(f, v, sizeof(OFVector3D));
 }
 
-void
+static void
 gzcheck(int a, int b)
 {
 	if (a != b)
 		fatal(@"savegame file corrupt (short)");
 }
 
-int
+static int
 gzget()
 {
 	char c = gzgetc(f);
 	return c;
 }
 
-int
+static int
 gzgeti()
 {
 	int i;
@@ -61,10 +61,10 @@ gzgeti()
 	return i;
 }
 
-void
-gzgetv(OFVector3D &v)
+static void
+gzgetv(OFVector3D *v)
 {
-	gzcheck(gzread(f, &v, sizeof(OFVector3D)), sizeof(OFVector3D));
+	gzcheck(gzread(f, v, sizeof(OFVector3D)), sizeof(OFVector3D));
 }
 
 void
@@ -326,7 +326,7 @@ incomingdemodata(uchar *buf, int len, bool extras)
 		bdamage = 0;
 		gzputi(ddamage);
 		if (ddamage) {
-			gzputv(dorig);
+			gzputv(&dorig);
 			ddamage = 0;
 		}
 		// FIXME: add all other client state which is not send through
@@ -453,7 +453,7 @@ demoplaybackstep()
 			if ((bdamage = gzgeti()))
 				damageblend(bdamage);
 			if ((ddamage = gzgeti())) {
-				gzgetv(dorig);
+				gzgetv(&dorig);
 				particle_splash(3, ddamage, 1000, &dorig);
 			}
 			// FIXME: set more client state here

@@ -252,8 +252,8 @@ lookuptexture(int tex, int *xs, int *ys)
 	}
 }
 
-void
-setupworld()
+static void
+gl_setupworld()
 {
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_COLOR_ARRAY);
@@ -281,7 +281,7 @@ renderstripssky()
 {
 	glBindTexture(GL_TEXTURE_2D, skyoglid);
 
-	const strip *items = (const strip *)strips.items;
+	const struct strip *items = strips.items;
 	size_t count = strips.count;
 	for (size_t i = 0; i < count; i++)
 		if (items[i].tex == skyoglid)
@@ -293,7 +293,7 @@ void
 renderstrips()
 {
 	int lasttex = -1;
-	const strip *items = (const strip *)strips.items;
+	const struct strip *items = strips.items;
 	size_t count = strips.count;
 	for (size_t i = 0; i < count; i++) {
 		if (items[i].tex == skyoglid)
@@ -319,9 +319,10 @@ void
 addstrip(int tex, int start, int n)
 {
 	if (strips == nil)
-		strips = [[OFMutableData alloc] initWithItemSize:sizeof(strip)];
+		strips = [[OFMutableData alloc]
+		    initWithItemSize:sizeof(struct strip)];
 
-	strip s = { .tex = tex, .start = start, .num = n };
+	struct strip s = { .tex = tex, .start = start, .num = n };
 	[strips addItem:&s];
 }
 
@@ -451,7 +452,7 @@ gl_drawframe(int w, int h, float curfps)
 	    (int)player1.pitch, (float)fov, w, h);
 	finishstrips();
 
-	setupworld();
+	gl_setupworld();
 
 	renderstripssky();
 

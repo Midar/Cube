@@ -30,8 +30,8 @@ initEntities()
 }
 
 static void
-renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame /* = 0*/,
-    int numf /* = 1*/, int basetime /* = 0*/, float speed /* = 10.0f*/)
+renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame, int numf,
+    int basetime, float speed)
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f,
 	    OFMakeVector3D(e.x, z + S(e.x, e.y)->floor, e.y), yaw, 0, false,

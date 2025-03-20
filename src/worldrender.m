@@ -7,8 +7,8 @@
 #import "DynamicEntity.h"
 
 void
-render_wall(sqr *o, sqr *s, int x1, int y1, int x2, int y2, int mip, sqr *d1,
-    sqr *d2, bool topleft)
+render_wall(struct sqr *o, struct sqr *s, int x1, int y1, int x2, int y2,
+    int mip, struct sqr *d1, struct sqr *d2, bool topleft)
 {
 	if (SOLID(o) || o->type == SEMISOLID) {
 		float c1 = s->floor;
@@ -83,7 +83,7 @@ issemi(int mip, int x, int y, int x1, int y1, int x2, int y2)
 {
 	if (!(mip--))
 		return true;
-	sqr *w = wmip[mip];
+	struct sqr *w = wmip[mip];
 	int msize = ssize >> mip;
 	x *= 2;
 	y *= 2;
@@ -121,7 +121,7 @@ void
 render_seg_new(
     float vx, float vy, float vh, int mip, int x, int y, int xs, int ys)
 {
-	sqr *w = wmip[mip];
+	struct sqr *w = wmip[mip];
 	int sz = ssize >> mip;
 	int vxx = ((int)vx + (1 << mip) / 2) >> mip;
 	int vyy = ((int)vy + (1 << mip) / 2) >> mip;
@@ -164,21 +164,21 @@ render_seg_new(
 	{                                                              \
 		for (int xx = x; xx < xs; xx++)                        \
 			for (int yy = y; yy < ys; yy++) {              \
-				sqr *s = SWS(w, xx, yy, sz);           \
+				struct sqr *s = SWS(w, xx, yy, sz);    \
 				if (s->occluded == 1)                  \
 					continue;                      \
 				if (s->defer && !s->occluded && mip && \
 				    xx >= lx && xx < rx && yy >= ly && \
 				    yy < ry)
-#define LOOPD                      \
-	sqr *t = SWS(s, 1, 0, sz); \
-	sqr *u = SWS(s, 1, 1, sz); \
-	sqr *v = SWS(s, 0, 1, sz);
+#define LOOPD                             \
+	struct sqr *t = SWS(s, 1, 0, sz); \
+	struct sqr *u = SWS(s, 1, 1, sz); \
+	struct sqr *v = SWS(s, 0, 1, sz);
 
 	LOOPH // ceils
 	{
 		int start = yy;
-		sqr *next;
+		struct sqr *next;
 		while (yy < ys - 1 && (next = SWS(w, xx, yy + 1, sz))->defer &&
 		    !next->occluded)
 			yy++; // collect 2xN rect of lower mip
@@ -221,15 +221,15 @@ LOOPD
 // zSt
 //  vu
 
-sqr *w = SWS(s, 0, -1, sz);
-sqr *z = SWS(s, -1, 0, sz);
+struct sqr *w = SWS(s, 0, -1, sz);
+struct sqr *z = SWS(s, -1, 0, sz);
 bool normalwall = true;
 
 if (s->type == CORNER) {
 	// cull also
 	bool topleft = true;
-	sqr *h1 = NULL;
-	sqr *h2 = NULL;
+	struct sqr *h1 = NULL;
+	struct sqr *h2 = NULL;
 	if (SOLID(z)) {
 		if (SOLID(w)) {
 			render_wall(w, h2 = s, xx + 1, yy, xx, yy + 1, mip, t,
@@ -299,16 +299,16 @@ if (normalwall) {
 }
 }
 
-void
-distlod(int &low, int &high, int angle, float widef)
+static void
+distlod(int *low, int *high, int angle, float widef)
 {
 	float f = 90.0f / lod / widef;
-	low = (int)((90 - angle) / f);
-	high = (int)(angle / f);
-	if (low < min_lod)
-		low = min_lod;
-	if (high < min_lod)
-		high = min_lod;
+	*low = (int)((90 - angle) / f);
+	*high = (int)(angle / f);
+	if (*low < min_lod)
+		*low = min_lod;
+	if (*high < min_lod)
+		*high = min_lod;
 }
 
 // does some out of date view frustrum optimisation that doesn't contribute much
@@ -334,17 +334,17 @@ render_world(
 	lodtop = lodbot = lodleft = lodright = min_lod;
 	if (yaw > 45 && yaw <= 135) {
 		lodleft = lod;
-		distlod(lodtop, lodbot, yaw - 45, widef);
+		distlod(&lodtop, &lodbot, yaw - 45, widef);
 	} else if (yaw > 135 && yaw <= 225) {
 		lodbot = lod;
-		distlod(lodleft, lodright, yaw - 135, widef);
+		distlod(&lodleft, &lodright, yaw - 135, widef);
 	} else if (yaw > 225 && yaw <= 315) {
 		lodright = lod;
-		distlod(lodbot, lodtop, yaw - 225, widef);
+		distlod(&lodbot, &lodtop, yaw - 225, widef);
 	} else {
 		lodtop = lod;
-		distlod(
-		    lodright, lodleft, yaw <= 45 ? yaw + 45 : yaw - 315, widef);
+		distlod(&lodright, &lodleft, yaw <= 45 ? yaw + 45 : yaw - 315,
+		    widef);
 	}
 	float hyfov = fov * h / w / 2;
 	render_floor = pitch < hyfov;

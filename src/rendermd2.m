@@ -108,7 +108,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 	OFVector3D light = OFMakeVector3D(1, 1, 1);
 
 	if (!OUTBORD(ix, iy)) {
-		sqr *s = S(ix, iy);
+		struct sqr *s = S(ix, iy);
 		float ll = 256.0f; // 0.96f;
 		float of = 0.0f;   // 0.1f;
 		light.x = s->r / ll + of;

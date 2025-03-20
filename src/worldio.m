@@ -53,7 +53,7 @@ setnames(OFString *name)
 // to reduce the amount spend in the mipmapper (as that is done in realtime).
 
 inline bool
-nhf(sqr *s)
+nhf(struct sqr *s)
 {
 	return s->type != FHF && s->type != CHF;
 }
@@ -63,7 +63,7 @@ voptimize() // reset vdeltas on non-hf cubes
 {
 	loop(x, ssize) loop(y, ssize)
 	{
-		sqr *s = S(x, y);
+		struct sqr *s = S(x, y);
 		if (x && y) {
 			if (nhf(s) && nhf(S(x - 1, y)) &&
 			    nhf(S(x - 1, y - 1)) && nhf(S(x, y - 1)))
@@ -73,34 +73,34 @@ voptimize() // reset vdeltas on non-hf cubes
 	}
 }
 
-void
-topt(sqr *s, bool &wf, bool &uf, int &wt, int &ut)
+static void
+topt(struct sqr *s, bool *wf, bool *uf, int *wt, int *ut)
 {
-	sqr *o[4];
+	struct sqr *o[4];
 	o[0] = SWS(s, 0, -1, ssize);
 	o[1] = SWS(s, 0, 1, ssize);
 	o[2] = SWS(s, 1, 0, ssize);
 	o[3] = SWS(s, -1, 0, ssize);
-	wf = true;
-	uf = true;
+	*wf = true;
+	*uf = true;
 	if (SOLID(s)) {
 		loopi(4) if (!SOLID(o[i]))
 		{
-			wf = false;
-			wt = s->wtex;
-			ut = s->utex;
+			*wf = false;
+			*wt = s->wtex;
+			*ut = s->utex;
 			return;
 		}
 	} else {
 		loopi(4) if (!SOLID(o[i]))
 		{
 			if (o[i]->floor < s->floor) {
-				wt = s->wtex;
-				wf = false;
+				*wt = s->wtex;
+				*wf = false;
 			}
 			if (o[i]->ceil > s->ceil) {
-				ut = s->utex;
-				uf = false;
+				*ut = s->utex;
+				*uf = false;
 			}
 		}
 	}
@@ -110,18 +110,18 @@ void
 toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 {
 	bool wf[4], uf[4];
-	sqr *s[4];
+	struct sqr *s[4];
 	for (int x = 2; x < ssize - 4; x += 2) {
 		for (int y = 2; y < ssize - 4; y += 2) {
 			s[0] = S(x, y);
 			int wt = s[0]->wtex, ut = s[0]->utex;
-			topt(s[0], wf[0], uf[0], wt, ut);
-			topt(s[1] = SWS(s[0], 0, 1, ssize), wf[1], uf[1], wt,
-			    ut);
-			topt(s[2] = SWS(s[0], 1, 1, ssize), wf[2], uf[2], wt,
-			    ut);
-			topt(s[3] = SWS(s[0], 1, 0, ssize), wf[3], uf[3], wt,
-			    ut);
+			topt(s[0], &wf[0], &uf[0], &wt, &ut);
+			topt(s[1] = SWS(s[0], 0, 1, ssize), &wf[1], &uf[1], &wt,
+			    &ut);
+			topt(s[2] = SWS(s[0], 1, 1, ssize), &wf[2], &uf[2], &wt,
+			    &ut);
+			topt(s[3] = SWS(s[0], 1, 0, ssize), &wf[3], &uf[3], &wt,
+			    &ut);
 			loopi(4)
 			{
 				if (wf[i])
@@ -185,19 +185,19 @@ save_world(OFString *mname)
 	for (Entity *e in ents)
 		if (e.type != NOTUSED)
 			hdr.numents++;
-	header tmp = hdr;
+	struct header tmp = hdr;
 	endianswap(&tmp.version, sizeof(int), 4);
 	endianswap(&tmp.waterlevel, sizeof(int), 16);
-	gzwrite(f, &tmp, sizeof(header));
+	gzwrite(f, &tmp, sizeof(struct header));
 	for (Entity *e in ents) {
 		if (e.type != NOTUSED) {
 			struct persistent_entity tmp = { e.x, e.y, e.z, e.attr1,
 				e.type, e.attr2, e.attr3, e.attr4 };
 			endianswap(&tmp, sizeof(short), 4);
-			gzwrite(f, &tmp, sizeof(persistent_entity));
+			gzwrite(f, &tmp, sizeof(struct persistent_entity));
 		}
 	}
-	sqr *t = NULL;
+	struct sqr *t = NULL;
 	int sc = 0;
 #define spurge                          \
 	while (sc) {                    \
@@ -212,7 +212,7 @@ save_world(OFString *mname)
 	}
 	loopk(cubicsize)
 	{
-		sqr *s = &world[k];
+		struct sqr *s = &world[k];
 #define c(f) (s->f == t->f)
 		// 4 types of blocks, to compress a bit:
 		// 255 (2): same as previous block + count
@@ -270,7 +270,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 		conoutf(@"could not read map %@", cgzname);
 		return;
 	}
-	gzread(f, &hdr, sizeof(header) - sizeof(int) * 16);
+	gzread(f, &hdr, sizeof(struct header) - sizeof(int) * 16);
 	endianswap(&hdr.version, sizeof(int), 4);
 	if (strncmp(hdr.head, "CUBE", 4) != 0)
 		fatal(@"while reading map: header malformatted");
@@ -288,7 +288,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	loopi(hdr.numents)
 	{
 		struct persistent_entity tmp;
-		gzread(f, &tmp, sizeof(persistent_entity));
+		gzread(f, &tmp, sizeof(struct persistent_entity));
 		endianswap(&tmp, sizeof(short), 4);
 
 		Entity *e = [Entity entity];
@@ -313,22 +313,22 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	setupworld(hdr.sfactor);
 	char texuse[256];
 	loopi(256) texuse[i] = 0;
-	sqr *t = NULL;
+	struct sqr *t = NULL;
 	loopk(cubicsize)
 	{
-		sqr *s = &world[k];
+		struct sqr *s = &world[k];
 		int type = gzgetc(f);
 		switch (type) {
 		case 255: {
 			int n = gzgetc(f);
 			for (int i = 0; i < n; i++, k++)
-				memcpy(&world[k], t, sizeof(sqr));
+				memcpy(&world[k], t, sizeof(struct sqr));
 			k--;
 			break;
 		}
 		case 254: // only in MAPVERSION<=2
 		{
-			memcpy(s, t, sizeof(sqr));
+			memcpy(s, t, sizeof(struct sqr));
 			s->r = s->g = s->b = gzgetc(f);
 			gzgetc(f);
 			break;
@@ -382,7 +382,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	calclight();
 	settagareas();
 	int xs, ys;
-	loopi(256) if (texuse) lookuptexture(i, &xs, &ys);
+	loopi(256) if (texuse[i]) lookuptexture(i, &xs, &ys);
 	conoutf(@"read map %@ (%d milliseconds)", cgzname,
 	    SDL_GetTicks() - lastmillis);
 	conoutf(@"%s", hdr.maptitle);
