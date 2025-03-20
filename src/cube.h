@@ -10,6 +10,7 @@
 
 #define _MAXDEFSTR 260
 
+@class Entity;
 @class DynamicEntity;
 
 @interface Cube: OFObject <OFApplicationDelegate>
@@ -74,18 +75,6 @@ enum {
 	CARROT,   // attr1 = tag, attr2 = type
 	JUMPPAD,  // attr1 = zpush, attr2 = ypush, attr3 = xpush
 	MAXENTTYPES
-};
-
-// map entity
-struct persistent_entity {
-	short x, y, z; // cube aligned position
-	short attr1;
-	uchar type; // type is one of the above
-	uchar attr2, attr3, attr4;
-};
-
-struct entity: public persistent_entity {
-	bool spawned; // the only dynamic state of a map entity
 };
 
 #define MAPVERSION 5 // bump if map format changes, see worldio.cpp
@@ -264,7 +253,7 @@ extern DynamicEntity *player1;
 // all the other clients (in multiplayer)
 extern OFMutableArray *players;
 extern bool editmode;
-extern vector<entity> ents; // map entities
+extern OFMutableArray<Entity *> *ents; // map entities
 extern OFVector3D worldpos; // current target of the crosshair in the world
 extern int lastmillis;      // last time
 extern int curtime;         // current frame time

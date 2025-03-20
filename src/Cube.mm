@@ -94,6 +94,7 @@ VARP(minmillis, 0, 5, 1000);
 		if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 			fatal(@"Unable to initialize SDL");
 
+		initEntities();
 		initPlayers();
 
 		log(@"net");

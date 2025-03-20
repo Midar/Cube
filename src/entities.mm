@@ -3,9 +3,10 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 #import "MapModelInfo.h"
 
-vector<entity> ents;
+OFMutableArray<Entity *> *ents;
 
 static OFString *entmdlnames[] = {
 	@"shells",
@@ -23,7 +24,13 @@ static OFString *entmdlnames[] = {
 int triggertime = 0;
 
 void
-renderent(entity &e, OFString *mdlname, float z, float yaw, int frame = 0,
+initEntities()
+{
+	ents = [[OFMutableArray alloc] init];
+}
+
+void
+renderent(Entity *e, OFString *mdlname, float z, float yaw, int frame = 0,
     int numf = 1, int basetime = 0, float speed = 10.0f)
 {
 	rendermodel(mdlname, frame, numf, 0, 1.1f,
@@ -36,9 +43,8 @@ renderentities()
 {
 	if (lastmillis > triggertime + 1000)
 		triggertime = 0;
-	loopv(ents)
-	{
-		entity &e = ents[i];
+
+	for (Entity *e in ents) {
 		if (e.type == MAPMODEL) {
 			MapModelInfo *mmi = getmminfo(e.attr2);
 			if (mmi == nil)
@@ -299,21 +305,24 @@ checkitems()
 {
 	if (editmode)
 		return;
-	loopv(ents)
-	{
-		entity &e = ents[i];
+
+	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
 		if (e.type == NOTUSED)
-			continue;
-		if (!ents[i].spawned && e.type != TELEPORT && e.type != JUMPPAD)
-			continue;
+			return;
+
+		if (!e.spawned && e.type != TELEPORT && e.type != JUMPPAD)
+			return;
+
 		if (OUTBORD(e.x, e.y))
-			continue;
+			return;
+
 		OFVector3D v = OFMakeVector3D(
 		    e.x, e.y, (float)S(e.x, e.y)->floor + player1.eyeheight);
 		vdist(dist, t, player1.o, v);
+
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);
-	}
+	}];
 }
 
 void
@@ -329,22 +338,24 @@ checkquad(int time)
 void
 putitems(uchar *&p) // puts items in network stream and also spawns them locally
 {
-	loopv(ents) if ((ents[i].type >= I_SHELLS && ents[i].type <= I_QUAD) ||
-	    ents[i].type == CARROT)
-	{
-		putint(p, i);
-		ents[i].spawned = true;
-	}
+	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+		if ((e.type >= I_SHELLS && e.type <= I_QUAD) ||
+		    e.type == CARROT) {
+			putint(p, i);
+			e.spawned = true;
+		}
+	}];
 }
 
 void
 resetspawns()
 {
-	loopv(ents) ents[i].spawned = false;
+	for (Entity *e in ents)
+		e.spawned = false;
 }
 void
 setspawn(uint i, bool on)
 {
-	if (i < (uint)ents.length())
+	if (i < (uint)ents.count)
 		ents[i].spawned = on;
 }

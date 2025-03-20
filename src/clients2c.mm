@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 
 extern int clientnum;
 extern bool c2sinit, senditemstoserver;
@@ -280,7 +281,7 @@ localservertoclient(uchar *buf, int len)
 		case SV_ITEMSPAWN: {
 			uint i = getint(p);
 			setspawn(i, true);
-			if (i >= (uint)ents.length())
+			if (i >= (uint)ents.count)
 				break;
 			OFVector3D v =
 			    OFMakeVector3D(ents[i].x, ents[i].y, ents[i].z);
@@ -328,8 +329,13 @@ localservertoclient(uchar *buf, int len)
 		case SV_EDITENT: // coop edit of ent
 		{
 			uint i = getint(p);
-			while ((uint)ents.length() <= i)
-				ents.add().type = NOTUSED;
+
+			while ((uint)ents.count <= i) {
+				Entity *e = [Entity entity];
+				e.type = NOTUSED;
+				[ents addObject:e];
+			}
+
 			int to = ents[i].type;
 			ents[i].type = getint(p);
 			ents[i].x = getint(p);

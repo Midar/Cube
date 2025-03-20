@@ -4,6 +4,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 
 #ifdef OF_BIG_ENDIAN
 static const int islittleendian = 0;
@@ -109,8 +110,9 @@ savestate(OFIRI *IRI)
 	    min(getclientmap().UTF8StringLength, _MAXDEFSTR - 1));
 	gzwrite(f, map, _MAXDEFSTR);
 	gzputi(gamemode);
-	gzputi(ents.length());
-	loopv(ents) gzputc(f, ents[i].spawned);
+	gzputi(ents.count);
+	for (Entity *e in ents)
+		gzputc(f, e.spawned);
 	gzwrite(f, data.items, data.count);
 	OFArray<DynamicEntity *> *monsters = getmonsters();
 	gzputi(monsters.count);
@@ -205,14 +207,16 @@ loadgamerest()
 	if (demoplayback || !f)
 		return;
 
-	if (gzgeti() != ents.length())
+	if (gzgeti() != ents.count)
 		return loadgameout();
-	loopv(ents)
-	{
-		ents[i].spawned = gzgetc(f) != 0;
-		if (ents[i].type == CARROT && !ents[i].spawned)
-			trigger(ents[i].attr1, ents[i].attr2, true);
+
+	for (Entity *e in ents) {
+		e.spawned = (gzgetc(f) != 0);
+
+		if (e.type == CARROT && !e.spawned)
+			trigger(e.attr1, e.attr2, true);
 	}
+
 	restoreserverstate(ents);
 
 	OFMutableData *data =

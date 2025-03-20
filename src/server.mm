@@ -4,6 +4,7 @@
 #include "cube.h"
 
 #import "Client.h"
+#import "Entity.h"
 
 enum { ST_EMPTY, ST_LOCAL, ST_TCPIP };
 
@@ -24,9 +25,9 @@ vector<server_entity> sents;
 bool notgotitems = true;
 int mode = 0;
 
+// hack: called from savegame code, only works in SP
 void
-restoreserverstate(
-    vector<entity> &ents) // hack: called from savegame code, only works in SP
+restoreserverstate(OFArray<Entity *> *ents)
 {
 	loopv(sents)
 	{

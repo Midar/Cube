@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 
 static OFMutableArray<DynamicEntity *> *monsters;
 static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
@@ -121,11 +122,14 @@ monsterclear()
 		monstertotal = spawnremain = gamemode < 0 ? skill * 10 : 0;
 	} else if (m_classicsp) {
 		mtimestart = lastmillis;
-		loopv(ents) if (ents[i].type == MONSTER)
-		{
-			DynamicEntity *m = basicmonster(
-			    ents[i].attr2, ents[i].attr1, M_SLEEP, 100, 0);
-			m.o = OFMakeVector3D(ents[i].x, ents[i].y, ents[i].z);
+
+		for (Entity *e in ents) {
+			if (e.type != MONSTER)
+				continue;
+
+			DynamicEntity *m =
+			    basicmonster(e.attr2, e.attr1, M_SLEEP, 100, 0);
+			m.o = OFMakeVector3D(e.x, e.y, e.z);
 			entinmap(m);
 			monstertotal++;
 		}
@@ -377,13 +381,13 @@ monsterthink()
 		endsp(true);
 
 	// equivalent of player entity touch, but only teleports are used
-	loopv(ents)
-	{
-		entity &e = ents[i];
+	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
 		if (e.type != TELEPORT)
-			continue;
+			return;
+
 		if (OUTBORD(e.x, e.y))
-			continue;
+			return;
+
 		OFVector3D v =
 		    OFMakeVector3D(e.x, e.y, (float)S(e.x, e.y)->floor);
 		for (DynamicEntity *monster in monsters) {
@@ -396,11 +400,12 @@ monsterthink()
 				v.z += monster.eyeheight;
 				vdist(dist, t, monster.o, v);
 				v.z -= monster.eyeheight;
+
 				if (dist < 4)
-					teleport((int)(&e - &ents[0]), monster);
+					teleport(i, monster);
 			}
 		}
-	}
+	}];
 
 	for (DynamicEntity *monster in monsters)
 		if (monster.state == CS_ALIVE)

@@ -2,6 +2,15 @@
 
 #include "cube.h"
 
+#import "Entity.h"
+
+struct persistent_entity {
+	short x, y, z; // cube aligned position
+	short attr1;
+	uchar type; // type is one of the above
+	uchar attr2, attr3, attr4;
+};
+
 void
 backup(OFString *name, OFString *backupname)
 {
@@ -173,15 +182,17 @@ save_world(OFString *mname)
 	}
 	hdr.version = MAPVERSION;
 	hdr.numents = 0;
-	loopv(ents) if (ents[i].type != NOTUSED) hdr.numents++;
+	for (Entity *e in ents)
+		if (e.type != NOTUSED)
+			hdr.numents++;
 	header tmp = hdr;
 	endianswap(&tmp.version, sizeof(int), 4);
 	endianswap(&tmp.waterlevel, sizeof(int), 16);
 	gzwrite(f, &tmp, sizeof(header));
-	loopv(ents)
-	{
-		if (ents[i].type != NOTUSED) {
-			entity tmp = ents[i];
+	for (Entity *e in ents) {
+		if (e.type != NOTUSED) {
+			struct persistent_entity tmp = { e.x, e.y, e.z, e.attr1,
+				e.type, e.attr2, e.attr3, e.attr4 };
 			endianswap(&tmp, sizeof(short), 4);
 			gzwrite(f, &tmp, sizeof(persistent_entity));
 		}
@@ -273,13 +284,24 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	} else {
 		hdr.waterlevel = -100000;
 	}
-	ents.setsize(0);
+	[ents removeAllObjects];
 	loopi(hdr.numents)
 	{
-		entity &e = ents.add();
-		gzread(f, &e, sizeof(persistent_entity));
-		endianswap(&e, sizeof(short), 4);
-		e.spawned = false;
+		struct persistent_entity tmp;
+		gzread(f, &tmp, sizeof(persistent_entity));
+		endianswap(&tmp, sizeof(short), 4);
+
+		Entity *e = [Entity entity];
+		e.x = tmp.x;
+		e.y = tmp.y;
+		e.z = tmp.z;
+		e.attr1 = tmp.attr1;
+		e.type = tmp.type;
+		e.attr2 = tmp.attr2;
+		e.attr3 = tmp.attr3;
+		e.attr4 = tmp.attr4;
+		[ents addObject:e];
+
 		if (e.type == LIGHT) {
 			if (!e.attr2)
 				e.attr2 = 255; // needed for MAPVERSION<=2

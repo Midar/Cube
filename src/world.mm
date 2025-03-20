@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 
 extern OFString *entnames[]; // lookup from map entities above to strings
 
@@ -53,7 +54,11 @@ void
 settagareas()
 {
 	settag(0, 1);
-	loopv(ents) if (ents[i].type == CARROT) setspawn(i, true);
+
+	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+		if (ents[i].type == CARROT)
+			setspawn(i, true);
+	}];
 } // set for playing
 
 void
@@ -256,21 +261,22 @@ closestent() // used for delent and edit mode ent display
 {
 	if (noteditmode())
 		return -1;
-	int best;
-	float bdist = 99999;
-	loopv(ents)
-	{
-		entity &e = ents[i];
+
+	__block int best;
+	__block float bdist = 99999;
+	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
 		if (e.type == NOTUSED)
-			continue;
+			return;
+
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
 		vdist(dist, t, player1.o, v);
 		if (dist < bdist) {
 			best = i;
 			bdist = dist;
 		}
-	}
-	return bdist == 99999 ? -1 : best;
+	}];
+
+	return (bdist == 99999 ? -1 : best);
 }
 
 void
@@ -319,12 +325,21 @@ findtype(OFString *what)
 	return NOTUSED;
 }
 
-entity *
+Entity *
 newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 {
 	int type = findtype(what);
-	persistent_entity e = { (short)x, (short)y, (short)z, (short)v1,
-		(uchar)type, (uchar)v2, (uchar)v3, (uchar)v4 };
+
+	PersistentEntity *e = [PersistentEntity entity];
+	e.x = x;
+	e.y = y;
+	e.z = z;
+	e.attr1 = v1;
+	e.type = type;
+	e.attr2 = v2;
+	e.attr3 = v3;
+	e.attr4 = v4;
+
 	switch (type) {
 	case LIGHT:
 		if (v1 > 32)
@@ -345,59 +360,63 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 		e.attr1 = (int)player1.yaw;
 		break;
 	}
-	addmsg(1, 10, SV_EDITENT, ents.length(), type, e.x, e.y, e.z, e.attr1,
+	addmsg(1, 10, SV_EDITENT, ents.count, type, e.x, e.y, e.z, e.attr1,
 	    e.attr2, e.attr3, e.attr4);
-	ents.add(*((entity *)&e)); // unsafe!
+
+	[ents addObject:e]; // unsafe!
+
 	if (type == LIGHT)
 		calclight();
-	return &ents.last();
+
+	return e;
 }
 
 void
 clearents(OFString *name)
 {
 	int type = findtype(name);
+
 	if (noteditmode() || multiplayer())
 		return;
-	loopv(ents)
-	{
-		entity &e = ents[i];
+
+	for (Entity *e in ents)
 		if (e.type == type)
 			e.type = NOTUSED;
-	}
+
 	if (type == LIGHT)
 		calclight();
 }
 COMMAND(clearents, ARG_1STR)
 
-void
-scalecomp(uchar &c, int intens)
+static uchar
+scalecomp(uchar c, int intens)
 {
 	int n = c * intens / 100;
 	if (n > 255)
 		n = 255;
-	c = n;
+	return n;
 }
 
 void
 scalelights(int f, int intens)
 {
-	loopv(ents)
-	{
-		entity &e = ents[i];
+	for (Entity *e in ents) {
 		if (e.type != LIGHT)
 			continue;
+
 		e.attr1 = e.attr1 * f / 100;
 		if (e.attr1 < 2)
 			e.attr1 = 2;
 		if (e.attr1 > 32)
 			e.attr1 = 32;
+
 		if (intens) {
-			scalecomp(e.attr2, intens);
-			scalecomp(e.attr3, intens);
-			scalecomp(e.attr4, intens);
+			e.attr2 = scalecomp(e.attr2, intens);
+			e.attr3 = scalecomp(e.attr3, intens);
+			e.attr4 = scalecomp(e.attr4, intens);
 		}
 	}
+
 	calclight();
 }
 COMMAND(scalelights, ARG_2INT)
@@ -405,7 +424,7 @@ COMMAND(scalelights, ARG_2INT)
 int
 findentity(int type, int index)
 {
-	for (int i = index; i < ents.length(); i++)
+	for (int i = index; i < ents.count; i++)
 		if (ents[i].type == type)
 			return i;
 	loopj(index) if (ents[j].type == type) return j;
@@ -474,10 +493,10 @@ empty_world(int factor, bool force)
 			*S(x + ssize / 4, y + ssize / 4) =
 			    *SWS(oldworld, x, y, ssize / 2);
 		}
-		loopv(ents)
-		{
-			ents[i].x += ssize / 4;
-			ents[i].y += ssize / 4;
+
+		for (Entity *e in ents) {
+			e.x += ssize / 4;
+			e.y += ssize / 4;
 		}
 	} else {
 		char buffer[128] = "Untitled Map by Unknown";
@@ -485,7 +504,7 @@ empty_world(int factor, bool force)
 		hdr.waterlevel = -100000;
 		loopi(15) hdr.reserved[i] = 0;
 		loopk(3) loopi(256) hdr.texlists[k][i] = i;
-		ents.setsize(0);
+		[ents removeAllObjects];
 		block b = { 8, 8, ssize - 16, ssize - 16 };
 		edittypexy(SPACE, b);
 	}

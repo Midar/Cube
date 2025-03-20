@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 #import "OFString+Cube.h"
 
 int nextmode = 0; // nextmode becomes gamemode after next map load

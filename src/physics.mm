@@ -7,6 +7,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 #import "MapModelInfo.h"
 
 // collide with player or monster
@@ -58,18 +59,19 @@ cornertest(int mip, int x, int y, int dx, int dy, int &bx, int &by,
 void
 mmcollide(DynamicEntity *d, float &hi, float &lo) // collide with a mapmodel
 {
-	loopv(ents)
-	{
-		entity &e = ents[i];
+	for (Entity *e in ents) {
 		if (e.type != MAPMODEL)
 			continue;
+
 		MapModelInfo *mmi = getmminfo(e.attr2);
 		if (mmi == nil || !mmi.h)
 			continue;
+
 		const float r = mmi.rad + d.radius;
 		if (fabs(e.x - d.o.x) < r && fabs(e.y - d.o.y) < r) {
 			float mmz =
 			    (float)(S(e.x, e.y)->floor + mmi.zoff + e.attr3);
+
 			if (d.o.z - d.eyeheight < mmz) {
 				if (mmz < hi)
 					hi = mmz;

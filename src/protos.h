@@ -121,7 +121,7 @@ extern int findentity(int type, int index = 0);
 extern void trigger(int tag, int type, bool savegame);
 extern void resettagareas();
 extern void settagareas();
-extern entity *newentity(
+extern Entity *newentity(
     int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4);
 
 // worldlight
@@ -227,7 +227,7 @@ extern void putint(uchar *&p, int n);
 extern int getint(uchar *&p);
 extern void sendstring(OFString *t, uchar *&p);
 extern void startintermission();
-extern void restoreserverstate(vector<entity> &ents);
+extern void restoreserverstate(OFArray<Entity *> *ents);
 extern uchar *retrieveservers(uchar *buf, int buflen);
 extern char msgsizelookup(int msg);
 extern void serverms(int mode, int numplayers, int minremain,
@@ -257,6 +257,7 @@ extern void monsterpain(DynamicEntity *m, int damage, DynamicEntity *d);
 extern void endsp(bool allkilled);
 
 // entities
+extern void initEntities();
 extern void renderents();
 extern void putitems(uchar *&p);
 extern void checkquad(int time);

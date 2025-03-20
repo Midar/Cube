@@ -3,14 +3,16 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
+#import "PersistentEntity.h"
 
 extern bool hasoverbright;
 
 VAR(lightscale, 1, 4, 100);
 
+// done in realtime, needs to be fast
 void
-lightray(float bx, float by,
-    persistent_entity &light) // done in realtime, needs to be fast
+lightray(float bx, float by, PersistentEntity *light)
 {
 	float lx = light.x + (rnd(21) - 10) * 0.1f;
 	float ly = light.y + (rnd(21) - 10) * 0.1f;
@@ -121,7 +123,7 @@ lightray(float bx, float by,
 }
 
 void
-calclightsource(persistent_entity &l)
+calclightsource(PersistentEntity *l)
 {
 	int reach = l.attr1;
 	int sx = l.x - reach;
@@ -175,12 +177,9 @@ calclight()
 		s->r = s->g = s->b = 10;
 	}
 
-	loopv(ents)
-	{
-		entity &e = ents[i];
+	for (Entity *e in ents)
 		if (e.type == LIGHT)
 			calclightsource(e);
-	}
 
 	block b = { 1, 1, ssize - 2, ssize - 2 };
 	postlightarea(b);
@@ -236,8 +235,13 @@ dodynlight(const OFVector3D &vold, const OFVector3D &v, int reach, int strength,
 	block *copy = blockcopy(b);
 	[dlights addItem:&copy];
 
-	persistent_entity l = { (short)v.x, (short)v.y, (short)v.z,
-		(short)reach, LIGHT, (uchar)strength, 0, 0 };
+	PersistentEntity *l = [Entity entity];
+	l.x = v.x;
+	l.y = v.y;
+	l.z = v.z;
+	l.attr1 = reach;
+	l.type = LIGHT;
+	l.attr2 = strength;
 	calclightsource(l);
 	postlightarea(b);
 }

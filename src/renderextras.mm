@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Entity.h"
 
 void
 line(int x1, int y1, float z1, int x2, int y2, float z2)
@@ -175,23 +176,26 @@ OFString *entnames[] = {
 	@"?",
 };
 
+// show sparkly thingies for map entities in edit mode
 void
-renderents() // show sparkly thingies for map entities in edit mode
+renderents()
 {
 	closeent = @"";
+
 	if (!editmode)
 		return;
-	loopv(ents)
-	{
-		entity &e = ents[i];
+
+	for (Entity *e in ents) {
 		if (e.type == NOTUSED)
 			continue;
+
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
 		particle_splash(2, 2, 40, v);
 	}
+
 	int e = closestent();
 	if (e >= 0) {
-		entity &c = ents[e];
+		Entity *c = ents[e];
 		closeent =
 		    [OFString stringWithFormat:@"closest entity = %@ (%d, %d, "
 		                               @"%d, %d), selection = (%d, %d)",
