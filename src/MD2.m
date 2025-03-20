@@ -21,7 +21,7 @@ struct md2_frame {
 	float scale[3];
 	float translate[3];
 	char name[16];
-	md2_vertex vertices[1];
+	struct md2_vertex vertices[1];
 };
 
 static float
@@ -51,10 +51,14 @@ snap(int sn, float f)
 
 - (void)dealloc
 {
-	if (_glCommands)
-		delete[] _glCommands;
-	if (_frames)
-		delete[] _frames;
+	OFFreeMemory(_glCommands);
+	OFFreeMemory(_frames);
+
+	if (_mverts != NULL)
+		for (size_t i = 0; i < _numFrames; i++)
+			OFFreeMemory(_mverts[i]);
+
+	OFFreeMemory(_mverts);
 }
 
 - (bool)loadWithIRI:(OFIRI *)IRI
@@ -71,16 +75,18 @@ snap(int sn, float f)
 	if (![stream isKindOfClass:OFSeekableStream.class])
 		return false;
 
-	md2_header header;
-	[stream readIntoBuffer:&header exactLength:sizeof(md2_header)];
-	endianswap(&header, sizeof(int), sizeof(md2_header) / sizeof(int));
+	struct md2_header header;
+	[stream readIntoBuffer:&header exactLength:sizeof(header)];
+	endianswap(&header, sizeof(int), sizeof(header) / sizeof(int));
 
 	if (header.magic != 844121161 || header.version != 8)
 		return false;
 
-	_frames = new char[header.frameSize * header.numFrames];
-	if (_frames == NULL)
+	@try {
+		_frames = OFAllocMemory(header.numFrames, header.frameSize);
+	} @catch (OFOutOfMemoryException *e) {
 		return false;
+	}
 
 	[stream seekToOffset:header.offsetFrames whence:OFSeekSet];
 	[stream readIntoBuffer:_frames
@@ -89,9 +95,11 @@ snap(int sn, float f)
 	for (int i = 0; i < header.numFrames; ++i)
 		endianswap(_frames + i * header.frameSize, sizeof(float), 6);
 
-	_glCommands = new int[header.numGlCommands];
-	if (_glCommands == NULL)
+	@try {
+		_glCommands = OFAllocMemory(header.numGlCommands, sizeof(int));
+	} @catch (OFOutOfMemoryException *e) {
 		return false;
+	}
 
 	[stream seekToOffset:header.offsetGlCommands whence:OFSeekSet];
 	[stream readIntoBuffer:_glCommands
@@ -106,16 +114,18 @@ snap(int sn, float f)
 
 	[stream close];
 
-	_mverts = new OFVector3D *[_numFrames];
-	loopj(_numFrames) _mverts[j] = NULL;
+	_mverts = OFAllocZeroedMemory(_numFrames, sizeof(OFVector3D *));
 
 	return true;
 }
 
 - (void)scaleWithFrame:(int)frame scale:(float)scale snap:(int)sn
 {
-	_mverts[frame] = new OFVector3D[_numVerts];
-	md2_frame *cf = (md2_frame *)((char *)_frames + _frameSize * frame);
+	OFAssert(_mverts[frame] == NULL);
+
+	_mverts[frame] = OFAllocMemory(_numVerts, sizeof(OFVector3D));
+	struct md2_frame *cf =
+	    (struct md2_frame *)((char *)_frames + _frameSize * frame);
 	float sc = 16.0f / scale;
 	loop(vi, _numVerts)
 	{
@@ -186,9 +196,7 @@ snap(int sn, float f)
 				float tv = *((float *)command++);
 				glTexCoord2f(tu, tv);
 				int vn = *command++;
-				OFVector3D &v1 = verts1[vn];
-				OFVector3D &v2 = verts2[vn];
-#define ip(c) v1.c *frac2 + v2.c *frac1
+#define ip(c) verts1[vn].c *frac2 + verts2[vn].c *frac1
 				glVertex3f(ip(x), ip(z), ip(y));
 			}
 

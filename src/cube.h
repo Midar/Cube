@@ -243,9 +243,12 @@ struct vertex {
 
 // globals ooh naughty
 
-extern sqr *world,
-    *wmip[];       // map data, the mips are sequential 2D arrays in memory
-extern header hdr; // current map header
+#ifdef __cplusplus
+extern "C" {
+#endif
+// map data, the mips are sequential 2D arrays in memory
+extern struct sqr *world, *wmip[];
+extern struct header hdr;      // current map header
 extern int sfactor, ssize;     // ssize = 2^sfactor
 extern int cubicsize, mipsize; // cubicsize = ssize^2
 // special client ent that receives input and acts as camera
@@ -260,6 +263,9 @@ extern int curtime;         // current frame time
 extern int gamemode, nextmode;
 extern int xtraverts;
 extern bool demoplayback;
+#ifdef __cplusplus
+}
+#endif
 
 #define DMF 16.0f
 #define DAF 1.0f

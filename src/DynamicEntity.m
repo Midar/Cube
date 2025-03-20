@@ -36,7 +36,7 @@ struct dynent {
 @implementation DynamicEntity
 + (size_t)serializedSize
 {
-	return sizeof(dynent);
+	return sizeof(struct dynent);
 }
 
 - (instancetype)init
@@ -117,7 +117,7 @@ struct dynent {
 {
 	// This is frighteningly *TERRIBLE*, but the format used by existing
 	// savegames.
-	dynent data = { .o = _o,
+	struct dynent data = { .o = _o,
 		.vel = _vel,
 		.yaw = _yaw,
 		.pitch = _pitch,
@@ -175,7 +175,7 @@ struct dynent {
 {
 	struct dynent d;
 
-	if (data.count != sizeof(dynent))
+	if (data.count != sizeof(struct dynent))
 		@throw [OFOutOfRangeException exception];
 
 	memcpy(&d, data.items, data.count);

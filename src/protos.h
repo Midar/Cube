@@ -1,5 +1,9 @@
 // protos for ALL external functions in cube...
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // command
 extern int variable(OFString *name, int min, int cur, int max, int *storage,
     void (*fun)(), bool persist);
@@ -47,22 +51,23 @@ extern void cleangl();
 extern void gl_drawframe(int w, int h, float curfps);
 extern bool installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp);
 extern void mipstats(int a, int b, int c);
-extern void vertf(float v1, float v2, float v3, sqr *ls, float t1, float t2);
+extern void vertf(
+    float v1, float v2, float v3, struct sqr *ls, float t1, float t2);
 extern void addstrip(int tex, int start, int n);
 extern int lookuptexture(int tex, int *xs, int *ys);
 
 // rendercubes
 extern void resetcubes();
-extern void render_flat(int tex, int x, int y, int size, int h, sqr *l1,
-    sqr *l2, sqr *l3, sqr *l4, bool isceil);
+extern void render_flat(int tex, int x, int y, int size, int h, struct sqr *l1,
+    struct sqr *l2, struct sqr *l3, struct sqr *l4, bool isceil);
 extern void render_flatdelta(int wtex, int x, int y, int size, float h1,
-    float h2, float h3, float h4, sqr *l1, sqr *l2, sqr *l3, sqr *l4,
-    bool isceil);
+    float h2, float h3, float h4, struct sqr *l1, struct sqr *l2,
+    struct sqr *l3, struct sqr *l4, bool isceil);
 extern void render_square(int wtex, float floor1, float floor2, float ceil1,
-    float ceil2, int x1, int y1, int x2, int y2, int size, sqr *l1, sqr *l2,
-    bool topleft);
-extern void render_tris(int x, int y, int size, bool topleft, sqr *h1, sqr *h2,
-    sqr *s, sqr *t, sqr *u, sqr *v);
+    float ceil2, int x1, int y1, int x2, int y2, int size, struct sqr *l1,
+    struct sqr *l2, bool topleft);
+extern void render_tris(int x, int y, int size, bool topleft, struct sqr *h1,
+    struct sqr *h2, struct sqr *s, struct sqr *t, struct sqr *u, struct sqr *v);
 extern void addwaterquad(int x, int y, int size);
 extern int renderwater(float hf);
 extern void finishstrips();
@@ -114,8 +119,8 @@ extern void renderscores();
 // world
 extern void setupworld(int factor);
 extern void empty_world(int factor, bool force);
-extern void remip(const block *b, int level);
-extern void remipmore(const block *b, int level);
+extern void remip(const struct block *b, int level);
+extern void remipmore(const struct block *b, int level);
 extern int closestent();
 extern int findentity(int type, int index);
 extern void trigger(int tag, int type, bool savegame);
@@ -129,8 +134,8 @@ extern void calclight();
 extern void dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach,
     int strength, DynamicEntity *owner);
 extern void cleardlights();
-extern block *blockcopy(const block *b);
-extern void blockpaste(const block *b);
+extern struct block *blockcopy(const struct block *b);
+extern void blockpaste(const struct block *b);
 
 // worldrender
 extern void render_world(float vx, float vy, float vh, int yaw, int pitch,
@@ -154,17 +159,17 @@ extern void draw_envbox(int t, int fogdist);
 extern void cursorupdate();
 extern void toggleedit();
 extern void editdrag(bool isdown);
-extern void setvdeltaxy(int delta, const block *sel);
-extern void editequalisexy(bool isfloor, const block *sel);
-extern void edittypexy(int type, const block *sel);
-extern void edittexxy(int type, int t, const block *sel);
-extern void editheightxy(bool isfloor, int amount, const block *sel);
+extern void setvdeltaxy(int delta, const struct block *sel);
+extern void editequalisexy(bool isfloor, const struct block *sel);
+extern void edittypexy(int type, const struct block *sel);
+extern void edittexxy(int type, int t, const struct block *sel);
+extern void editheightxy(bool isfloor, int amount, const struct block *sel);
 extern bool noteditmode();
 extern void pruneundos(int maxremain);
 
 // renderextras
 extern void line(int x1, int y1, float z1, int x2, int y2, float z2);
-extern void box(const block *b, float z1, float z2, float z3, float z4);
+extern void box(const struct block *b, float z1, float z2, float z3, float z4);
 extern void dot(int x, int y, float z);
 extern void linestyle(float width, int r, int g, int b);
 extern void newsphere(const OFVector3D *o, float max, int type);
@@ -270,4 +275,8 @@ extern void teleport(int n, DynamicEntity *d);
 extern void baseammo(int gun);
 
 // rndmap
-extern void perlinarea(const block *b, int scale, int seed, int psize);
+extern void perlinarea(const struct block *b, int scale, int seed, int psize);
+
+#ifdef __cplusplus
+}
+#endif

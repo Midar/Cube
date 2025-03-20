@@ -46,6 +46,12 @@ typedef unsigned int uint;
 
 #define fast_f2nat(val) ((int)(val))
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void endianswap(void *, int, int);
+#ifdef __cplusplus
+}
+#endif
 
 #endif
