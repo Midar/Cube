@@ -205,7 +205,7 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 {
 	if (!reach)
 		reach = dynlight;
-	if (owner.monsterstate)
+	if (owner.monsterState)
 		reach = reach / 2;
 	if (!reach)
 		return;

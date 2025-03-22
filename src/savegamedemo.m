@@ -224,7 +224,7 @@ loadgamerest()
 	[data increaseCountBy:DynamicEntity.serializedSize];
 	gzread(f, data.mutableItems, data.count);
 	[player1 setFromSerializedData:data];
-	player1.lastaction = lastmillis;
+	player1.lastAction = lastmillis;
 
 	int nmonsters = gzgeti();
 	OFArray<DynamicEntity *> *monsters = getmonsters();
@@ -237,9 +237,9 @@ loadgamerest()
 		// lazy, could save id of enemy instead
 		monster.enemy = player1;
 		// also lazy, but no real noticable effect on game
-		monster.lastaction = monster.trigger = lastmillis + 500;
+		monster.lastAction = monster.trigger = lastmillis + 500;
 		if (monster.state == CS_DEAD)
-			monster.lastaction = 0;
+			monster.lastAction = 0;
 	}
 	restoremonsterstate();
 
@@ -313,13 +313,13 @@ incomingdemodata(uchar *buf, int len, bool extras)
 	gzwrite(f, buf, len);
 	gzput(extras);
 	if (extras) {
-		gzput(player1.gunselect);
-		gzput(player1.lastattackgun);
-		gzputi(player1.lastaction - starttime);
-		gzputi(player1.gunwait);
+		gzput(player1.gunSelect);
+		gzput(player1.lastAttackGun);
+		gzputi(player1.lastAction - starttime);
+		gzputi(player1.gunWait);
 		gzputi(player1.health);
 		gzputi(player1.armour);
-		gzput(player1.armourtype);
+		gzput(player1.armourType);
 		loopi(NUMGUNS) gzput(player1.ammo[i]);
 		gzput(player1.state);
 		gzputi(bdamage);
@@ -440,16 +440,16 @@ demoplaybackstep()
 		// read additional client side state not present in normal
 		// network stream
 		if ((extras = gzget())) {
-			target.gunselect = gzget();
-			target.lastattackgun = gzget();
-			target.lastaction = scaletime(gzgeti());
-			target.gunwait = gzgeti();
+			target.gunSelect = gzget();
+			target.lastAttackGun = gzget();
+			target.lastAction = scaletime(gzgeti());
+			target.gunWait = gzgeti();
 			target.health = gzgeti();
 			target.armour = gzgeti();
-			target.armourtype = gzget();
+			target.armourType = gzget();
 			loopi(NUMGUNS) target.ammo[i] = gzget();
 			target.state = gzget();
-			target.lastmove = playbacktime;
+			target.lastMove = playbacktime;
 			if ((bdamage = gzgeti()))
 				damageblend(bdamage);
 			if ((ddamage = gzgeti())) {
@@ -462,9 +462,9 @@ demoplaybackstep()
 		// insert latest copy of player into history
 		if (extras &&
 		    (playerhistory.count == 0 ||
-		        playerhistory.lastObject.lastupdate != playbacktime)) {
+		        playerhistory.lastObject.lastUpdate != playbacktime)) {
 			DynamicEntity *d = [target copy];
-			d.lastupdate = playbacktime;
+			d.lastUpdate = playbacktime;
 
 			if (playerhistory == nil)
 				playerhistory = [[OFMutableArray alloc] init];
@@ -485,7 +485,7 @@ demoplaybackstep()
 	// find 2 positions in history that surround interpolation time point
 	size_t count = playerhistory.count;
 	for (ssize_t i = count - 1; i >= 0; i--) {
-		if (playerhistory[i].lastupdate < itime) {
+		if (playerhistory[i].lastUpdate < itime) {
 			DynamicEntity *a = playerhistory[i];
 			DynamicEntity *b = a;
 
@@ -503,16 +503,16 @@ demoplaybackstep()
 					z = playerhistory[i - 1];
 				// if(a==z || b==c)
 				//	printf("* %d\n", lastmillis);
-				float bf = (itime - a.lastupdate) /
-				    (float)(b.lastupdate - a.lastupdate);
+				float bf = (itime - a.lastUpdate) /
+				    (float)(b.lastUpdate - a.lastUpdate);
 				fixwrap(a, player1);
 				fixwrap(c, player1);
 				fixwrap(z, player1);
-				vdist(dist, v, z.o, c.o);
+				vdist(dist, v, z.origin, c.origin);
 				// if teleport or spawn, don't interpolate
 				if (dist < 16) {
-					catmulrom(
-					    z.o, a.o, b.o, c.o, bf, player1.o);
+					catmulrom(z.origin, a.origin, b.origin,
+					    c.origin, bf, player1.origin);
 					OFVector3D vz = OFMakeVector3D(
 					    z.yaw, z.pitch, z.roll);
 					OFVector3D va = OFMakeVector3D(

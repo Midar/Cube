@@ -232,7 +232,7 @@ VARP(minmillis, 0, 5, 1000);
 			static float fps = 30.0f;
 			fps = (1000.0f / curtime + fps * 50) / 51;
 
-			computeraytable(player1.o.x, player1.o.y);
+			computeraytable(player1.origin.x, player1.origin.y);
 			readdepth(_width, _height);
 			SDL_GL_SwapWindow(_window);
 			extern void updatevol();

@@ -38,26 +38,27 @@ void
 updatepos(DynamicEntity *d)
 {
 	const float r = player1.radius + d.radius;
-	const float dx = player1.o.x - d.o.x;
-	const float dy = player1.o.y - d.o.y;
-	const float dz = player1.o.z - d.o.z;
-	const float rz = player1.aboveeye + d.eyeheight;
+	const float dx = player1.origin.x - d.origin.x;
+	const float dy = player1.origin.y - d.origin.y;
+	const float dz = player1.origin.z - d.origin.z;
+	const float rz = player1.aboveEye + d.eyeHeight;
 	const float fx = (float)fabs(dx), fy = (float)fabs(dy),
 	            fz = (float)fabs(dz);
 	if (fx < r && fy < r && fz < rz && d.state != CS_DEAD) {
 		if (fx < fy)
 			// push aside
-			d.o = OFMakeVector3D(d.o.x,
-			    d.o.y + (dy < 0 ? r - fy : -(r - fy)), d.o.z);
+			d.origin = OFAddVector3D(d.origin,
+			    OFMakeVector3D(
+			        0, (dy < 0 ? r - fy : -(r - fy)), 0));
 		else
-			d.o = OFMakeVector3D(
-			    d.o.x + (dx < 0 ? r - fx : -(r - fx)), d.o.y,
-			    d.o.z);
+			d.origin = OFAddVector3D(d.origin,
+			    OFMakeVector3D(
+			        (dx < 0 ? r - fx : -(r - fx)), 0, 0));
 	}
-	int lagtime = lastmillis - d.lastupdate;
+	int lagtime = lastmillis - d.lastUpdate;
 	if (lagtime) {
-		d.plag = (d.plag * 5 + lagtime) / 6;
-		d.lastupdate = lastmillis;
+		d.lag = (d.lag * 5 + lagtime) / 6;
+		d.lastUpdate = lastmillis;
 	}
 }
 
@@ -118,22 +119,22 @@ localservertoclient(uchar *buf, int len)
 			tmp.x = getint(&p) / DMF;
 			tmp.y = getint(&p) / DMF;
 			tmp.z = getint(&p) / DMF;
-			d.o = tmp;
+			d.origin = tmp;
 			d.yaw = getint(&p) / DAF;
 			d.pitch = getint(&p) / DAF;
 			d.roll = getint(&p) / DAF;
 			tmp.x = getint(&p) / DVF;
 			tmp.y = getint(&p) / DVF;
 			tmp.z = getint(&p) / DVF;
-			d.vel = tmp;
+			d.velocity = tmp;
 			int f = getint(&p);
 			d.strafe = (f & 3) == 3 ? -1 : f & 3;
 			f >>= 2;
 			d.move = (f & 3) == 3 ? -1 : f & 3;
-			d.onfloor = (f >> 2) & 1;
+			d.onFloor = (f >> 2) & 1;
 			int state = f >> 3;
 			if (state == CS_DEAD && d.state != CS_DEAD)
-				d.lastaction = lastmillis;
+				d.lastAction = lastmillis;
 			d.state = state;
 			if (!demoplayback)
 				updatepos(d);
@@ -141,7 +142,7 @@ localservertoclient(uchar *buf, int len)
 		}
 
 		case SV_SOUND: {
-			OFVector3D loc = d.o;
+			OFVector3D loc = d.origin;
 			playsound(getint(&p), &loc);
 			break;
 		}
@@ -197,7 +198,7 @@ localservertoclient(uchar *buf, int len)
 			d.name = @(text);
 			sgetstr();
 			d.team = @(text);
-			d.lifesequence = getint(&p);
+			d.lifeSequence = getint(&p);
 			break;
 		}
 
@@ -230,10 +231,10 @@ localservertoclient(uchar *buf, int len)
 			int damage = getint(&p);
 			int ls = getint(&p);
 			if (target == clientnum) {
-				if (ls == player1.lifesequence)
+				if (ls == player1.lifeSequence)
 					selfdamage(damage, cn, d);
 			} else {
-				OFVector3D loc = getclient(target).o;
+				OFVector3D loc = getclient(target).origin;
 				playsound(S_PAIN1 + rnd(5), &loc);
 			}
 			break;
@@ -267,9 +268,9 @@ localservertoclient(uchar *buf, int len)
 						    a.name, d.name);
 				}
 			}
-			OFVector3D loc = d.o;
+			OFVector3D loc = d.origin;
 			playsound(S_DIE1 + rnd(2), &loc);
-			d.lifesequence++;
+			d.lifeSequence++;
 			break;
 		}
 

@@ -117,7 +117,7 @@ updatechanvol(int chan, const OFVector3D *loc)
 {
 	int vol = soundvol, pan = 255 / 2;
 	if (loc) {
-		vdist(dist, v, *loc, player1.o);
+		vdist(dist, v, *loc, player1.origin);
 		vol -= (int)(dist * 3 * soundvol /
 		    255); // simple mono distance attenuation
 		if (stereo && (v.x != 0 || v.y != 0)) {

@@ -21,7 +21,7 @@ renderclient(
 {
 	int n = 3;
 	float speed = 100.0f;
-	float mz = d.o.z - d.eyeheight + 1.55f * scale;
+	float mz = d.origin.z - d.eyeHeight + 1.55f * scale;
 	intptr_t tmp = (intptr_t)d;
 	int basetime = -(tmp & 0xFFF);
 	if (d.state == CS_DEAD) {
@@ -33,8 +33,8 @@ renderclient(
 			n = (intptr_t)d % 3;
 			r = range[n];
 		}
-		basetime = d.lastaction;
-		int t = lastmillis - d.lastaction;
+		basetime = d.lastAction;
+		int t = lastmillis - d.lastAction;
 		if (t < 0 || t > 20000)
 			return;
 		if (t > (r - 1) * 100) {
@@ -47,25 +47,25 @@ renderclient(
 		if (mz < -1000)
 			return;
 		// mdl = (((int)d>>6)&1)+1;
-		// mz = d.o.z-d.eyeheight+0.2f;
+		// mz = d.o.z-d.eyeHeight+0.2f;
 		// scale = 1.2f;
 	} else if (d.state == CS_EDITING) {
 		n = 16;
 	} else if (d.state == CS_LAGGED) {
 		n = 17;
-	} else if (d.monsterstate == M_ATTACKING) {
+	} else if (d.monsterState == M_ATTACKING) {
 		n = 8;
-	} else if (d.monsterstate == M_PAIN) {
+	} else if (d.monsterState == M_PAIN) {
 		n = 10;
 	} else if ((!d.move && !d.strafe) || !d.moving) {
 		n = 12;
-	} else if (!d.onfloor && d.timeinair > 100) {
+	} else if (!d.onFloor && d.timeInAir > 100) {
 		n = 18;
 	} else {
 		n = 14;
-		speed = 1200 / d.maxspeed * scale;
+		speed = 1200 / d.maxSpeed * scale;
 		if (hellpig)
-			speed = 300 / d.maxspeed;
+			speed = 300 / d.maxSpeed;
 	}
 	if (hellpig) {
 		n++;
@@ -73,8 +73,8 @@ renderclient(
 		mz -= 1.9f;
 	}
 	rendermodel(mdlname, frame[n], range[n], 0, 1.5f,
-	    OFMakeVector3D(d.o.x, mz, d.o.y), d.yaw + 90, d.pitch / 2, team,
-	    scale, speed, 0, basetime);
+	    OFMakeVector3D(d.origin.x, mz, d.origin.y), d.yaw + 90, d.pitch / 2,
+	    team, scale, speed, 0, basetime);
 }
 
 extern int democlientnum;
@@ -107,7 +107,7 @@ static OFMutableArray<OFString *> *scoreLines;
 void
 renderscore(DynamicEntity *d)
 {
-	OFString *lag = [OFString stringWithFormat:@"%d", d.plag];
+	OFString *lag = [OFString stringWithFormat:@"%d", d.lag];
 	OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
 	OFString *line =
 	    [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@", d.frags,

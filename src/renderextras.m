@@ -335,7 +335,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 	readmatrices();
 	if (editmode) {
 		if (cursordepth == 1.0f)
-			worldpos = player1.o;
+			worldpos = player1.origin;
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		cursorupdate();
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -385,7 +385,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBegin(GL_QUADS);
 		glColor3ub(255, 255, 255);
 		if (crosshairfx) {
-			if (player1.gunwait)
+			if (player1.gunWait)
 				glColor3ub(128, 128, 128);
 			else if (player1.health <= 25)
 				glColor3ub(255, 0, 0);
@@ -428,7 +428,7 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		draw_textf(@"%d", 90, 827, 2, player1.health);
 		if (player1.armour)
 			draw_textf(@"%d", 390, 827, 2, player1.armour);
-		draw_textf(@"%d", 690, 827, 2, player1.ammo[player1.gunselect]);
+		draw_textf(@"%d", 690, 827, 2, player1.ammo[player1.gunSelect]);
 		glPopMatrix();
 		glPushMatrix();
 		glOrtho(0, VIRTW, VIRTH, 0, -1, 1);
@@ -436,8 +436,8 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		drawicon(128, 128, 20, 1650);
 		if (player1.armour)
 			drawicon(
-			    (float)(player1.armourtype * 64), 0, 620, 1650);
-		int g = player1.gunselect;
+			    (float)(player1.armourType * 64), 0, 620, 1650);
+		int g = player1.gunSelect;
 		int r = 64;
 		if (g > 2) {
 			g -= 3;

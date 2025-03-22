@@ -137,7 +137,7 @@ render_seg_new(
 		// first collect occlusion information for this block
 		for (int oy = y; oy < ys; oy++) {
 			SWS(w, ox, oy, sz)->occluded =
-			    isoccluded(player1.o.x, player1.o.y,
+			    isoccluded(player1.origin.x, player1.origin.y,
 			        (float)(ox << mip), (float)(oy << mip), fsize);
 		}
 	}

@@ -350,10 +350,10 @@ transplayer()
 	glRotated(player1.pitch, -1.0, 0.0, 0.0);
 	glRotated(player1.yaw, 0.0, 1.0, 0.0);
 
-	glTranslated(-player1.o.x,
-	    (player1.state == CS_DEAD ? player1.eyeheight - 0.2f : 0) -
-	        player1.o.z,
-	    -player1.o.y);
+	glTranslated(-player1.origin.x,
+	    (player1.state == CS_DEAD ? player1.eyeHeight - 0.2f : 0) -
+	        player1.origin.z,
+	    -player1.origin.y);
 }
 
 VARP(fov, 10, 105, 120);
@@ -371,15 +371,16 @@ OFString *hudgunnames[] = { @"hudguns/fist", @"hudguns/shotg",
 void
 drawhudmodel(int start, int end, float speed, int base)
 {
-	rendermodel(hudgunnames[player1.gunselect], start, end, 0, 1.0f,
-	    OFMakeVector3D(player1.o.x, player1.o.z, player1.o.y),
+	rendermodel(hudgunnames[player1.gunSelect], start, end, 0, 1.0f,
+	    OFMakeVector3D(
+	        player1.origin.x, player1.origin.z, player1.origin.y),
 	    player1.yaw + 90, player1.pitch, false, 1.0f, speed, 0, base);
 }
 
 void
 drawhudgun(float fovy, float aspect, int farplane)
 {
-	if (!hudgun /*|| !player1.gunselect*/)
+	if (!hudgun /*|| !player1.gunSelect*/)
 		return;
 
 	glEnable(GL_CULL_FACE);
@@ -390,10 +391,10 @@ drawhudgun(float fovy, float aspect, int farplane)
 	glMatrixMode(GL_MODELVIEW);
 
 	// glClear(GL_DEPTH_BUFFER_BIT);
-	int rtime = reloadtime(player1.gunselect);
-	if (player1.lastaction && player1.lastattackgun == player1.gunselect &&
-	    lastmillis - player1.lastaction < rtime) {
-		drawhudmodel(7, 18, rtime / 18.0f, player1.lastaction);
+	int rtime = reloadtime(player1.gunSelect);
+	if (player1.lastAction && player1.lastAttackGun == player1.gunSelect &&
+	    lastmillis - player1.lastAction < rtime) {
+		drawhudmodel(7, 18, rtime / 18.0f, player1.lastAction);
 	} else
 		drawhudmodel(6, 1, 100, 0);
 
@@ -411,7 +412,7 @@ gl_drawframe(int w, int h, float curfps)
 	float hf = hdr.waterlevel - 0.3f;
 	float fovy = (float)fov * h / w;
 	float aspect = w / (float)h;
-	bool underwater = player1.o.z < hf;
+	bool underwater = (player1.origin.z < hf);
 
 	glFogi(GL_FOG_START, (fog + 64) / 8);
 	glFogi(GL_FOG_END, fog);
@@ -428,7 +429,7 @@ gl_drawframe(int w, int h, float curfps)
 		glFogi(GL_FOG_END, (fog + 96) / 8);
 	}
 
-	glClear((player1.outsidemap ? GL_COLOR_BUFFER_BIT : 0) |
+	glClear((player1.outsideMap ? GL_COLOR_BUFFER_BIT : 0) |
 	    GL_DEPTH_BUFFER_BIT);
 
 	glMatrixMode(GL_PROJECTION);
@@ -449,8 +450,8 @@ gl_drawframe(int w, int h, float curfps)
 	curvert = 0;
 	[strips removeAllItems];
 
-	render_world(player1.o.x, player1.o.y, player1.o.z, (int)player1.yaw,
-	    (int)player1.pitch, (float)fov, w, h);
+	render_world(player1.origin.x, player1.origin.y, player1.origin.z,
+	    (int)player1.yaw, (int)player1.pitch, (float)fov, w, h);
 	finishstrips();
 
 	gl_setupworld();

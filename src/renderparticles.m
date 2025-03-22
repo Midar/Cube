@@ -57,7 +57,7 @@ void
 render_particles(int time)
 {
 	if (demoplayback && demotracking) {
-		OFVector3D o = player1.o;
+		OFVector3D o = player1.origin;
 		OFVector3D nom = OFMakeVector3D(0, 0, 0);
 		newparticle(&o, &nom, 100000000, 8);
 	}

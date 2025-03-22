@@ -169,8 +169,9 @@ cursorupdate() // called every frame from hud
 
 	// selected wall
 	if (fabs(sheight(s, s, z) - z) > 1) {
-		x += x > player1.o.x ? 0.5f : -0.5f; // find right wall cube
-		y += y > player1.o.y ? 0.5f : -0.5f;
+		// find right wall cube
+		x += (x > player1.origin.x ? 0.5f : -0.5f);
+		y += (y > player1.origin.y ? 0.5f : -0.5f);
 
 		cx = (int)x;
 		cy = (int)y;
@@ -622,7 +623,7 @@ void
 newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 {
 	EDITSEL;
-	newentity(sel.x, sel.y, (int)player1.o.z, what,
+	newentity(sel.x, sel.y, (int)player1.origin.z, what,
 	    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
 	    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
 }

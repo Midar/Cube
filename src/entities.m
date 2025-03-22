@@ -171,16 +171,16 @@ realpickup(int n, DynamicEntity *d)
 
 	case I_GREENARMOUR:
 		d.armour = radditem(n, d.armour);
-		d.armourtype = A_GREEN;
+		d.armourType = A_GREEN;
 		break;
 
 	case I_YELLOWARMOUR:
 		d.armour = radditem(n, d.armour);
-		d.armourtype = A_YELLOW;
+		d.armourType = A_YELLOW;
 		break;
 
 	case I_QUAD:
-		d.quadmillis = radditem(n, d.quadmillis);
+		d.quadMillis = radditem(n, d.quadMillis);
 		conoutf(@"you got the quad!");
 		break;
 	}
@@ -214,10 +214,11 @@ teleport(int n, DynamicEntity *d)
 		if (beenhere < 0)
 			beenhere = e;
 		if (ents[e].attr2 == tag) {
-			d.o = OFMakeVector3D(ents[e].x, ents[e].y, ents[e].z);
+			d.origin =
+			    OFMakeVector3D(ents[e].x, ents[e].y, ents[e].z);
 			d.yaw = ents[e].attr1;
 			d.pitch = 0;
-			d.vel = OFMakeVector3D(0, 0, 0);
+			d.velocity = OFMakeVector3D(0, 0, 0);
 			entinmap(d);
 			playsoundc(S_TELEPORT);
 			break;
@@ -257,7 +258,7 @@ pickup(int n, DynamicEntity *d)
 
 	case I_GREENARMOUR:
 		// (100h/100g only absorbs 166 damage)
-		if (d.armourtype == A_YELLOW && d.armour > 66)
+		if (d.armourType == A_YELLOW && d.armour > 66)
 			break;
 		additem(n, d.armour, 20);
 		break;
@@ -267,7 +268,7 @@ pickup(int n, DynamicEntity *d)
 		break;
 
 	case I_QUAD:
-		additem(n, d.quadmillis, 60);
+		additem(n, d.quadMillis, 60);
 		break;
 
 	case CARROT:
@@ -293,8 +294,9 @@ pickup(int n, DynamicEntity *d)
 		lastjumppad = lastmillis;
 		OFVector3D v = OFMakeVector3D((int)(char)ents[n].attr3 / 10.0f,
 		    (int)(char)ents[n].attr2 / 10.0f, ents[n].attr1 / 10.0f);
-		player1.vel = OFMakeVector3D(player1.vel.x, player1.vel.y, 0);
-		vadd(player1.vel, v);
+		player1.velocity =
+		    OFMakeVector3D(player1.velocity.x, player1.velocity.y, 0);
+		vadd(player1.velocity, v);
 		playsoundc(S_JUMPPAD);
 		break;
 	}
@@ -318,8 +320,8 @@ checkitems()
 			return;
 
 		OFVector3D v = OFMakeVector3D(
-		    e.x, e.y, (float)S(e.x, e.y)->floor + player1.eyeheight);
-		vdist(dist, t, player1.o, v);
+		    e.x, e.y, (float)S(e.x, e.y)->floor + player1.eyeHeight);
+		vdist(dist, t, player1.origin, v);
 
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);
@@ -329,8 +331,8 @@ checkitems()
 void
 checkquad(int time)
 {
-	if (player1.quadmillis && (player1.quadmillis -= time) < 0) {
-		player1.quadmillis = 0;
+	if (player1.quadMillis && (player1.quadMillis -= time) < 0) {
+		player1.quadMillis = 0;
 		playsoundc(S_PUPOUT);
 		conoutf(@"quad damage is over");
 	}

@@ -24,7 +24,7 @@ OFMutableArray *players; // other clients
 void
 initPlayers()
 {
-	player1 = newdynent();
+	player1 = [[DynamicEntity alloc] init];
 	players = [[OFMutableArray alloc] init];
 }
 
@@ -40,101 +40,6 @@ OFString *
 getclientmap()
 {
 	return clientmap;
-}
-
-void
-resetmovement(DynamicEntity *d)
-{
-	d.k_left = false;
-	d.k_right = false;
-	d.k_up = false;
-	d.k_down = false;
-	d.jumpnext = false;
-	d.strafe = 0;
-	d.move = 0;
-}
-
-// reset player state not persistent accross spawns
-void
-spawnstate(DynamicEntity *d)
-{
-	resetmovement(d);
-	d.vel = OFMakeVector3D(0, 0, 0);
-	d.onfloor = false;
-	d.timeinair = 0;
-	d.health = 100;
-	d.armour = 50;
-	d.armourtype = A_BLUE;
-	d.quadmillis = 0;
-	d.lastattackgun = d.gunselect = GUN_SG;
-	d.gunwait = 0;
-	d.attacking = false;
-	d.lastaction = 0;
-	loopi(NUMGUNS) d.ammo[i] = 0;
-	d.ammo[GUN_FIST] = 1;
-	if (m_noitems) {
-		d.gunselect = GUN_RIFLE;
-		d.armour = 0;
-		if (m_noitemsrail) {
-			d.health = 1;
-			d.ammo[GUN_RIFLE] = 100;
-		} else {
-			if (gamemode == 12) {
-				// eihrul's secret "instafist" mode
-				d.gunselect = GUN_FIST;
-				return;
-			}
-			d.health = 256;
-			if (m_tarena) {
-				int gun1 = rnd(4) + 1;
-				baseammo(d.gunselect = gun1);
-				for (;;) {
-					int gun2 = rnd(4) + 1;
-					if (gun1 != gun2) {
-						baseammo(gun2);
-						break;
-					}
-				}
-			} else if (m_arena) {
-				// insta arena
-				d.ammo[GUN_RIFLE] = 100;
-			} else {
-				// efficiency
-				loopi(4) baseammo(i + 1);
-				d.gunselect = GUN_CG;
-			}
-			d.ammo[GUN_CG] /= 2;
-		}
-	} else
-		d.ammo[GUN_SG] = 5;
-}
-
-DynamicEntity *
-newdynent() // create a new blank player or monster
-{
-	DynamicEntity *d = [[DynamicEntity alloc] init];
-	d.o = OFMakeVector3D(0, 0, 0);
-	d.yaw = 270;
-	d.pitch = 0;
-	d.roll = 0;
-	d.maxspeed = 22;
-	d.outsidemap = false;
-	d.inwater = false;
-	d.radius = 1.1f;
-	d.eyeheight = 3.2f;
-	d.aboveeye = 0.7f;
-	d.frags = 0;
-	d.plag = 0;
-	d.ping = 0;
-	d.lastupdate = lastmillis;
-	d.enemy = NULL;
-	d.monsterstate = 0;
-	d.name = d.team = @"";
-	d.blocked = false;
-	d.lifesequence = 0;
-	d.state = CS_ALIVE;
-	spawnstate(d);
-	return d;
 }
 
 void
@@ -203,7 +108,7 @@ otherplayers()
 		if (player == [OFNull null])
 			return;
 
-		const int lagtime = lastmillis - [player lastupdate];
+		const int lagtime = lastmillis - [player lastUpdate];
 		if (lagtime > 1000 && [player state] == CS_ALIVE) {
 			[player setState:CS_LAGGED];
 			return;
@@ -271,11 +176,11 @@ updateworld(int millis) // main game update loop
 		if (!demoplayback) {
 			monsterthink();
 			if (player1.state == CS_DEAD) {
-				if (lastmillis - player1.lastaction < 2000) {
+				if (lastmillis - player1.lastAction < 2000) {
 					player1.move = player1.strafe = 0;
 					moveplayer(player1, 10, false);
 				} else if (!m_arena && !m_sp &&
-				    lastmillis - player1.lastaction > 10000)
+				    lastmillis - player1.lastAction > 10000)
 					respawn();
 			} else if (!intermission) {
 				moveplayer(player1, 20, true);
@@ -296,14 +201,14 @@ entinmap(DynamicEntity *d)
 	{
 		float dx = (rnd(21) - 10) / 10.0f * i; // increasing distance
 		float dy = (rnd(21) - 10) / 10.0f * i;
-		OFVector3D old = d.o;
-		d.o = OFMakeVector3D(d.o.x + dx, d.o.y + dy, d.o.z);
+		OFVector3D old = d.origin;
+		d.origin = OFAddVector3D(d.origin, OFMakeVector3D(dx, dy, 0));
 		if (collide(d, true, 0, 0))
 			return;
-		d.o = old;
+		d.origin = old;
 	}
-	conoutf(
-	    @"can't find entity spawn spot! (%d, %d)", (int)d.o.x, (int)d.o.y);
+	conoutf(@"can't find entity spawn spot! (%d, %d)", (int)d.origin.x,
+	    (int)d.origin.y);
 	// leave ent at original pos, possibly stuck
 }
 
@@ -317,15 +222,16 @@ spawnplayer(DynamicEntity *d)
 	int r = fixspawn-- > 0 ? 4 : rnd(10) + 1;
 	loopi(r) spawncycle = findentity(PLAYERSTART, spawncycle + 1);
 	if (spawncycle != -1) {
-		d.o = OFMakeVector3D(
+		d.origin = OFMakeVector3D(
 		    ents[spawncycle].x, ents[spawncycle].y, ents[spawncycle].z);
 		d.yaw = ents[spawncycle].attr1;
 		d.pitch = 0;
 		d.roll = 0;
 	} else
-		d.o = OFMakeVector3D((float)ssize / 2, (float)ssize / 2, 4);
+		d.origin =
+		    OFMakeVector3D((float)ssize / 2, (float)ssize / 2, 4);
 	entinmap(d);
-	spawnstate(d);
+	[d resetToSpawnState];
 	d.state = CS_ALIVE;
 }
 
@@ -336,7 +242,7 @@ spawnplayer(DynamicEntity *d)
 	{                                                         \
 		player1.s = isdown;                               \
 		player1.v = isdown ? d : (player1.os ? -(d) : 0); \
-		player1.lastmove = lastmillis;                    \
+		player1.lastMove = lastmillis;                    \
 	}
 
 dir(backward, move, -1, k_down, k_up);
@@ -358,7 +264,7 @@ attack(bool on)
 void
 jumpn(bool on)
 {
-	if (!intermission && (player1.jumpnext = on))
+	if (!intermission && (player1.jumpNext = on))
 		respawn();
 }
 
@@ -406,7 +312,7 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 	damageblend(damage);
 	demoblend(damage);
 	// let armour absorb when possible
-	int ad = damage * (player1.armourtype + 1) * 20 / 100;
+	int ad = damage * (player1.armourType + 1) * 20 / 100;
 	if (ad > player1.armour)
 		ad = player1.armour;
 	player1.armour -= ad;
@@ -440,14 +346,14 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 		}
 		showscores(true);
 		addmsg(1, 2, SV_DIED, actor);
-		player1.lifesequence++;
+		player1.lifeSequence++;
 		player1.attacking = false;
 		player1.state = CS_DEAD;
 		player1.pitch = 0;
 		player1.roll = 60;
 		playsound(S_DIE1 + rnd(2), NULL);
-		spawnstate(player1);
-		player1.lastaction = lastmillis;
+		[player1 resetToSpawnState];
+		player1.lastAction = lastmillis;
 	} else
 		playsound(S_PAIN6, NULL);
 }
@@ -473,10 +379,17 @@ getclient(int cn) // ensure valid entity
 		neterr(@"clientnum");
 		return nil;
 	}
+
 	while (cn >= players.count)
 		[players addObject:[OFNull null]];
-	return (players[cn] != [OFNull null] ? players[cn]
-	                                     : (players[cn] = newdynent()));
+
+	id player = players[cn];
+	if (player == [OFNull null]) {
+		player = [DynamicEntity entity];
+		players[cn] = player;
+	}
+
+	return player;
 }
 
 void

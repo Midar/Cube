@@ -93,7 +93,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 {
 	MD2 *m = loadmodel(mdl);
 
-	if (isoccluded(player1.o.x, player1.o.y, position.x - rad,
+	if (isoccluded(player1.origin.x, player1.origin.y, position.x - rad,
 	        position.z - rad, rad * 2))
 		return;
 

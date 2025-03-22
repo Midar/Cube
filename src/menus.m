@@ -3,6 +3,8 @@
 #include "cube.h"
 
 #import "Menu.h"
+
+#import "DynamicEntity.h"
 #import "MenuItem.h"
 
 static OFMutableArray<OFNumber *> *menuStack;
@@ -13,7 +15,7 @@ void
 menuset(int menu)
 {
 	if ((vmenu = menu) >= 1)
-		resetmovement(player1);
+		[player1 resetMovement];
 	if (vmenu == 1)
 		menus[1].menusel = 0;
 }

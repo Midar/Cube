@@ -17,22 +17,26 @@ plcollide(
 {
 	if (o.state != CS_ALIVE)
 		return true;
-	const float r = o.radius + d.radius;
-	if (fabs(o.o.x - d.o.x) < r && fabs(o.o.y - d.o.y) < r) {
-		if (d.o.z - d.eyeheight < o.o.z - o.eyeheight) {
-			if (o.o.z - o.eyeheight < *hi)
-				*hi = o.o.z - o.eyeheight - 1;
-		} else if (o.o.z + o.aboveeye > *lo)
-			*lo = o.o.z + o.aboveeye + 1;
 
-		if (fabs(o.o.z - d.o.z) < o.aboveeye + d.eyeheight)
+	const float r = o.radius + d.radius;
+	if (fabs(o.origin.x - d.origin.x) < r &&
+	    fabs(o.origin.y - d.origin.y) < r) {
+		if (d.origin.z - d.eyeHeight < o.origin.z - o.eyeHeight) {
+			if (o.origin.z - o.eyeHeight < *hi)
+				*hi = o.origin.z - o.eyeHeight - 1;
+		} else if (o.origin.z + o.aboveEye > *lo)
+			*lo = o.origin.z + o.aboveEye + 1;
+
+		if (fabs(o.origin.z - d.origin.z) < o.aboveEye + d.eyeHeight)
 			return false;
-		if (d.monsterstate)
+		if (d.monsterState)
 			return false; // hack
-		*headspace = d.o.z - o.o.z - o.aboveeye - d.eyeheight;
+			              //
+		*headspace = d.origin.z - o.origin.z - o.aboveEye - d.eyeHeight;
 		if (*headspace < 0)
 			*headspace = 10;
 	}
+
 	return true;
 }
 
@@ -69,11 +73,11 @@ mmcollide(DynamicEntity *d, float *hi, float *lo)
 			continue;
 
 		const float r = mmi.rad + d.radius;
-		if (fabs(e.x - d.o.x) < r && fabs(e.y - d.o.y) < r) {
+		if (fabs(e.x - d.origin.x) < r && fabs(e.y - d.origin.y) < r) {
 			float mmz =
 			    (float)(S(e.x, e.y)->floor + mmi.zoff + e.attr3);
 
-			if (d.o.z - d.eyeheight < mmz) {
+			if (d.origin.z - d.eyeHeight < mmz) {
 				if (mmz < *hi)
 					*hi = mmz;
 			} else if (mmz + mmi.h > *lo)
@@ -91,21 +95,21 @@ bool
 collide(DynamicEntity *d, bool spawn, float drop, float rise)
 {
 	// figure out integer cube rectangle this entity covers in map
-	const float fx1 = d.o.x - d.radius;
-	const float fy1 = d.o.y - d.radius;
-	const float fx2 = d.o.x + d.radius;
-	const float fy2 = d.o.y + d.radius;
+	const float fx1 = d.origin.x - d.radius;
+	const float fy1 = d.origin.y - d.radius;
+	const float fx2 = d.origin.x + d.radius;
+	const float fy2 = d.origin.y + d.radius;
 	const int x1 = fast_f2nat(fx1);
 	const int y1 = fast_f2nat(fy1);
 	const int x2 = fast_f2nat(fx2);
 	const int y2 = fast_f2nat(fy2);
 	float hi = 127, lo = -128;
 	// big monsters are afraid of heights, unless angry :)
-	float minfloor = (d.monsterstate && !spawn && d.health > 100)
-	    ? d.o.z - d.eyeheight - 4.5f
+	float minfloor = (d.monsterState && !spawn && d.health > 100)
+	    ? d.origin.z - d.eyeHeight - 4.5f
 	    : -1000.0f;
 
-	for (int x = x1; x <= x2; x++)
+	for (int x = x1; x <= x2; x++) {
 		for (int y = y1; y <= y2; y++) {
 			// collide with map
 			if (OUTBORD(x, y))
@@ -160,8 +164,9 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 			if (floor < minfloor)
 				return false;
 		}
+	}
 
-	if (hi - lo < d.eyeheight + d.aboveeye)
+	if (hi - lo < d.eyeHeight + d.aboveEye)
 		return false;
 
 	float headspace = 10;
@@ -171,53 +176,61 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 		if (!plcollide(d, player, &headspace, &hi, &lo))
 			return false;
 	}
+
 	if (d != player1)
 		if (!plcollide(d, player1, &headspace, &hi, &lo))
 			return false;
+
 	// this loop can be a performance bottleneck with many monster on a slow
 	// cpu, should replace with a blockmap but seems mostly fast enough
 	for (DynamicEntity *monster in getmonsters())
-		if (!vreject(d.o, monster.o, 7.0f) && d != monster &&
+		if (!vreject(d.origin, monster.origin, 7.0f) && d != monster &&
 		    !plcollide(d, monster, &headspace, &hi, &lo))
 			return false;
+
 	headspace -= 0.01f;
 
 	mmcollide(d, &hi, &lo); // collide with map models
 
 	if (spawn) {
 		// just drop to floor (sideeffect)
-		d.o = OFMakeVector3D(d.o.x, d.o.y, lo + d.eyeheight);
-		d.onfloor = true;
+		d.origin =
+		    OFMakeVector3D(d.origin.x, d.origin.y, lo + d.eyeHeight);
+		d.onFloor = true;
 	} else {
-		const float space = d.o.z - d.eyeheight - lo;
+		const float space = d.origin.z - d.eyeHeight - lo;
 		if (space < 0) {
 			if (space > -0.01)
 				// stick on step
-				d.o = OFMakeVector3D(
-				    d.o.x, d.o.y, lo + d.eyeheight);
+				d.origin = OFMakeVector3D(
+				    d.origin.x, d.origin.y, lo + d.eyeHeight);
 			else if (space > -1.26f)
 				// rise thru stair
-				d.o =
-				    OFMakeVector3D(d.o.x, d.o.y, d.o.z + rise);
+				d.origin = OFAddVector3D(
+				    d.origin, OFMakeVector3D(0, 0, rise));
 			else
 				return false;
 		} else
 			// gravity
-			d.o = OFMakeVector3D(d.o.x, d.o.y,
-			    d.o.z - min(min(drop, space), headspace));
+			d.origin = OFSubtractVector3D(d.origin,
+			    OFMakeVector3D(
+			        0, 0, min(min(drop, space), headspace)));
 
-		const float space2 = hi - (d.o.z + d.aboveeye);
+		const float space2 = hi - (d.origin.z + d.aboveEye);
 		if (space2 < 0) {
 			if (space2 < -0.1)
 				return false; // hack alert!
 			// glue to ceiling
-			d.o = OFMakeVector3D(d.o.x, d.o.y, hi - d.aboveeye);
+			d.origin = OFMakeVector3D(
+			    d.origin.x, d.origin.y, hi - d.aboveEye);
 			// cancel out jumping velocity
-			d.vel = OFMakeVector3D(d.vel.x, d.vel.y, 0);
+			d.velocity =
+			    OFMakeVector3D(d.velocity.x, d.velocity.y, 0);
 		}
 
-		d.onfloor = d.o.z - d.eyeheight - lo < 0.001f;
+		d.onFloor = (d.origin.z - d.eyeHeight - lo < 0.001f);
 	}
+
 	return true;
 }
 
@@ -251,7 +264,7 @@ physicsframe() // optimally schedule physics frames inside the graphics frames
 static void
 moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 {
-	const bool water = hdr.waterlevel > pl.o.z - 0.5f;
+	const bool water = (hdr.waterlevel > pl.origin.z - 0.5f);
 	const bool floating = (editmode && local) || pl.state == CS_EDITING;
 
 	OFVector3D d; // vector of direction we ideally want to move in
@@ -269,18 +282,18 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 	d.x += (float)(pl.strafe * cos(rad(pl.yaw - 180)));
 	d.y += (float)(pl.strafe * sin(rad(pl.yaw - 180)));
 
-	const float speed = curtime / (water ? 2000.0f : 1000.0f) * pl.maxspeed;
+	const float speed = curtime / (water ? 2000.0f : 1000.0f) * pl.maxSpeed;
 	const float friction =
-	    water ? 20.0f : (pl.onfloor || floating ? 6.0f : 30.0f);
+	    water ? 20.0f : (pl.onFloor || floating ? 6.0f : 30.0f);
 
 	const float fpsfric = friction / curtime * 20.0f;
 
 	// slowly apply friction and direction to
 	// velocity, gives a smooth movement
-	vmul(pl.vel, fpsfric - 1);
-	vadd(pl.vel, d);
-	vdiv(pl.vel, fpsfric);
-	d = pl.vel;
+	vmul(pl.velocity, fpsfric - 1);
+	vadd(pl.velocity, d);
+	vdiv(pl.velocity, fpsfric);
+	d = pl.velocity;
 	vmul(d, speed); // d is now frametime based velocity vector
 
 	pl.blocked = false;
@@ -288,52 +301,55 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 
 	if (floating) {
 		// just apply velocity
-		vadd(pl.o, d);
-		if (pl.jumpnext) {
-			pl.jumpnext = false;
-			pl.vel = OFMakeVector3D(pl.vel.x, pl.vel.y, 2);
+		vadd(pl.origin, d);
+		if (pl.jumpNext) {
+			pl.jumpNext = false;
+			pl.velocity =
+			    OFMakeVector3D(pl.velocity.x, pl.velocity.y, 2);
 		}
 	} else {
 		// apply velocity with collision
-		if (pl.onfloor || water) {
-			if (pl.jumpnext) {
-				pl.jumpnext = false;
+		if (pl.onFloor || water) {
+			if (pl.jumpNext) {
+				pl.jumpNext = false;
 				// physics impulse upwards
-				pl.vel =
-				    OFMakeVector3D(pl.vel.x, pl.vel.y, 1.7);
+				pl.velocity = OFMakeVector3D(
+				    pl.velocity.x, pl.velocity.y, 1.7);
 				// dampen velocity change even harder, gives
 				// correct water feel
 				if (water)
-					pl.vel = OFMakeVector3D(pl.vel.x / 8,
-					    pl.vel.y / 8, pl.vel.z);
+					pl.velocity = OFMakeVector3D(
+					    pl.velocity.x / 8,
+					    pl.velocity.y / 8, pl.velocity.z);
 				if (local)
 					playsoundc(S_JUMP);
-				else if (pl.monsterstate) {
-					OFVector3D loc = pl.o;
+				else if (pl.monsterState) {
+					OFVector3D loc = pl.origin;
 					playsound(S_JUMP, &loc);
 				}
-			} else if (pl.timeinair > 800) {
+			} else if (pl.timeInAir > 800) {
 				// if we land after long time must have been a
 				// high jump, make thud sound
 				if (local)
 					playsoundc(S_LAND);
-				else if (pl.monsterstate) {
-					OFVector3D loc = pl.o;
+				else if (pl.monsterState) {
+					OFVector3D loc = pl.origin;
 					playsound(S_LAND, &loc);
 				}
 			}
-			pl.timeinair = 0;
+
+			pl.timeInAir = 0;
 		} else
-			pl.timeinair += curtime;
+			pl.timeInAir += curtime;
 
 		const float gravity = 20;
 		const float f = 1.0f / moveres;
 		// incorrect, but works fine
-		float dropf = ((gravity - 1) + pl.timeinair / 15.0f);
+		float dropf = ((gravity - 1) + pl.timeInAir / 15.0f);
 		// float slowly down in water
 		if (water) {
 			dropf = 5;
-			pl.timeinair = 0;
+			pl.timeInAir = 0;
 		}
 		// at high fps, gravity kicks in too fast
 		const float drop = dropf * curtime / gravity / 100 / moveres;
@@ -343,32 +359,39 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 		loopi(moveres) // discrete steps collision detection & sliding
 		{
 			// try move forward
-			pl.o = OFMakeVector3D(pl.o.x + f * d.x,
-			    pl.o.y + f * d.y, pl.o.z + f * d.z);
+			pl.origin = OFAddVector3D(pl.origin,
+			    OFMakeVector3D(f * d.x, f * d.y, f * d.z));
 			if (collide(pl, false, drop, rise))
 				continue;
+
 			// player stuck, try slide along y axis
 			pl.blocked = true;
-			pl.o = OFMakeVector3D(pl.o.x - f * d.x, pl.o.y, pl.o.z);
+			pl.origin = OFSubtractVector3D(
+			    pl.origin, OFMakeVector3D(f * d.x, 0, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.x = 0;
 				continue;
 			}
+
 			// still stuck, try x axis
-			pl.o = OFMakeVector3D(
-			    pl.o.x + f * d.x, pl.o.y - f * d.y, pl.o.z);
+			pl.origin = OFAddVector3D(
+			    pl.origin, OFMakeVector3D(f * d.x, -f * d.y, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.y = 0;
 				continue;
 			}
+
 			// try just dropping down
 			pl.moving = false;
-			pl.o = OFMakeVector3D(pl.o.x - f * d.x, pl.o.y, pl.o.z);
+			pl.origin = OFSubtractVector3D(
+			    pl.origin, OFMakeVector3D(f * d.x, 0, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.y = d.x = 0;
 				continue;
 			}
-			pl.o = OFMakeVector3D(pl.o.x, pl.o.y, pl.o.z - f * d.z);
+
+			pl.origin = OFSubtractVector3D(
+			    pl.origin, OFMakeVector3D(0, 0, f * d.z));
 			break;
 		}
 	}
@@ -376,13 +399,16 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 	// detect wether player is outside map, used for skipping zbuffer clear
 	// mostly
 
-	if (pl.o.x < 0 || pl.o.x >= ssize || pl.o.y < 0 || pl.o.y > ssize)
-		pl.outsidemap = true;
+	if (pl.origin.x < 0 || pl.origin.x >= ssize || pl.origin.y < 0 ||
+	    pl.origin.y > ssize)
+		pl.outsideMap = true;
 	else {
-		struct sqr *s = S((int)pl.o.x, (int)pl.o.y);
-		pl.outsidemap = SOLID(s) ||
-		    pl.o.z < s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
-		    pl.o.z > s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
+		struct sqr *s = S((int)pl.origin.x, (int)pl.origin.y);
+		pl.outsideMap = SOLID(s) ||
+		    pl.origin.z <
+		        s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
+		    pl.origin.z >
+		        s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
 	}
 
 	// automatically apply smooth roll when strafing
@@ -399,15 +425,15 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 
 	// play sounds on water transitions
 
-	if (!pl.inwater && water) {
-		OFVector3D loc = pl.o;
+	if (!pl.inWater && water) {
+		OFVector3D loc = pl.origin;
 		playsound(S_SPLASH2, &loc);
-		pl.vel = OFMakeVector3D(pl.vel.x, pl.vel.y, 0);
-	} else if (pl.inwater && !water) {
-		OFVector3D loc = pl.o;
+		pl.velocity = OFMakeVector3D(pl.velocity.x, pl.velocity.y, 0);
+	} else if (pl.inWater && !water) {
+		OFVector3D loc = pl.origin;
 		playsound(S_SPLASH1, &loc);
 	}
-	pl.inwater = water;
+	pl.inWater = water;
 }
 
 void

@@ -142,7 +142,7 @@ disconnect(bool onlyclean, bool async)
 	disconnecting = 0;
 	clientnum = -1;
 	c2sinit = false;
-	player1.lifesequence = 0;
+	player1.lifeSequence = 0;
 	[players removeAllObjects];
 
 	localdisconnect();
@@ -300,20 +300,20 @@ c2sinfo(DynamicEntity *d)
 		putint(&p, clientnum);
 		// quantize coordinates to 1/16th of a cube, between 1 and 3
 		// bytes
-		putint(&p, (int)(d.o.x * DMF));
-		putint(&p, (int)(d.o.y * DMF));
-		putint(&p, (int)(d.o.z * DMF));
+		putint(&p, (int)(d.origin.x * DMF));
+		putint(&p, (int)(d.origin.y * DMF));
+		putint(&p, (int)(d.origin.z * DMF));
 		putint(&p, (int)(d.yaw * DAF));
 		putint(&p, (int)(d.pitch * DAF));
 		putint(&p, (int)(d.roll * DAF));
 		// quantize to 1/100, almost always 1 byte
-		putint(&p, (int)(d.vel.x * DVF));
-		putint(&p, (int)(d.vel.y * DVF));
-		putint(&p, (int)(d.vel.z * DVF));
-		// pack rest in 1 byte: strafe:2, move:2, onfloor:1, state:3
+		putint(&p, (int)(d.velocity.x * DVF));
+		putint(&p, (int)(d.velocity.y * DVF));
+		putint(&p, (int)(d.velocity.z * DVF));
+		// pack rest in 1 byte: strafe:2, move:2, onFloor:1, state:3
 		putint(&p,
 		    (d.strafe & 3) | ((d.move & 3) << 2) |
-		        (((int)d.onfloor) << 4) |
+		        (((int)d.onFloor) << 4) |
 		        ((editmode ? CS_EDITING : d.state) << 5));
 
 		if (senditemstoserver) {
@@ -339,7 +339,7 @@ c2sinfo(DynamicEntity *d)
 			putint(&p, SV_INITC2S);
 			sendstring(player1.name, &p);
 			sendstring(player1.team, &p);
-			putint(&p, player1.lifesequence);
+			putint(&p, player1.lifeSequence);
 		}
 		for (OFData *msg in messages) {
 			// send messages collected during the previous frames

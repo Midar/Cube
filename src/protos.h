@@ -100,13 +100,11 @@ extern void changemap(OFString *name);
 extern void initclient();
 extern void spawnplayer(DynamicEntity *d);
 extern void selfdamage(int damage, int actor, DynamicEntity *act);
-extern DynamicEntity *newdynent();
 extern OFString *getclientmap();
 extern OFString *modestr(int n);
 extern DynamicEntity *getclient(int cn);
 extern void setclient(int cn, id client);
 extern void timeupdate(int timeremain);
-extern void resetmovement(DynamicEntity *d);
 extern void fixplayer1range();
 
 // clientextras
