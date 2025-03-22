@@ -138,7 +138,7 @@ snap(int sn, float f)
 	}
 }
 
-- (void)renderWithLight:(OFVector3D)light
+- (void)renderWithLight:(OFColor *)light
                   frame:(int)frame
                   range:(int)range
                position:(OFVector3D)position
@@ -158,7 +158,9 @@ snap(int sn, float f)
 	glRotatef(yaw + 180, 0, -1, 0);
 	glRotatef(pitch, 0, 0, 1);
 
-	glColor3fv((float *)&light);
+	float red, green, blue;
+	[light getRed:&red green:&green blue:&blue alpha:NULL];
+	glColor3f(red, green, blue);
 
 	if (_displaylist && frame == 0 && range == 1) {
 		glCallList(_displaylist);

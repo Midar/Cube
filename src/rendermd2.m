@@ -105,21 +105,25 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 
 	int ix = (int)position.x;
 	int iy = (int)position.z;
-	OFVector3D light = OFMakeVector3D(1, 1, 1);
+	OFColor *light = [OFColor colorWithRed:1 green:1 blue:1 alpha:1];
 
 	if (!OUTBORD(ix, iy)) {
 		struct sqr *s = S(ix, iy);
 		float ll = 256.0f; // 0.96f;
 		float of = 0.0f;   // 0.1f;
-		light.x = s->r / ll + of;
-		light.y = s->g / ll + of;
-		light.z = s->b / ll + of;
+		light = [OFColor colorWithRed:s->r / ll + of
+		                        green:s->g / ll + of
+		                         blue:s->b / ll + of
+		                        alpha:1];
 	}
 
 	if (teammate) {
-		light.x *= 0.6f;
-		light.y *= 0.7f;
-		light.z *= 1.2f;
+		float red, green, blue;
+		[light getRed:&red green:&green blue:&blue alpha:NULL];
+		light = [OFColor colorWithRed:red * 0.6f
+		                        green:green * 0.7f
+		                         blue:blue * 1.2f
+		                        alpha:1];
 	}
 
 	[m renderWithLight:light

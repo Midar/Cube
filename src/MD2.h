@@ -12,7 +12,7 @@ OF_ASSUME_NONNULL_BEGIN
 
 + (instancetype)md2;
 - (bool)loadWithIRI:(OFIRI *)IRI;
-- (void)renderWithLight:(OFVector3D)light
+- (void)renderWithLight:(OFColor *)light
                   frame:(int)frame
                   range:(int)range
                position:(OFVector3D)position
