@@ -3,6 +3,8 @@
 
 #include "cube.h"
 
+#import "Command.h"
+
 static struct vertex *verts = NULL;
 int curvert;
 static int curmaxverts = 10000;
@@ -61,12 +63,9 @@ int ol3r, ol3g, ol3b, ol4r, ol4g, ol4b;
 int firstindex;
 bool showm = false;
 
-void
-showmip()
-{
+COMMAND(showmip, ARG_NONE, ^{
 	showm = !showm;
-}
-COMMAND(showmip, ARG_NONE)
+})
 
 void
 mipstats(int a, int b, int c)

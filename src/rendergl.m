@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
@@ -185,16 +186,11 @@ purgetextures()
 
 int curtexnum = 0;
 
-void
-texturereset()
-{
+COMMAND(texturereset, ARG_NONE, ^{
 	curtexnum = 0;
-}
-COMMAND(texturereset, ARG_NONE)
+})
 
-void
-texture(OFString *aframe, OFString *name)
-{
+COMMAND(texture, ARG_2STR, (^(OFString *aframe, OFString *name) {
 	int num = curtexnum++, frame = aframe.cube_intValue;
 
 	if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
@@ -203,8 +199,7 @@ texture(OFString *aframe, OFString *name)
 	mapping[num][frame] = 1;
 	mapname[num][frame] = [name stringByReplacingOccurrencesOfString:@"\\"
 	                                                      withString:@"/"];
-}
-COMMAND(texture, ARG_2STR)
+}))
 
 int
 lookuptexture(int tex, int *xs, int *ys)

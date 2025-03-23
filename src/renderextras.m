@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Entity.h"
 
@@ -203,9 +204,7 @@ renderents()
 	}
 }
 
-void
-loadsky(OFString *basename)
-{
+COMMAND(loadsky, ARG_1STR, (^(OFString *basename) {
 	static OFString *lastsky = @"";
 
 	basename = [basename stringByReplacingOccurrencesOfString:@"\\"
@@ -230,8 +229,7 @@ loadsky(OFString *basename)
 	}
 
 	lastsky = basename;
-}
-COMMAND(loadsky, ARG_1STR)
+}))
 
 float cursordepth = 0.9f;
 GLint viewport[4];

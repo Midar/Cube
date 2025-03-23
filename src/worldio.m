@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "Entity.h"
 
 struct persistent_entity {
@@ -256,7 +257,10 @@ save_world(OFString *mname)
 	conoutf(@"wrote map file %@", cgzname);
 	settagareas();
 }
-COMMANDN(savemap, save_world, ARG_1STR)
+
+COMMAND(savemap, ARG_1STR, ^(OFString *mname) {
+	save_world(mname);
+})
 
 void
 load_world(OFString *mname) // still supports all map formats that have existed

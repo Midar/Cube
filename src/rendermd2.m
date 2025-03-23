@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "MD2.h"
 #import "MapModelInfo.h"
@@ -54,31 +55,27 @@ loadmodel(OFString *name)
 	return m;
 }
 
-void
-mapmodel(
-    OFString *rad, OFString *h, OFString *zoff, OFString *snap, OFString *name)
-{
-	MD2 *m = loadmodel([name stringByReplacingOccurrencesOfString:@"\\"
-	                                                   withString:@"/"]);
-	m.mmi = [MapModelInfo infoWithRad:rad.cube_intValue
-	                                h:h.cube_intValue
-	                             zoff:zoff.cube_intValue
-	                             snap:snap.cube_intValue
-	                             name:m.loadname];
+COMMAND(mapmodel, ARG_5STR,
+    ^(OFString *rad, OFString *h, OFString *zoff, OFString *snap,
+        OFString *name) {
+	    MD2 *m =
+	        loadmodel([name stringByReplacingOccurrencesOfString:@"\\"
+	                                                  withString:@"/"]);
+	    m.mmi = [MapModelInfo infoWithRad:rad.cube_intValue
+	                                    h:h.cube_intValue
+	                                 zoff:zoff.cube_intValue
+	                                 snap:snap.cube_intValue
+	                                 name:m.loadname];
 
-	if (mapmodels == nil)
-		mapmodels = [[OFMutableArray alloc] init];
+	    if (mapmodels == nil)
+		    mapmodels = [[OFMutableArray alloc] init];
 
-	[mapmodels addObject:m];
-}
-COMMAND(mapmodel, ARG_5STR)
+	    [mapmodels addObject:m];
+    })
 
-void
-mapmodelreset()
-{
+COMMAND(mapmodelreset, ARG_NONE, ^{
 	[mapmodels removeAllObjects];
-}
-COMMAND(mapmodelreset, ARG_NONE)
+})
 
 MapModelInfo *
 getmminfo(int i)

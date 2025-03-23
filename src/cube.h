@@ -340,14 +340,6 @@ enum {
 
 // nasty macros for registering script functions, abuses globals to avoid
 // excessive infrastructure
-#define COMMANDN(name, fun, nargs)                                   \
-	OF_CONSTRUCTOR()                                             \
-	{                                                            \
-		enqueueInit(^{                                       \
-			addcommand(@ #name, (void (*)())fun, nargs); \
-		});                                                  \
-	}
-#define COMMAND(name, nargs) COMMANDN(name, name, nargs)
 #define VARP(name, min, cur, max)                                       \
 	int name;                                                       \
 	OF_CONSTRUCTOR()                                                \

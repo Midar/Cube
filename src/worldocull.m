@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 
 #define NUMRAYS 512
@@ -10,12 +11,9 @@ float rdist[NUMRAYS];
 bool ocull = true;
 float odist = 256;
 
-void
-toggleocull()
-{
+COMMAND(toggleocull, ARG_NONE, ^{
 	ocull = !ocull;
-}
-COMMAND(toggleocull, ARG_NONE)
+})
 
 // constructs occlusion map: cast rays in all directions on the 2d plane and
 // record distance. done exactly once per frame.

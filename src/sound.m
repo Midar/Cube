@@ -1,5 +1,6 @@
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 
 #include <SDL_mixer.h>
@@ -47,9 +48,7 @@ initsound()
 	Mix_AllocateChannels(MAXCHAN);
 }
 
-void
-music(OFString *name)
-{
+COMMAND(music, ARG_1STR, (^(OFString *name) {
 	if (nosound)
 		return;
 
@@ -69,15 +68,12 @@ music(OFString *name)
 			Mix_VolumeMusic((musicvol * MAXVOL) / 255);
 		}
 	}
-}
-COMMAND(music, ARG_1STR)
+}))
 
 static OFMutableData *samples;
 static OFMutableArray<OFString *> *snames;
 
-int
-registersound(OFString *name)
-{
+COMMAND(registersound, ARG_1EST, ^int(OFString *name) {
 	int i = 0;
 	for (OFString *iter in snames) {
 		if ([iter isEqual:name])
@@ -98,8 +94,7 @@ registersound(OFString *name)
 	[samples addItem:&sample];
 
 	return samples.count - 1;
-}
-COMMAND(registersound, ARG_1EST)
+})
 
 void
 cleansound()
@@ -216,9 +211,6 @@ playsound(int n, const OFVector3D *loc)
 	updatechanvol(chan, loc);
 }
 
-void
-sound(int n)
-{
+COMMAND(sound, ARG_1INT, ^(int n) {
 	playsound(n, NULL);
-}
-COMMAND(sound, ARG_1INT)
+})

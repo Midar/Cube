@@ -20,23 +20,27 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 }
 
 @implementation Command
+{
+	id _block;
+}
+
 + (instancetype)commandWithName:(OFString *)name
-                       function:(void (*)())function
                  argumentsTypes:(int)argumentsTypes
+                          block:(id)block
 {
 	return [[self alloc] initWithName:name
-	                         function:function
-	                   argumentsTypes:argumentsTypes];
+	                   argumentsTypes:argumentsTypes
+	                            block:block];
 }
 
 - (instancetype)initWithName:(OFString *)name
-                    function:(void (*)())function
               argumentsTypes:(int)argumentsTypes
+                       block:(id)block
 {
 	self = [super initWithName:name];
 
-	_function = function;
 	_argumentsTypes = argumentsTypes;
+	_block = block;
 
 	return self;
 }
@@ -47,14 +51,14 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	case ARG_1INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
-			((void(__cdecl *)(int))_function)(
+			((void (^)(int))_block)(
 			    [arguments[1] cube_intValueWithBase:0]);
 		}
 		break;
 	case ARG_2INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
-			((void(__cdecl *)(int, int))_function)(
+			((void (^)(int, int))_block)(
 			    [arguments[1] cube_intValueWithBase:0],
 			    [arguments[2] cube_intValueWithBase:0]);
 		}
@@ -62,7 +66,7 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	case ARG_3INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 4);
-			((void(__cdecl *)(int, int, int))_function)(
+			((void (^)(int, int, int))_block)(
 			    [arguments[1] cube_intValueWithBase:0],
 			    [arguments[2] cube_intValueWithBase:0],
 			    [arguments[3] cube_intValueWithBase:0]);
@@ -71,7 +75,7 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	case ARG_4INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 5);
-			((void(__cdecl *)(int, int, int, int))_function)(
+			((void (^)(int, int, int, int))_block)(
 			    [arguments[1] cube_intValueWithBase:0],
 			    [arguments[2] cube_intValueWithBase:0],
 			    [arguments[3] cube_intValueWithBase:0],
@@ -80,57 +84,55 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 		break;
 	case ARG_NONE:
 		if (isDown)
-			((void(__cdecl *)())_function)();
+			((void (^)())_block)();
 		break;
 	case ARG_1STR:
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
-			((void(__cdecl *)(OFString *))_function)(arguments[1]);
+			((void (^)(OFString *))_block)(arguments[1]);
 		}
 		break;
 	case ARG_2STR:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
-			((void(__cdecl *)(OFString *, OFString *))_function)(
+			((void (^)(OFString *, OFString *))_block)(
 			    arguments[1], arguments[2]);
 		}
 		break;
 	case ARG_3STR:
 		if (isDown) {
 			arguments = padArguments(arguments, 4);
-			((void(__cdecl *)(
-			    OFString *, OFString *, OFString *))_function)(
+			((void (^)(OFString *, OFString *, OFString *))_block)(
 			    arguments[1], arguments[2], arguments[3]);
 		}
 		break;
 	case ARG_5STR:
 		if (isDown) {
 			arguments = padArguments(arguments, 6);
-			((void(__cdecl *)(OFString *, OFString *, OFString *,
-			    OFString *, OFString *))_function)(arguments[1],
+			((void (^)(OFString *, OFString *, OFString *,
+			    OFString *, OFString *))_block)(arguments[1],
 			    arguments[2], arguments[3], arguments[4],
 			    arguments[5]);
 		}
 		break;
 	case ARG_DOWN:
-		((void(__cdecl *)(bool))_function)(isDown);
+		((void (^)(bool))_block)(isDown);
 		break;
 	case ARG_DWN1:
 		arguments = padArguments(arguments, 2);
-		((void(__cdecl *)(bool, OFString *))_function)(
-		    isDown, arguments[1]);
+		((void (^)(bool, OFString *))_block)(isDown, arguments[1]);
 		break;
 	case ARG_1EXP:
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
-			return ((int(__cdecl *)(int))_function)(
+			return ((int (^)(int))_block)(
 			    execute(arguments[1], isDown));
 		}
 		break;
 	case ARG_2EXP:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
-			return ((int(__cdecl *)(int, int))_function)(
+			return ((int (^)(int, int))_block)(
 			    execute(arguments[1], isDown),
 			    execute(arguments[2], isDown));
 		}
@@ -138,21 +140,20 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	case ARG_1EST:
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
-			return ((int(__cdecl *)(OFString *))_function)(
-			    arguments[1]);
+			return ((int (^)(OFString *))_block)(arguments[1]);
 		}
 		break;
 	case ARG_2EST:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
-			return ((int(__cdecl *)(OFString *,
-			    OFString *))_function)(arguments[1], arguments[2]);
+			return ((int (^)(OFString *, OFString *))_block)(
+			    arguments[1], arguments[2]);
 		}
 		break;
 	case ARG_VARI:
 		if (isDown)
 			// limit, remove
-			((void(__cdecl *)(OFString *))_function)([[arguments
+			((void (^)(OFString *))_block)([[arguments
 			    objectsInRange:OFMakeRange(1, arguments.count - 1)]
 			    componentsJoinedByString:@" "]);
 		break;

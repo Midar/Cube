@@ -3,6 +3,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
@@ -129,9 +130,7 @@ savestate(OFIRI *IRI)
 	}
 }
 
-void
-savegame(OFString *name)
-{
+COMMAND(savegame, ARG_1STR, (^(OFString *name) {
 	if (!m_classicsp) {
 		conoutf(@"can only save classic sp games");
 		return;
@@ -143,8 +142,7 @@ savegame(OFString *name)
 	savestate(IRI);
 	stop();
 	conoutf(@"wrote %@", IRI.string);
-}
-COMMAND(savegame, ARG_1STR)
+}))
 
 void
 loadstate(OFIRI *IRI)
@@ -184,15 +182,12 @@ out:
 	stop();
 }
 
-void
-loadgame(OFString *name)
-{
+COMMAND(loadgame, ARG_1STR, (^(OFString *name) {
 	OFString *path = [OFString stringWithFormat:@"savegames/%@.csgz", name];
 	OFIRI *IRI =
 	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
 	loadstate(IRI);
-}
-COMMAND(loadgame, ARG_1STR)
+}))
 
 void
 loadgameout()
@@ -268,9 +263,7 @@ int playbacktime = 0;
 int ddamage, bdamage;
 OFVector3D dorig;
 
-void
-record(OFString *name)
-{
+COMMAND(record, ARG_1STR, (^(OFString *name) {
 	if (m_sp) {
 		conoutf(@"cannot record singleplayer games");
 		return;
@@ -289,8 +282,7 @@ record(OFString *name)
 	demorecording = true;
 	starttime = lastmillis;
 	ddamage = bdamage = 0;
-}
-COMMAND(record, ARG_1STR)
+}))
 
 void
 demodamage(int damage, const OFVector3D *o)
@@ -337,16 +329,13 @@ incomingdemodata(unsigned char *buf, int len, bool extras)
 	}
 }
 
-void
-demo(OFString *name)
-{
+COMMAND(demo, ARG_1STR, (^(OFString *name) {
 	OFString *path = [OFString stringWithFormat:@"demos/%@.cdgz", name];
 	OFIRI *IRI =
 	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
 	loadstate(IRI);
 	demoloading = true;
-}
-COMMAND(demo, ARG_1STR)
+}))
 
 void
 stopreset()
@@ -549,13 +538,10 @@ demoplaybackstep()
 	// if(player1->state!=CS_DEAD) showscores(false);
 }
 
-void
-stopn()
-{
+COMMAND(stop, ARG_NONE, ^{
 	if (demoplayback)
 		stopreset();
 	else
 		stop();
 	conoutf(@"demo stopped");
-}
-COMMANDN(stop, stopn, ARG_NONE)
+})

@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
@@ -62,14 +63,11 @@ reloadtime(int gun)
 	return guns[gun].attackdelay;
 }
 
-void
-weapon(OFString *a1, OFString *a2, OFString *a3)
-{
+COMMAND(weapon, ARG_3STR, ^(OFString *a1, OFString *a2, OFString *a3) {
 	selectgun((a1.length > 0 ? a1.cube_intValue : -1),
 	    (a2.length > 0 ? a2.cube_intValue : -1),
 	    (a3.length > 0 ? a3.cube_intValue : -1));
-}
-COMMAND(weapon, ARG_3STR)
+})
 
 // create random spread of rays for the shotgun
 void

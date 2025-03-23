@@ -4,6 +4,7 @@
 #include "SDL_thread.h"
 #include "cube.h"
 
+#import "Command.h"
 #import "ResolverResult.h"
 #import "ResolverThread.h"
 #import "ServerInfo.h"
@@ -126,6 +127,10 @@ addserver(OFString *servername)
 	[servers addObject:[ServerInfo infoWithName:servername]];
 }
 
+COMMAND(addserver, ARG_1STR, ^(OFString *servername) {
+	addserver(servername);
+})
+
 void
 pingservers()
 {
@@ -245,7 +250,7 @@ refreshservers()
 	}];
 }
 
-void
+static void
 servermenu()
 {
 	if (pingsock == ENET_SOCKET_NULL) {
@@ -262,9 +267,11 @@ servermenu()
 	menuset(1);
 }
 
-void
-updatefrommaster()
-{
+COMMAND(servermenu, ARG_NONE, ^{
+	servermenu();
+})
+
+COMMAND(updatefrommaster, ARG_NONE, ^{
 	const int MAXUPD = 32000;
 	unsigned char buf[MAXUPD];
 	unsigned char *reply = retrieveservers(buf, MAXUPD);
@@ -276,11 +283,7 @@ updatefrommaster()
 		execute(@((char *)reply), true);
 	}
 	servermenu();
-}
-
-COMMAND(addserver, ARG_1STR)
-COMMAND(servermenu, ARG_NONE)
-COMMAND(updatefrommaster, ARG_NONE)
+})
 
 void
 writeservercfg()

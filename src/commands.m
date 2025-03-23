@@ -9,9 +9,6 @@
 #import "OFString+Cube.h"
 #import "Variable.h"
 
-// contains ALL vars/commands/aliases
-static OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
-
 static void
 cleanup(char **string)
 {
@@ -21,16 +18,13 @@ cleanup(char **string)
 void
 alias(OFString *name, OFString *action)
 {
-	Alias *alias = identifiers[name];
+	Alias *alias = [Identifier identifierForName:name];
 
-	if (alias == nil) {
-		alias = [Alias aliasWithName:name action:action persisted:true];
-
-		if (identifiers == nil)
-			identifiers = [[OFMutableDictionary alloc] init];
-
-		identifiers[name] = alias;
-	} else {
+	if (alias == nil)
+		[Identifier addIdentifier:[Alias aliasWithName:name
+		                                        action:action
+		                                     persisted:true]];
+	else {
 		if ([alias isKindOfClass:Alias.class])
 			alias.action = action;
 		else
@@ -38,69 +32,59 @@ alias(OFString *name, OFString *action)
 			    @"cannot redefine builtin %@ with an alias", name);
 	}
 }
-COMMAND(alias, ARG_2STR)
+
+COMMAND(alias, ARG_2STR, ^(OFString *name, OFString *action) {
+	alias(name, action);
+})
 
 int
 variable(OFString *name, int min, int cur, int max, int *storage,
     void (*function)(), bool persisted)
 {
-	Variable *variable = [Variable variableWithName:name
-	                                            min:min
-	                                            max:max
-	                                        storage:storage
-	                                       function:function
-	                                      persisted:persisted];
-
-	if (identifiers == nil)
-		identifiers = [[OFMutableDictionary alloc] init];
-
-	identifiers[name] = variable;
-
+	[Identifier addIdentifier:[Variable variableWithName:name
+	                                                 min:min
+	                                                 max:max
+	                                             storage:storage
+	                                            function:function
+	                                           persisted:persisted]];
 	return cur;
 }
 
 void
 setvar(OFString *name, int i)
 {
-	*[identifiers[name] storage] = i;
+	Variable *variable = [Identifier identifierForName:name];
+
+	if ([variable isKindOfClass:Variable.class])
+		*variable.storage = i;
 }
 
 int
 getvar(OFString *name)
 {
-	return *[identifiers[name] storage];
+	Variable *variable = [Identifier identifierForName:name];
+
+	if ([variable isKindOfClass:Variable.class])
+		return *variable.storage;
+
+	return 0;
 }
 
 bool
 identexists(OFString *name)
 {
-	return (identifiers[name] != nil);
+	return ([Identifier identifierForName:name] != nil);
 }
 
 OFString *
 getalias(OFString *name)
 {
-	Alias *alias = identifiers[name];
+	Alias *alias = [Identifier identifierForName:name];
 
 	if ([alias isKindOfClass:Alias.class])
 		return alias.action;
 
 	return nil;
-}
-
-bool
-addcommand(OFString *name, void (*function)(), int argumentsTypes)
-{
-	Command *command = [Command commandWithName:name
-	                                   function:function
-	                             argumentsTypes:argumentsTypes];
-
-	if (identifiers == nil)
-		identifiers = [[OFMutableDictionary alloc] init];
-
-	identifiers[name] = command;
-
-	return false;
 }
 
 // parse any nested set of () or []
@@ -168,7 +152,8 @@ parseword(char **p)
 OFString *
 lookup(OFString *n)
 {
-	__kindof Identifier *identifier = identifiers[[n substringFromIndex:1]];
+	__kindof Identifier *identifier =
+	    [Identifier identifierForName:[n substringFromIndex:1]];
 
 	if ([identifier isKindOfClass:Variable.class]) {
 		return [OFString stringWithFormat:@"%d", *[identifier storage]];
@@ -275,7 +260,7 @@ execute(OFString *string, bool isDown)
 		if (c.length == 0)
 			continue;
 
-		val = executeIdentifier(identifiers[c],
+		val = executeIdentifier([Identifier identifierForName:c],
 		    [OFArray arrayWithObjects:w count:numargs], isDown);
 	}
 
@@ -307,8 +292,8 @@ complete(OFMutableString *s)
 	}
 
 	__block int idx = 0;
-	[identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, Identifier *identifier, bool *stop) {
+	[Identifier enumerateIdentifiersUsingBlock:^(
+	    __kindof Identifier *identifier) {
 		if (strncmp(identifier.name.UTF8String, s.UTF8String + 1,
 		        completesize) == 0 &&
 		    idx++ == completeidx)
@@ -348,6 +333,10 @@ exec(OFString *cfgfile)
 		conoutf(@"could not read \"%@\"", cfgfile);
 }
 
+COMMAND(exec, ARG_1STR, ^(OFString *cfgfile) {
+	exec(cfgfile);
+})
+
 void
 writecfg()
 {
@@ -370,34 +359,36 @@ writecfg()
 	writeclientinfo(stream);
 	[stream writeString:@"\n"];
 
-	[identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:Variable.class] ||
-		    ![identifier persisted])
-			return;
+	[Identifier
+	    enumerateIdentifiersUsingBlock:^(__kindof Identifier *identifier) {
+		    if (![identifier isKindOfClass:Variable.class] ||
+		        ![identifier persisted])
+			    return;
 
-		[stream writeFormat:@"%@ %d\n", identifier.name,
-		        *[identifier storage]];
-	}];
+		    [stream writeFormat:@"%@ %d\n", identifier.name,
+		            *[identifier storage]];
+	    }];
 	[stream writeString:@"\n"];
 
 	writebinds(stream);
 	[stream writeString:@"\n"];
 
-	[identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:Alias.class] ||
-		    [identifier.name hasPrefix:@"nextmap_"])
-			return;
+	[Identifier
+	    enumerateIdentifiersUsingBlock:^(__kindof Identifier *identifier) {
+		    if (![identifier isKindOfClass:Alias.class] ||
+		        [identifier.name hasPrefix:@"nextmap_"])
+			    return;
 
-		[stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
-		        [identifier action]];
-	}];
+		    [stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
+		            [identifier action]];
+	    }];
 
 	[stream close];
 }
 
-COMMAND(writecfg, ARG_NONE)
+COMMAND(writecfg, ARG_NONE, ^{
+	writecfg();
+})
 
 // below the commands that implement a small imperative language. thanks to the
 // semantics of () and [] expressions, any control construct can be defined
@@ -409,36 +400,28 @@ intset(OFString *name, int v)
 	alias(name, [OFString stringWithFormat:@"%d", v]);
 }
 
-void
-ifthen(OFString *cond, OFString *thenp, OFString *elsep)
-{
+COMMAND(if, ARG_3STR, ^(OFString *cond, OFString *thenp, OFString *elsep) {
 	execute((![cond hasPrefix:@"0"] ? thenp : elsep), true);
-}
+})
 
-void
-loopa(OFString *times, OFString *body)
-{
+COMMAND(loop, ARG_2STR, ^(OFString *times, OFString *body) {
 	int t = times.cube_intValue;
 
 	for (int i = 0; i < t; i++) {
 		intset(@"i", i);
 		execute(body, true);
 	}
-}
+})
 
-void
-whilea(OFString *cond, OFString *body)
-{
+COMMAND(while, ARG_2STR, ^(OFString *cond, OFString *body) {
 	while (execute(cond, true))
 		execute(body, true);
-}
+})
 
-void
-onrelease(bool on, OFString *body)
-{
+COMMAND(onrelease, ARG_DWN1, ^(bool on, OFString *body) {
 	if (!on)
 		execute(body, true);
-}
+})
 
 void
 concat(OFString *s)
@@ -446,15 +429,15 @@ concat(OFString *s)
 	alias(@"s", s);
 }
 
-void
-concatword(OFString *s)
-{
-	concat([s stringByReplacingOccurrencesOfString:@" " withString:@""]);
-}
+COMMAND(concat, ARG_VARI, ^(OFString *s) {
+	concat(s);
+})
 
-int
-listlen(OFString *a_)
-{
+COMMAND(concatword, ARG_VARI, ^(OFString *s) {
+	concat([s stringByReplacingOccurrencesOfString:@" " withString:@""]);
+})
+
+COMMAND(listlen, ARG_1EST, ^(OFString *a_) {
 	const char *a = a_.UTF8String;
 
 	if (!*a)
@@ -466,11 +449,9 @@ listlen(OFString *a_)
 			n++;
 
 	return n + 1;
-}
+})
 
-void
-at(OFString *s_, OFString *pos)
-{
+COMMAND(at, ARG_2STR, ^(OFString *s_, OFString *pos) {
 	int n = pos.cube_intValue;
 	char *copy __attribute__((__cleanup__(cleanup))) =
 	    strdup(s_.UTF8String);
@@ -481,91 +462,48 @@ at(OFString *s_, OFString *pos)
 	}
 	s[strcspn(s, " \0")] = 0;
 	concat(@(s));
-}
+})
 
-COMMANDN(loop, loopa, ARG_2STR)
-COMMANDN(while, whilea, ARG_2STR)
-COMMANDN(if, ifthen, ARG_3STR)
-COMMAND(onrelease, ARG_DWN1)
-COMMAND(exec, ARG_1STR)
-COMMAND(concat, ARG_VARI)
-COMMAND(concatword, ARG_VARI)
-COMMAND(at, ARG_2STR)
-COMMAND(listlen, ARG_1EST)
-
-int
-add(int a, int b)
-{
+COMMAND(+, ARG_2EXP, ^(int a, int b) {
 	return a + b;
-}
-COMMANDN(+, add, ARG_2EXP)
+})
 
-int
-mul(int a, int b)
-{
+COMMAND(*, ARG_2EXP, ^(int a, int b) {
 	return a * b;
-}
-COMMANDN(*, mul, ARG_2EXP)
+})
 
-int
-sub(int a, int b)
-{
+COMMAND(-, ARG_2EXP, ^(int a, int b) {
 	return a - b;
-}
-COMMANDN(-, sub, ARG_2EXP)
+})
 
-int
-divi(int a, int b)
-{
+COMMAND(div, ARG_2EXP, ^(int a, int b) {
 	return b ? a / b : 0;
-}
-COMMANDN(div, divi, ARG_2EXP)
+})
 
-int
-mod(int a, int b)
-{
+COMMAND(mod, ARG_2EXP, ^(int a, int b) {
 	return b ? a % b : 0;
-}
-COMMAND(mod, ARG_2EXP)
+})
 
-int
-equal(int a, int b)
-{
+COMMAND(=, ARG_2EXP, ^(int a, int b) {
 	return (int)(a == b);
-}
-COMMANDN(=, equal, ARG_2EXP)
+})
 
-int
-lt(int a, int b)
-{
+COMMAND(<, ARG_2EXP, ^(int a, int b) {
 	return (int)(a < b);
-}
-COMMANDN(<, lt, ARG_2EXP)
+})
 
-int
-gt(int a, int b)
-{
+COMMAND(>, ARG_2EXP, ^(int a, int b) {
 	return (int)(a > b);
-}
-COMMANDN(>, gt, ARG_2EXP)
+})
 
-int
-strcmpa(OFString *a, OFString *b)
-{
+COMMAND(strcmp, ARG_2EST, ^(OFString *a, OFString *b) {
 	return [a isEqual:b];
-}
-COMMANDN(strcmp, strcmpa, ARG_2EST)
+})
 
-int
-rndn(int a)
-{
-	return a > 0 ? rnd(a) : 0;
-}
-COMMANDN(rnd, rndn, ARG_1EXP)
+COMMAND(rnd, ARG_1EXP, ^(int a) {
+	return (a > 0 ? rnd(a) : 0);
+})
 
-int
-explastmillis()
-{
+COMMAND(millis, ARG_1EXP, ^(int unused) {
 	return lastmillis;
-}
-COMMANDN(millis, explastmillis, ARG_1EXP)
+})

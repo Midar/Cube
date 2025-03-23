@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
@@ -10,12 +11,9 @@
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
-static void
-mode(int n)
-{
+COMMAND(mode, ARG_1INT, ^(int n) {
 	addmsg(1, 2, SV_GAMEMODE, nextmode = n);
-}
-COMMAND(mode, ARG_1INT)
+})
 
 bool intermission = false;
 
@@ -142,13 +140,10 @@ respawn()
 
 int sleepwait = 0;
 static OFString *sleepcmd = nil;
-void
-sleepf(OFString *msec, OFString *cmd)
-{
+COMMAND(sleep, ARG_2STR, ^(OFString *msec, OFString *cmd) {
 	sleepwait = msec.cube_intValue + lastmillis;
 	sleepcmd = cmd;
-}
-COMMANDN(sleep, sleepf, ARG_2STR)
+})
 
 void
 updateworld(int millis) // main game update loop
@@ -240,43 +235,34 @@ spawnplayer(DynamicEntity *d)
 // movement input code
 
 #define dir(name, v, d, s, os)                                    \
-	static void name(bool isdown)                             \
-	{                                                         \
-		player1.s = isdown;                               \
-		player1.v = isdown ? d : (player1.os ? -(d) : 0); \
+	COMMAND(name, ARG_DOWN, ^(bool isDown) {                  \
+		player1.s = isDown;                               \
+		player1.v = isDown ? d : (player1.os ? -(d) : 0); \
 		player1.lastMove = lastmillis;                    \
-	}
+	})
 
 dir(backward, move, -1, k_down, k_up);
 dir(forward, move, 1, k_up, k_down);
 dir(left, strafe, 1, k_left, k_right);
 dir(right, strafe, -1, k_right, k_left);
 
-void
-attack(bool on)
-{
+COMMAND(attack, ARG_DOWN, ^(bool on) {
 	if (intermission)
 		return;
 	if (editmode)
 		editdrag(on);
 	else if ((player1.attacking = on))
 		respawn();
-}
+})
 
-void
-jumpn(bool on)
-{
+COMMAND(jump, ARG_DOWN, ^(bool on) {
 	if (!intermission && (player1.jumpNext = on))
 		respawn();
-}
+})
 
-COMMAND(backward, ARG_DOWN)
-COMMAND(forward, ARG_DOWN)
-COMMAND(left, ARG_DOWN)
-COMMAND(right, ARG_DOWN)
-COMMANDN(jump, jumpn, ARG_DOWN)
-COMMAND(attack, ARG_DOWN)
-COMMAND(showscores, ARG_DOWN)
+COMMAND(showscores, ARG_DOWN, ^(bool isDown) {
+	showscores(isDown);
+})
 
 void
 fixplayer1range()
@@ -440,4 +426,6 @@ startmap(OFString *name) // called just after a map load
 	conoutf(@"game mode is %@", modestr(gamemode));
 }
 
-COMMANDN(map, changemap, ARG_1STR)
+COMMAND(map, ARG_1STR, ^(OFString *name) {
+	changemap(name);
+})

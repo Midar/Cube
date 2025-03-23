@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 
 static ENetHost *clienthost = NULL;
@@ -60,7 +61,7 @@ throttle()
 	    throttle_interval * 1000, throttle_accel, throttle_decel);
 }
 
-void
+static void
 newname(OFString *name)
 {
 	c2sinit = false;
@@ -70,9 +71,12 @@ newname(OFString *name)
 
 	player1.name = name;
 }
-COMMANDN(name, newname, ARG_1STR)
 
-void
+COMMAND(name, ARG_1STR, ^(OFString *name) {
+	newname(name);
+})
+
+static void
 newteam(OFString *name)
 {
 	c2sinit = false;
@@ -82,7 +86,10 @@ newteam(OFString *name)
 
 	player1.team = name;
 }
-COMMANDN(team, newteam, ARG_1STR)
+
+COMMAND(team, ARG_1STR, ^(OFString *name) {
+	newteam(name);
+})
 
 void
 writeclientinfo(OFStream *stream)
@@ -177,16 +184,18 @@ toserver(OFString *text)
 	ctext = text;
 }
 
-void
-echo(OFString *text)
-{
+COMMAND(echo, ARG_VARI, ^(OFString *text) {
 	conoutf(@"%@", text);
-}
-
-COMMAND(echo, ARG_VARI)
-COMMANDN(say, toserver, ARG_VARI)
-COMMANDN(connect, connects, ARG_1STR)
-COMMANDN(disconnect, trydisconnect, ARG_NONE)
+})
+COMMAND(say, ARG_VARI, ^(OFString *text) {
+	toserver(text);
+})
+COMMAND(connect, ARG_1STR, ^(OFString *servername) {
+	connects(servername);
+})
+COMMAND(disconnect, ARG_NONE, ^{
+	trydisconnect();
+})
 
 // collect c2s messages conveniently
 
@@ -239,12 +248,9 @@ bool senditemstoserver =
     false; // after a map change, since server doesn't have map data
 
 OFString *clientpassword;
-void
-password(OFString *p)
-{
+COMMAND(password, ARG_1STR, ^(OFString *p) {
 	clientpassword = p;
-}
-COMMAND(password, ARG_1STR)
+})
 
 bool
 netmapstart()

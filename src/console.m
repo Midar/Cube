@@ -4,6 +4,7 @@
 
 #include <ctype.h>
 
+#import "Command.h"
 #import "ConsoleLine.h"
 #import "KeyMapping.h"
 #import "OFString+Cube.h"
@@ -17,14 +18,11 @@ int conskip = 0;
 bool saycommandon = false;
 static OFMutableString *commandbuf;
 
-void
-setconskip(int n)
-{
+COMMAND(conskip, ARG_1INT, ^(int n) {
 	conskip += n;
 	if (conskip < 0)
 		conskip = 0;
-}
-COMMANDN(conskip, setconskip, ARG_1INT)
+})
 
 static void
 conline(OFString *sf, bool highlight) // add a line to the console buffer
@@ -104,9 +102,7 @@ renderconsole()
 
 static OFMutableArray<KeyMapping *> *keyMappings = nil;
 
-void
-keymap(OFString *code, OFString *key, OFString *action)
-{
+COMMAND(keymap, ARG_3STR, ^(OFString *code, OFString *key, OFString *action) {
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
@@ -114,12 +110,9 @@ keymap(OFString *code, OFString *key, OFString *action)
 	                                             name:key];
 	mapping.action = action;
 	[keyMappings addObject:mapping];
-}
-COMMAND(keymap, ARG_3STR)
+})
 
-void
-bindkey(OFString *key, OFString *action)
-{
+COMMAND(bind, ARG_2STR, ^(OFString *key, OFString *action) {
 	for (KeyMapping *mapping in keyMappings) {
 		if ([mapping.name caseInsensitiveCompare:key] ==
 		    OFOrderedSame) {
@@ -129,11 +122,11 @@ bindkey(OFString *key, OFString *action)
 	}
 
 	conoutf(@"unknown key \"%@\"", key);
-}
-COMMANDN(bind, bindkey, ARG_2STR)
+})
 
-void
-saycommand(OFString *init) // turns input to the command line on or off
+// turns input to the command line on or off
+static void
+saycommand(OFString *init)
 {
 	saycommandon = (init != nil);
 	if (saycommandon)
@@ -149,15 +142,15 @@ saycommand(OFString *init) // turns input to the command line on or off
 
 	commandbuf = [init mutableCopy];
 }
-COMMAND(saycommand, ARG_VARI)
 
-void
-mapmsg(OFString *s)
-{
+COMMAND(saycommand, ARG_VARI, ^(OFString *init) {
+	saycommand(init);
+})
+
+COMMAND(mapmsg, ARG_1STR, ^(OFString *s) {
 	memset(hdr.maptitle, '\0', sizeof(hdr.maptitle));
 	strncpy(hdr.maptitle, s.UTF8String, 127);
-}
-COMMAND(mapmsg, ARG_1STR)
+})
 
 void
 pasteconsole()
@@ -168,9 +161,7 @@ pasteconsole()
 static OFMutableArray<OFString *> *vhistory;
 static int histpos = 0;
 
-void
-history(int n)
-{
+COMMAND(history, ARG_1INT, ^(int n) {
 	static bool rec = false;
 
 	if (!rec && n >= 0 && n < vhistory.count) {
@@ -178,8 +169,7 @@ history(int n)
 		execute(vhistory[vhistory.count - n - 1], true);
 		rec = false;
 	}
-}
-COMMAND(history, ARG_1INT)
+})
 
 void
 keypress(int code, bool isDown)

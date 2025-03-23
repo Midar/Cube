@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 
 OF_APPLICATION_DELEGATE(Cube)
@@ -373,16 +374,11 @@ fatal(OFConstantString *s, ...)
 	[OFApplication terminateWithStatus:1];
 }
 
-void
-quit() // normal exit
-{
+// normal exit
+COMMAND(quit, ARG_NONE, ^{
 	[Cube.sharedInstance quit];
-}
-COMMAND(quit, ARG_NONE)
+})
 
-void
-screenshot()
-{
+COMMAND(screenshot, ARG_NONE, ^{
 	[Cube.sharedInstance screenshot];
-}
-COMMAND(screenshot, ARG_NONE)
+})

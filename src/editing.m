@@ -3,6 +3,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
@@ -78,7 +79,10 @@ toggleedit()
 	selset = false;
 	editing = editmode;
 }
-COMMANDN(edittoggle, toggleedit, ARG_NONE)
+
+COMMAND(edittoggle, ARG_NONE, ^{
+	toggleedit();
+})
 
 void
 correctsel() // ensures above invariant
@@ -120,14 +124,12 @@ noselection()
 	if (noteditmode() || multiplayer()) \
 		return;
 
-void
-selectpos(int x, int y, int xs, int ys)
-{
+COMMAND(select, ARG_4INT, (^(int x, int y, int xs, int ys) {
 	struct block s = { x, y, xs, ys };
 	sel = s;
 	selh = 0;
 	correctsel();
-}
+}))
 
 void
 makesel()
@@ -272,9 +274,7 @@ makeundo()
 	pruneundos(undomegs << 20);
 }
 
-void
-editundo()
-{
+COMMAND(undo, ARG_NONE, ^{
 	EDITMP;
 	if (undos.count == 0) {
 		conoutf(@"nothing more to undo");
@@ -284,24 +284,20 @@ editundo()
 	[undos removeLastItem];
 	blockpaste(p);
 	OFFreeMemory(p);
-}
+})
 
 static struct block *copybuf = NULL;
 
-void
-copy()
-{
+COMMAND(copy, ARG_NONE, ^{
 	EDITSELMP;
 
 	if (copybuf)
 		OFFreeMemory(copybuf);
 
 	copybuf = blockcopy(&sel);
-}
+})
 
-void
-paste()
-{
+COMMAND(paste, ARG_NONE, ^{
 	EDITMP;
 	if (!copybuf) {
 		conoutf(@"nothing to paste");
@@ -318,7 +314,7 @@ paste()
 	copybuf->x = sel.x;
 	copybuf->y = sel.y;
 	blockpaste(copybuf);
-}
+})
 
 void
 tofronttex() // maintain most recently used of the texture lists when applying
@@ -378,7 +374,10 @@ editheight(int flr, int amount)
 	editheightxy(isfloor, amount, &sel);
 	addmsg(1, 7, SV_EDITH, sel.x, sel.y, sel.xs, sel.ys, isfloor, amount);
 }
-COMMAND(editheight, ARG_2INT)
+
+COMMAND(editheight, ARG_2INT, ^(int flr, int amount) {
+	editheight(flr, amount);
+})
 
 void
 edittexxy(int type, int t, const struct block *sel)
@@ -399,9 +398,7 @@ edittexxy(int type, int t, const struct block *sel)
 	});
 }
 
-void
-edittex(int type, int dir)
-{
+COMMAND(edittex, ARG_2INT, ^(int type, int dir) {
 	EDITSEL;
 
 	if (type < 0 || type > 3)
@@ -419,11 +416,9 @@ edittex(int type, int dir)
 	int t = lasttex = hdr.texlists[atype][i];
 	edittexxy(type, t, &sel);
 	addmsg(1, 7, SV_EDITT, sel.x, sel.y, sel.xs, sel.ys, type, t);
-}
+})
 
-void
-replace()
-{
+COMMAND(replace, ARG_NONE, (^{
 	EDITSELMP;
 
 	for (int x = 0; x < ssize; x++) {
@@ -452,7 +447,7 @@ replace()
 
 	struct block b = { 0, 0, ssize, ssize };
 	remip(&b, 0);
-}
+}))
 
 void
 edittypexy(int type, const struct block *sel)
@@ -460,7 +455,7 @@ edittypexy(int type, const struct block *sel)
 	loopselxy(s->type = type);
 }
 
-void
+static void
 edittype(int type)
 {
 	EDITSEL;
@@ -476,26 +471,17 @@ edittype(int type)
 	addmsg(1, 6, SV_EDITS, sel.x, sel.y, sel.xs, sel.ys, type);
 }
 
-void
-heightfield(int t)
-{
+COMMAND(heightfield, ARG_1INT, ^(int t) {
 	edittype(t == 0 ? FHF : CHF);
-}
-COMMAND(heightfield, ARG_1INT)
+})
 
-void
-solid(int t)
-{
+COMMAND(solid, ARG_1INT, ^(int t) {
 	edittype(t == 0 ? SPACE : SOLID);
-}
-COMMAND(solid, ARG_1INT)
+})
 
-void
-corner()
-{
+COMMAND(corner, ARG_NONE, ^{
 	edittype(CORNER);
-}
-COMMAND(corner, ARG_NONE)
+})
 
 void
 editequalisexy(bool isfloor, const struct block *sel)
@@ -517,17 +503,14 @@ editequalisexy(bool isfloor, const struct block *sel)
 	});
 }
 
-void
-equalize(int flr)
-{
+COMMAND(equalize, ARG_1INT, ^(int flr) {
 	bool isfloor = (flr == 0);
 
 	EDITSEL;
 
 	editequalisexy(isfloor, &sel);
 	addmsg(1, 6, SV_EDITE, sel.x, sel.y, sel.xs, sel.ys, isfloor);
-}
-COMMAND(equalize, ARG_1INT)
+})
 
 void
 setvdeltaxy(int delta, const struct block *sel)
@@ -536,22 +519,18 @@ setvdeltaxy(int delta, const struct block *sel)
 	remipmore(sel, 0);
 }
 
-void
-setvdelta(int delta)
-{
+COMMAND(vdelta, ARG_1INT, ^(int delta) {
 	EDITSEL;
 
 	setvdeltaxy(delta, &sel);
 	addmsg(1, 6, SV_EDITD, sel.x, sel.y, sel.xs, sel.ys, delta);
-}
+})
 
 #define MAXARCHVERT 50
 int archverts[MAXARCHVERT][MAXARCHVERT];
 bool archvinit = false;
 
-void
-archvertex(int span, int vert, int delta)
-{
+COMMAND(archvertex, ARG_3INT, ^(int span, int vert, int delta) {
 	if (!archvinit) {
 		archvinit = true;
 		for (int s = 0; s < MAXARCHVERT; s++)
@@ -561,11 +540,9 @@ archvertex(int span, int vert, int delta)
 	if (span >= MAXARCHVERT || vert >= MAXARCHVERT || span < 0 || vert < 0)
 		return;
 	archverts[span][vert] = delta;
-}
+})
 
-void
-arch(int sidedelta, int _a)
-{
+COMMAND(arch, ARG_2INT, ^(int sidedelta, int _a) {
 	EDITSELMP;
 
 	sel.xs++;
@@ -585,11 +562,9 @@ arch(int sidedelta, int _a)
 	        : (archverts[sel->ys - 1][y] +
 	              (x == 0 || x == sel->xs - 1 ? sidedelta : 0)));
 	remipmore(sel, 0);
-}
+})
 
-void
-slope(int xd, int yd)
-{
+COMMAND(slope, ARG_2INT, ^(int xd, int yd) {
 	EDITSELMP;
 
 	int off = 0;
@@ -606,11 +581,9 @@ slope(int xd, int yd)
 	struct block *sel = sel_;
 	loopselxy(s->vdelta = xd * x + yd * y + off);
 	remipmore(sel, 0);
-}
+})
 
-void
-perlin(int scale, int seed, int psize)
-{
+COMMAND(perlin, ARG_3INT, ^(int scale, int seed, int psize) {
 	EDITSELMP;
 
 	sel.xs++;
@@ -630,7 +603,7 @@ perlin(int scale, int seed, int psize)
 
 	sel.xs--;
 	sel.ys--;
-}
+})
 
 VARF(
     fullbright, 0, 0, 1, if (fullbright) {
@@ -640,37 +613,20 @@ VARF(
 		    world[i].r = world[i].g = world[i].b = 176;
     });
 
-void
-edittag(int tag)
-{
+COMMAND(edittag, ARG_1INT, ^(int tag) {
 	EDITSELMP;
 
 	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
 	struct block *sel = sel_;
 	loopselxy(s->tag = tag);
-}
+})
 
-void
-newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
-{
-	EDITSEL;
+COMMAND(newent, ARG_5STR,
+    ^(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4) {
+	    EDITSEL;
 
-	newentity(sel.x, sel.y, (int)player1.origin.z, what,
-	    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
-	    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
-}
-
-COMMANDN(select, selectpos, ARG_4INT)
-COMMAND(edittag, ARG_1INT)
-COMMAND(replace, ARG_NONE)
-COMMAND(archvertex, ARG_3INT)
-COMMAND(arch, ARG_2INT)
-COMMAND(slope, ARG_2INT)
-COMMANDN(vdelta, setvdelta, ARG_1INT)
-COMMANDN(undo, editundo, ARG_NONE)
-COMMAND(copy, ARG_NONE)
-COMMAND(paste, ARG_NONE)
-COMMAND(edittex, ARG_2INT)
-COMMAND(newent, ARG_5STR)
-COMMAND(perlin, ARG_3INT)
+	    newentity(sel.x, sel.y, (int)player1.origin.z, what,
+	        [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
+	        [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
+    })

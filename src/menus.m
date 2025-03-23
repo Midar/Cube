@@ -4,6 +4,7 @@
 
 #import "Menu.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "MenuItem.h"
 
@@ -20,9 +21,7 @@ menuset(int menu)
 		menus[1].menusel = 0;
 }
 
-void
-showmenu(OFString *name)
-{
+COMMAND(showmenu, ARG_1STR, ^(OFString *name) {
 	int i = 0;
 	for (Menu *menu in menus) {
 		if (i > 1 && [menu.name isEqual:name]) {
@@ -31,8 +30,7 @@ showmenu(OFString *name)
 		}
 		i++;
 	}
-}
-COMMAND(showmenu, ARG_1STR)
+})
 
 void
 sortmenu()
@@ -97,7 +95,10 @@ newmenu(OFString *name)
 
 	[menus addObject:[Menu menuWithName:name]];
 }
-COMMAND(newmenu, ARG_1STR)
+
+COMMAND(newmenu, ARG_1STR, ^(OFString *name) {
+	newmenu(name);
+})
 
 void
 menumanual(int m, int n, OFString *text)
@@ -109,17 +110,14 @@ menumanual(int m, int n, OFString *text)
 	[menus[m].items addObject:item];
 }
 
-void
-menuitem(OFString *text, OFString *action)
-{
+COMMAND(menuitem, ARG_2STR, ^(OFString *text, OFString *action) {
 	Menu *menu = menus.lastObject;
 
 	MenuItem *item =
 	    [MenuItem itemWithText:text
 	                    action:(action.length > 0 ? action : text)];
 	[menu.items addObject:item];
-}
-COMMAND(menuitem, ARG_2STR)
+})
 
 bool
 menukey(int code, bool isdown)

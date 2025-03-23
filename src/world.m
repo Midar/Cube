@@ -2,6 +2,7 @@
 
 #include "cube.h"
 
+#import "Command.h"
 #import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
@@ -91,7 +92,10 @@ trigger(int tag, int type, bool savegame)
 	if (type == 2)
 		[Monster endSinglePlayerWithAllKilled:false];
 }
-COMMAND(trigger, ARG_2INT)
+
+COMMAND(trigger, ARG_2INT, ^(int tag, int type, bool savegame) {
+	trigger(tag, type, savegame);
+})
 
 // main geometric mipmapping routine, recursively rebuild mipmaps within block
 // b. tries to produce cube out of 4 lower level mips as well as possible, sets
@@ -304,9 +308,7 @@ closestent() // used for delent and edit mode ent display
 	return (bdist == 99999 ? -1 : best);
 }
 
-void
-entproperty(int prop, int amount)
-{
+COMMAND(entproperty, ARG_2INT, ^(int prop, int amount) {
 	int e = closestent();
 	if (e < 0)
 		return;
@@ -324,11 +326,9 @@ entproperty(int prop, int amount)
 		ents[e].attr4 += amount;
 		break;
 	}
-}
+})
 
-void
-delent()
-{
+COMMAND(delent, ARG_NONE, ^{
 	int e = closestent();
 	if (e < 0) {
 		conoutf(@"no more entities");
@@ -340,7 +340,7 @@ delent()
 	addmsg(1, 10, SV_EDITENT, e, NOTUSED, 0, 0, 0, 0, 0, 0, 0);
 	if (t == LIGHT)
 		calclight();
-}
+})
 
 int
 findtype(OFString *what)
@@ -397,9 +397,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	return e;
 }
 
-void
-clearents(OFString *name)
-{
+COMMAND(clearents, ARG_1STR, ^(OFString *name) {
 	int type = findtype(name);
 
 	if (noteditmode() || multiplayer())
@@ -411,8 +409,7 @@ clearents(OFString *name)
 
 	if (type == LIGHT)
 		calclight();
-}
-COMMAND(clearents, ARG_1STR)
+})
 
 static unsigned char
 scalecomp(unsigned char c, int intens)
@@ -423,9 +420,7 @@ scalecomp(unsigned char c, int intens)
 	return n;
 }
 
-void
-scalelights(int f, int intens)
-{
+COMMAND(scalelights, ARG_2INT, ^(int f, int intens) {
 	for (Entity *e in ents) {
 		if (e.type != LIGHT)
 			continue;
@@ -444,8 +439,7 @@ scalelights(int f, int intens)
 	}
 
 	calclight();
-}
-COMMAND(scalelights, ARG_2INT)
+})
 
 int
 findentity(int type, int index)
@@ -551,20 +545,14 @@ empty_world(int factor, bool force)
 	}
 }
 
-void
-mapenlarge()
-{
+COMMAND(mapenlarge, ARG_NONE, ^{
 	empty_world(-1, false);
-}
+})
 
-void
-newmap(int i)
-{
+COMMAND(newmap, ARG_1INT, ^(int i) {
 	empty_world(i, false);
-}
+})
 
-COMMAND(mapenlarge, ARG_NONE)
-COMMAND(newmap, ARG_1INT)
-COMMANDN(recalc, calclight, ARG_NONE)
-COMMAND(delent, ARG_NONE)
-COMMAND(entproperty, ARG_2INT)
+COMMAND(recalc, ARG_NONE, ^{
+	calclight();
+})
