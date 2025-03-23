@@ -47,11 +47,11 @@ updatepos(DynamicEntity *d)
 	if (fx < r && fy < r && fz < rz && d.state != CS_DEAD) {
 		if (fx < fy)
 			// push aside
-			d.origin = OFAddVector3D(d.origin,
+			d.origin = OFAddVectors3D(d.origin,
 			    OFMakeVector3D(
 			        0, (dy < 0 ? r - fy : -(r - fy)), 0));
 		else
-			d.origin = OFAddVector3D(d.origin,
+			d.origin = OFAddVectors3D(d.origin,
 			    OFMakeVector3D(
 			        (dx < 0 ? r - fx : -(r - fx)), 0, 0));
 	}

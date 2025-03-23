@@ -208,13 +208,13 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 				    d.origin.x, d.origin.y, lo + d.eyeHeight);
 			else if (space > -1.26f)
 				// rise thru stair
-				d.origin = OFAddVector3D(
+				d.origin = OFAddVectors3D(
 				    d.origin, OFMakeVector3D(0, 0, rise));
 			else
 				return false;
 		} else
 			// gravity
-			d.origin = OFSubtractVector3D(d.origin,
+			d.origin = OFSubtractVectors3D(d.origin,
 			    OFMakeVector3D(
 			        0, 0, min(min(drop, space), headspace)));
 
@@ -361,14 +361,14 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 		// discrete steps collision detection & sliding
 		for (int i = 0; i < moveres; i++) {
 			// try move forward
-			pl.origin = OFAddVector3D(pl.origin,
+			pl.origin = OFAddVectors3D(pl.origin,
 			    OFMakeVector3D(f * d.x, f * d.y, f * d.z));
 			if (collide(pl, false, drop, rise))
 				continue;
 
 			// player stuck, try slide along y axis
 			pl.blocked = true;
-			pl.origin = OFSubtractVector3D(
+			pl.origin = OFSubtractVectors3D(
 			    pl.origin, OFMakeVector3D(f * d.x, 0, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.x = 0;
@@ -376,7 +376,7 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 			}
 
 			// still stuck, try x axis
-			pl.origin = OFAddVector3D(
+			pl.origin = OFAddVectors3D(
 			    pl.origin, OFMakeVector3D(f * d.x, -f * d.y, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.y = 0;
@@ -385,14 +385,14 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 
 			// try just dropping down
 			pl.moving = false;
-			pl.origin = OFSubtractVector3D(
+			pl.origin = OFSubtractVectors3D(
 			    pl.origin, OFMakeVector3D(f * d.x, 0, 0));
 			if (collide(pl, false, drop, rise)) {
 				d.y = d.x = 0;
 				continue;
 			}
 
-			pl.origin = OFSubtractVector3D(
+			pl.origin = OFSubtractVectors3D(
 			    pl.origin, OFMakeVector3D(0, 0, f * d.z));
 			break;
 		}

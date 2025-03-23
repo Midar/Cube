@@ -203,7 +203,7 @@ entinmap(DynamicEntity *d)
 		float dx = (rnd(21) - 10) / 10.0f * i; // increasing distance
 		float dy = (rnd(21) - 10) / 10.0f * i;
 		OFVector3D old = d.origin;
-		d.origin = OFAddVector3D(d.origin, OFMakeVector3D(dx, dy, 0));
+		d.origin = OFAddVectors3D(d.origin, OFMakeVector3D(dx, dy, 0));
 		if (collide(d, true, 0, 0))
 			return;
 		d.origin = old;

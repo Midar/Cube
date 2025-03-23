@@ -288,10 +288,10 @@ extern bool demoplayback;
 
 // simplistic vector ops
 #define dotprod(u, v) ((u).x * (v).x + (u).y * (v).y + (u).z * (v).z)
-#define vmul(u, f) u = OFMultiplyVector3D(u, OFMakeVector3D(f, f, f))
-#define vdiv(u, f) u = OFDivideVector3D(u, OFMakeVector3D(f, f, f))
-#define vadd(u, v) u = OFAddVector3D(u, v)
-#define vsub(u, v) u = OFSubtractVector3D(u, v)
+#define vmul(u, f) u = OFMultiplyVector3D(u, f)
+#define vdiv(u, f) u = OFMultiplyVector3D(u, (f) / 1.0f)
+#define vadd(u, v) u = OFAddVectors3D(u, v)
+#define vsub(u, v) u = OFSubtractVectors3D(u, v)
 #define vdist(d, v, e, s) \
 	OFVector3D v = s; \
 	vsub(v, e);       \
