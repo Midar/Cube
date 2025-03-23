@@ -250,15 +250,6 @@ extern void projreset();
 extern OFString *playerincrosshair();
 extern int reloadtime(int gun);
 
-// monster
-extern void monsterclear();
-extern void restoremonsterstate();
-extern void monsterthink();
-extern void monsterrender();
-extern OFArray<DynamicEntity *> *getmonsters();
-extern void monsterpain(DynamicEntity *m, int damage, DynamicEntity *d);
-extern void endsp(bool allkilled);
-
 // entities
 extern void initEntities();
 extern void renderents();

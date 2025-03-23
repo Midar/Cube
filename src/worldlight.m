@@ -4,6 +4,7 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
+#import "Monster.h"
 
 extern bool hasoverbright;
 
@@ -205,7 +206,7 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 {
 	if (!reach)
 		reach = dynlight;
-	if (owner.monsterState)
+	if ([owner isKindOfClass:Monster.class])
 		reach = reach / 2;
 	if (!reach)
 		return;

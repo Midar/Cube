@@ -4,6 +4,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Monster.h"
 #import "OFString+Cube.h"
 
 bool editmode = false;
@@ -68,8 +69,8 @@ toggleedit()
 		                 // edited
 		player1.health = 100;
 		if (m_classicsp)
-			monsterclear(); // all monsters back at their spawns for
-			                // editing
+			// all monsters back at their spawns for editing
+			[Monster resetAll];
 		projreset();
 	}
 	Cube.sharedInstance.repeatsKeys = editmode;

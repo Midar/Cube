@@ -29,24 +29,10 @@
 @property (nonatomic) int health, armour, armourType, quadMillis;
 @property (nonatomic) int gunSelect, gunWait;
 @property (nonatomic) int lastAction, lastAttackGun, lastMove;
-@property (nonatomic) bool attacking;
 @property (readonly, nonatomic) int *ammo;
-// one of M_* below, M_NONE means human
-@property (nonatomic) int monsterState;
-// see monster.m
-@property (nonatomic) int monsterType;
-// monster wants to kill this entity
-@property (nonatomic) DynamicEntity *enemy;
-// monster wants to look in this direction
-@property (nonatomic) float targetYaw;
+@property (nonatomic) bool attacking;
 // used by physics to signal ai
 @property (nonatomic) bool blocked, moving;
-// millis at which transition to another monsterstate takes place
-@property (nonatomic) int trigger;
-// delayed attacks
-@property (nonatomic) OFVector3D attackTarget;
-// how many times already hit by fellow monster
-@property (nonatomic) int anger;
 @property (copy, nonatomic) OFString *name, *team;
 
 + (instancetype)entity;

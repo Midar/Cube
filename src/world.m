@@ -4,6 +4,7 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
+#import "Monster.h"
 
 extern OFString *entnames[]; // lookup from map entities above to strings
 
@@ -79,7 +80,7 @@ trigger(int tag, int type, bool savegame)
 		execute(aliasname, true);
 
 	if (type == 2)
-		endsp(false);
+		[Monster endSinglePlayerWithAllKilled:false];
 }
 COMMAND(trigger, ARG_2INT)
 

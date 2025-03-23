@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Monster.h"
 
 // render players & monsters
 // very messy ad-hoc handling of animation frames, should be made more
@@ -53,9 +54,11 @@ renderclient(
 		n = 16;
 	} else if (d.state == CS_LAGGED) {
 		n = 17;
-	} else if (d.monsterState == M_ATTACKING) {
+	} else if ([d isKindOfClass:Monster.class] &&
+	    ((Monster *)d).monsterState == M_ATTACKING) {
 		n = 8;
-	} else if (d.monsterState == M_PAIN) {
+	} else if ([d isKindOfClass:Monster.class] &&
+	    ((Monster *)d).monsterState == M_PAIN) {
 		n = 10;
 	} else if ((!d.move && !d.strafe) || !d.moving) {
 		n = 12;

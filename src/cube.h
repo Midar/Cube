@@ -126,7 +126,6 @@ enum {
 
 enum { A_BLUE, A_GREEN, A_YELLOW }; // armour types... take 20/40/60 % off
 enum {
-	M_NONE = 0,
 	M_SEARCH,
 	M_HOME,
 	M_ATTACKING,

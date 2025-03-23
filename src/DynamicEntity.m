@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "Monster.h"
+
 struct dynent {
 	OFVector3D origin, velocity;
 	float yaw, pitch, roll;
@@ -113,16 +115,8 @@ struct dynent {
 	for (size_t i = 0; i < NUMGUNS; i++)
 		copy->_ammo[i] = _ammo[i];
 
-	copy->_monsterState = _monsterState;
-	copy->_monsterType = _monsterType;
-	copy->_enemy = _enemy;
-	copy->_targetYaw = _targetYaw;
 	copy->_blocked = _blocked;
 	copy->_moving = _moving;
-	copy->_trigger = _trigger;
-	copy->_attackTarget = _attackTarget;
-	copy->_anger = _anger;
-
 	copy->_name = [_name copy];
 	copy->_team = [_team copy];
 
@@ -169,14 +163,18 @@ struct dynent {
 		.lastAttackGun = _lastAttackGun,
 		.lastMove = _lastMove,
 		.attacking = _attacking,
-		.monsterState = _monsterState,
-		.monsterType = _monsterType,
-		.targetYaw = _targetYaw,
 		.blocked = _blocked,
-		.moving = _moving,
-		.trigger = _trigger,
-		.attackTarget = _attackTarget,
-		.anger = _anger };
+		.moving = _moving };
+
+	if ([self isKindOfClass:Monster.class]) {
+		Monster *monster = (Monster *)self;
+		data.monsterState = monster.monsterState;
+		data.monsterType = monster.monsterType;
+		data.targetYaw = monster.targetYaw;
+		data.trigger = monster.trigger;
+		data.attackTarget = monster.attackTarget;
+		data.anger = monster.anger;
+	}
 
 	for (int i = 0; i < NUMGUNS; i++)
 		data.ammo[i] = _ammo[i];
@@ -236,14 +234,18 @@ struct dynent {
 	for (int i = 0; i < NUMGUNS; i++)
 		_ammo[i] = d.ammo[i];
 
-	_monsterState = d.monsterState;
-	_monsterType = d.monsterType;
-	_targetYaw = d.targetYaw;
 	_blocked = d.blocked;
 	_moving = d.moving;
-	_trigger = d.trigger;
-	_attackTarget = d.attackTarget;
-	_anger = d.anger;
+
+	if ([self isKindOfClass:Monster.class]) {
+		Monster *monster = (Monster *)self;
+		monster.monsterState = d.monsterState;
+		monster.monsterType = d.monsterType;
+		monster.targetYaw = d.targetYaw;
+		monster.trigger = d.trigger;
+		monster.attackTarget = d.attackTarget;
+		monster.anger = d.anger;
+	}
 
 	_name = [[OFString alloc] initWithUTF8String:d.name];
 	_team = [[OFString alloc] initWithUTF8String:d.team];

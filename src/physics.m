@@ -9,6 +9,7 @@
 #import "DynamicEntity.h"
 #import "Entity.h"
 #import "MapModelInfo.h"
+#import "Monster.h"
 
 // collide with player or monster
 static bool
@@ -29,9 +30,9 @@ plcollide(
 
 		if (fabs(o.origin.z - d.origin.z) < o.aboveEye + d.eyeHeight)
 			return false;
-		if (d.monsterState)
+		if ([d isKindOfClass:Monster.class])
 			return false; // hack
-			              //
+
 		*headspace = d.origin.z - o.origin.z - o.aboveEye - d.eyeHeight;
 		if (*headspace < 0)
 			*headspace = 10;
@@ -105,9 +106,10 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 	const int y2 = fast_f2nat(fy2);
 	float hi = 127, lo = -128;
 	// big monsters are afraid of heights, unless angry :)
-	float minfloor = (d.monsterState && !spawn && d.health > 100)
-	    ? d.origin.z - d.eyeHeight - 4.5f
-	    : -1000.0f;
+	float minfloor =
+	    ([d isKindOfClass:Monster.class] && !spawn && d.health > 100
+	            ? d.origin.z - d.eyeHeight - 4.5f
+	            : -1000.0f);
 
 	for (int x = x1; x <= x2; x++) {
 		for (int y = y1; y <= y2; y++) {
@@ -183,7 +185,7 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 
 	// this loop can be a performance bottleneck with many monster on a slow
 	// cpu, should replace with a blockmap but seems mostly fast enough
-	for (DynamicEntity *monster in getmonsters())
+	for (Monster *monster in Monster.monsters)
 		if (!vreject(d.origin, monster.origin, 7.0f) && d != monster &&
 		    !plcollide(d, monster, &headspace, &hi, &lo))
 			return false;
@@ -323,7 +325,7 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 					    pl.velocity.y / 8, pl.velocity.z);
 				if (local)
 					playsoundc(S_JUMP);
-				else if (pl.monsterState) {
+				else if ([pl isKindOfClass:Monster.class]) {
 					OFVector3D loc = pl.origin;
 					playsound(S_JUMP, &loc);
 				}
@@ -332,7 +334,7 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 				// high jump, make thud sound
 				if (local)
 					playsoundc(S_LAND);
-				else if (pl.monsterState) {
+				else if ([pl isKindOfClass:Monster.class]) {
 					OFVector3D loc = pl.origin;
 					playsound(S_LAND, &loc);
 				}

@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "DynamicEntity.h"
+#import "Monster.h"
 #import "OFString+Cube.h"
 
 #ifdef DARWIN
@@ -478,7 +479,7 @@ gl_drawframe(int w, int h, float curfps)
 	xtraverts = 0;
 
 	renderclients();
-	monsterrender();
+	[Monster renderAll];
 
 	renderentities();
 

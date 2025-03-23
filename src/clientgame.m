@@ -4,6 +4,7 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
+#import "Monster.h"
 #import "OFString+Cube.h"
 
 int nextmode = 0; // nextmode becomes gamemode after next map load
@@ -174,7 +175,7 @@ updateworld(int millis) // main game update loop
 		}
 		otherplayers();
 		if (!demoplayback) {
-			monsterthink();
+			[Monster thinkAll];
 			if (player1.state == CS_DEAD) {
 				if (lastmillis - player1.lastAction < 2000) {
 					player1.move = player1.strafe = 0;
@@ -417,7 +418,7 @@ startmap(OFString *name) // called just after a map load
 		conoutf(@"coop sp not supported yet");
 	}
 	sleepwait = 0;
-	monsterclear();
+	[Monster resetAll];
 	projreset();
 	spawncycle = -1;
 	spawnplayer(player1);

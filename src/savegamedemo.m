@@ -5,6 +5,7 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
+#import "Monster.h"
 
 #ifdef OF_BIG_ENDIAN
 static const int islittleendian = 0;
@@ -114,9 +115,9 @@ savestate(OFIRI *IRI)
 	for (Entity *e in ents)
 		gzputc(f, e.spawned);
 	gzwrite(f, data.items, data.count);
-	OFArray<DynamicEntity *> *monsters = getmonsters();
+	OFArray<Monster *> *monsters = Monster.monsters;
 	gzputi(monsters.count);
-	for (DynamicEntity *monster in monsters) {
+	for (Monster *monster in monsters) {
 		data = [monster dataBySerializing];
 		gzwrite(f, data.items, data.count);
 	}
@@ -227,11 +228,11 @@ loadgamerest()
 	player1.lastAction = lastmillis;
 
 	int nmonsters = gzgeti();
-	OFArray<DynamicEntity *> *monsters = getmonsters();
+	OFArray<Monster *> *monsters = Monster.monsters;
 	if (nmonsters != monsters.count)
 		return loadgameout();
 
-	for (DynamicEntity *monster in monsters) {
+	for (Monster *monster in monsters) {
 		gzread(f, data.mutableItems, data.count);
 		[monster setFromSerializedData:data];
 		// lazy, could save id of enemy instead
@@ -241,7 +242,7 @@ loadgamerest()
 		if (monster.state == CS_DEAD)
 			monster.lastAction = 0;
 	}
-	restoremonsterstate();
+	[Monster restoreAll];
 
 	int nplayers = gzgeti();
 	loopi(nplayers) if (!gzget())

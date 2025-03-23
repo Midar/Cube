@@ -1,26 +1,45 @@
 // monster.cpp: implements AI for single player monsters, currently client only
 
+#import "Monster.h"
+
 #include "cube.h"
 
 #import "DynamicEntity.h"
 #import "Entity.h"
 
-static OFMutableArray<DynamicEntity *> *monsters;
+static OFMutableArray<Monster *> *monsters;
 static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
 
-VARF(skill, 1, 3, 10, conoutf(@"skill is now %d", skill));
+@implementation Monster
++ (void)initialize
+{
+	monsters = [[OFMutableArray alloc] init];
+}
 
-OFArray<DynamicEntity *> *
-getmonsters()
++ (OFMutableArray<Monster *> *)monsters
 {
 	return monsters;
 }
 
-// for savegames
-void
-restoremonsterstate()
++ (instancetype)monsterWithType:(int)type
+                            yaw:(int)yaw
+                          state:(int)state
+                        trigger:(int)trigger
+                           move:(int)move
 {
-	for (DynamicEntity *monster in monsters)
+	return [[self alloc] initWithType:type
+	                              yaw:yaw
+	                            state:state
+	                          trigger:trigger
+	                             move:move];
+}
+
+VARF(skill, 1, 3, 10, conoutf(@"skill is now %d", skill));
+
+// for savegames
++ (void)restoreAll
+{
+	for (Monster *monster in monsters)
 		if (monster.state == CS_DEAD)
 			numkilled++;
 }
@@ -55,47 +74,67 @@ monstertypes[NUMMONSTERTYPES] = {
 	    @"a goblin", @"monster/goblin" },
 };
 
-DynamicEntity *
-basicmonster(int type, int yaw, int state, int trigger, int move)
+- (instancetype)initWithType:(int)type
+                         yaw:(int)yaw
+                       state:(int)state
+                     trigger:(int)trigger
+                        move:(int)move
 {
+	self = [super init];
+
 	if (type >= NUMMONSTERTYPES) {
 		conoutf(@"warning: unknown monster in spawn: %d", type);
 		type = 0;
 	}
-	DynamicEntity *m = [DynamicEntity entity];
-	struct monstertype *t = &monstertypes[(m.monsterType = type)];
-	m.eyeHeight = 2.0f;
-	m.aboveEye = 1.9f;
-	m.radius *= t->bscale / 10.0f;
-	m.eyeHeight *= t->bscale / 10.0f;
-	m.aboveEye *= t->bscale / 10.0f;
-	m.monsterState = state;
+
+	struct monstertype *t = &monstertypes[(self.monsterType = type)];
+	self.eyeHeight = 2.0f;
+	self.aboveEye = 1.9f;
+	self.radius *= t->bscale / 10.0f;
+	self.eyeHeight *= t->bscale / 10.0f;
+	self.aboveEye *= t->bscale / 10.0f;
+	self.monsterState = state;
+
 	if (state != M_SLEEP)
-		spawnplayer(m);
-	m.trigger = lastmillis + trigger;
-	m.targetYaw = m.yaw = (float)yaw;
-	m.move = move;
-	m.enemy = player1;
-	m.gunSelect = t->gun;
-	m.maxSpeed = (float)t->speed;
-	m.health = t->health;
-	m.armour = 0;
-	loopi(NUMGUNS) m.ammo[i] = 10000;
-	m.pitch = 0;
-	m.roll = 0;
-	m.state = CS_ALIVE;
-	m.anger = 0;
-	m.name = t->name;
+		spawnplayer(self);
 
-	if (monsters == nil)
-		monsters = [[OFMutableArray alloc] init];
+	self.trigger = lastmillis + trigger;
+	self.targetYaw = self.yaw = (float)yaw;
+	self.move = move;
+	self.enemy = player1;
+	self.gunSelect = t->gun;
+	self.maxSpeed = (float)t->speed;
+	self.health = t->health;
+	self.armour = 0;
 
-	[monsters addObject:m];
+	for (size_t i = 0; i < NUMGUNS; i++)
+		self.ammo[i] = 10000;
 
-	return m;
+	self.pitch = 0;
+	self.roll = 0;
+	self.state = CS_ALIVE;
+	self.anger = 0;
+	self.name = t->name;
+
+	return self;
 }
 
-void
+- (id)copy
+{
+	Monster *copy = [super copy];
+
+	copy->_monsterState = _monsterState;
+	copy->_monsterType = _monsterType;
+	copy->_enemy = _enemy;
+	copy->_targetYaw = _targetYaw;
+	copy->_trigger = _trigger;
+	copy->_attackTarget = _attackTarget;
+	copy->_anger = _anger;
+
+	return copy;
+}
+
+static void
 spawnmonster() // spawn a random monster according to freq distribution in DMSP
 {
 	int n = rnd(TOTMFREQ), type;
@@ -105,18 +144,22 @@ spawnmonster() // spawn a random monster according to freq distribution in DMSP
 			break;
 		}
 	}
-	basicmonster(type, rnd(360), M_SEARCH, 1000, 1);
+
+	[monsters addObject:[Monster monsterWithType:type
+	                                         yaw:rnd(360)
+	                                       state:M_SEARCH
+	                                     trigger:1000
+	                                        move:1]];
 }
 
-// called after map start of when toggling edit mode to reset/spawn all
-// monsters to initial state
-void
-monsterclear()
++ (void)resetAll
 {
 	[monsters removeAllObjects];
+
 	numkilled = 0;
 	monstertotal = 0;
 	spawnremain = 0;
+
 	if (m_dmsp) {
 		nextmonster = mtimestart = lastmillis + 10000;
 		monstertotal = spawnremain = gamemode < 0 ? skill * 10 : 0;
@@ -127,9 +170,13 @@ monsterclear()
 			if (e.type != MONSTER)
 				continue;
 
-			DynamicEntity *m =
-			    basicmonster(e.attr2, e.attr1, M_SLEEP, 100, 0);
+			Monster *m = [Monster monsterWithType:e.attr2
+			                                  yaw:e.attr1
+			                                state:M_SLEEP
+			                              trigger:100
+			                                 move:0];
 			m.origin = OFMakeVector3D(e.x, e.y, e.z);
+			[monsters addObject:m];
 			entinmap(m);
 			monstertotal++;
 		}
@@ -137,7 +184,7 @@ monsterclear()
 }
 
 // height-correct line of sight for monster shooting/seeing
-bool
+static bool
 los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D *v)
 {
 	if (OUTBORD((int)lx, (int)ly) || OUTBORD((int)bx, (int)by))
@@ -173,8 +220,8 @@ los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D *v)
 	return i >= steps;
 }
 
-bool
-enemylos(DynamicEntity *m, OFVector3D *v)
+static bool
+enemylos(Monster *m, OFVector3D *v)
 {
 	*v = m.origin;
 	return los(m.origin.x, m.origin.y, m.origin.z, m.enemy.origin.x,
@@ -189,90 +236,91 @@ enemylos(DynamicEntity *m, OFVector3D *v)
 // decision making means tougher AI.
 
 // n = at skill 0, n/2 = at skill 10, r = added random factor
-void
-transition(DynamicEntity *m, int state, int moving, int n, int r)
+- (void)transitionWithState:(int)state moving:(int)moving n:(int)n r:(int)r
 {
-	m.monsterState = state;
-	m.move = moving;
+	self.monsterState = state;
+	self.move = moving;
 	n = n * 130 / 100;
-	m.trigger = lastmillis + n - skill * (n / 16) + rnd(r + 1);
+	self.trigger = lastmillis + n - skill * (n / 16) + rnd(r + 1);
 }
 
-void
-normalise(DynamicEntity *m, float angle)
+- (void)normalizeWithAngle:(float)angle
 {
-	while (m.yaw < angle - 180.0f)
-		m.yaw += 360.0f;
-	while (m.yaw > angle + 180.0f)
-		m.yaw -= 360.0f;
+	while (self.yaw < angle - 180.0f)
+		self.yaw += 360.0f;
+	while (self.yaw > angle + 180.0f)
+		self.yaw -= 360.0f;
 }
 
 // main AI thinking routine, called every frame for every monster
-void
-monsteraction(DynamicEntity *m)
+- (void)performAction
 {
-	if (m.enemy.state == CS_DEAD) {
-		m.enemy = player1;
-		m.anger = 0;
+	if (self.enemy.state == CS_DEAD) {
+		self.enemy = player1;
+		self.anger = 0;
 	}
-	normalise(m, m.targetYaw);
+	[self normalizeWithAngle:self.targetYaw];
 	// slowly turn monster towards his target
-	if (m.targetYaw > m.yaw) {
-		m.yaw += curtime * 0.5f;
-		if (m.targetYaw < m.yaw)
-			m.yaw = m.targetYaw;
+	if (self.targetYaw > self.yaw) {
+		self.yaw += curtime * 0.5f;
+		if (self.targetYaw < self.yaw)
+			self.yaw = self.targetYaw;
 	} else {
-		m.yaw -= curtime * 0.5f;
-		if (m.targetYaw > m.yaw)
-			m.yaw = m.targetYaw;
+		self.yaw -= curtime * 0.5f;
+		if (self.targetYaw > self.yaw)
+			self.yaw = self.targetYaw;
 	}
 
-	vdist(disttoenemy, vectoenemy, m.origin, m.enemy.origin);
-	m.pitch = atan2(m.enemy.origin.z - m.origin.z, disttoenemy) * 180 / PI;
+	vdist(disttoenemy, vectoenemy, self.origin, self.enemy.origin);
+	self.pitch =
+	    atan2(self.enemy.origin.z - self.origin.z, disttoenemy) * 180 / PI;
 
 	// special case: if we run into scenery
-	if (m.blocked) {
-		m.blocked = false;
+	if (self.blocked) {
+		self.blocked = false;
 		// try to jump over obstackle (rare)
-		if (!rnd(20000 / monstertypes[m.monsterType].speed))
-			m.jumpNext = true;
+		if (!rnd(20000 / monstertypes[self.monsterType].speed))
+			self.jumpNext = true;
 		// search for a way around (common)
-		else if (m.trigger < lastmillis &&
-		    (m.monsterState != M_HOME || !rnd(5))) {
+		else if (self.trigger < lastmillis &&
+		    (self.monsterState != M_HOME || !rnd(5))) {
 			// patented "random walk" AI pathfinding (tm) ;)
-			m.targetYaw += 180 + rnd(180);
-			transition(m, M_SEARCH, 1, 400, 1000);
+			self.targetYaw += 180 + rnd(180);
+			[self transitionWithState:M_SEARCH
+			                   moving:1
+			                        n:400
+			                        r:1000];
 		}
 	}
 
-	float enemyYaw = -(float)atan2(m.enemy.origin.x - m.origin.x,
-	                     m.enemy.origin.y - m.origin.y) /
+	float enemyYaw = -(float)atan2(self.enemy.origin.x - self.origin.x,
+	                     self.enemy.origin.y - self.origin.y) /
 	        PI * 180 +
 	    180;
 
-	switch (m.monsterState) {
+	switch (self.monsterState) {
 	case M_PAIN:
 	case M_ATTACKING:
 	case M_SEARCH:
-		if (m.trigger < lastmillis)
-			transition(m, M_HOME, 1, 100, 200);
+		if (self.trigger < lastmillis)
+			[self transitionWithState:M_HOME moving:1 n:100 r:200];
 		break;
 
 	case M_SLEEP: // state classic sp monster start in, wait for visual
 	              // contact
 	{
 		OFVector3D target;
-		if (editmode || !enemylos(m, &target))
+		if (editmode || !enemylos(self, &target))
 			return; // skip running physics
-		normalise(m, enemyYaw);
-		float angle = (float)fabs(enemyYaw - m.yaw);
+		[self normalizeWithAngle:enemyYaw];
+		float angle = (float)fabs(enemyYaw - self.yaw);
 		if (disttoenemy < 8 // the better the angle to the player, the
 		                    // further the monster can see/hear
 		    || (disttoenemy < 16 && angle < 135) ||
 		    (disttoenemy < 32 && angle < 90) ||
 		    (disttoenemy < 64 && angle < 45) || angle < 10) {
-			transition(m, M_HOME, 1, 500, 200);
-			OFVector3D loc = m.origin;
+			[self transitionWithState:M_HOME moving:1 n:500 r:200];
+			OFVector3D loc = self.origin;
 			playsound(S_GRUNT1 + rnd(2), &loc);
 		}
 		break;
@@ -281,90 +329,109 @@ monsteraction(DynamicEntity *m)
 	case M_AIMING:
 		// this state is the delay between wanting to shoot and actually
 		// firing
-		if (m.trigger < lastmillis) {
-			m.lastAction = 0;
-			m.attacking = true;
-			OFVector3D attackTarget = m.attackTarget;
-			shoot(m, &attackTarget);
-			transition(m, M_ATTACKING, 0, 600, 0);
+		if (self.trigger < lastmillis) {
+			self.lastAction = 0;
+			self.attacking = true;
+			OFVector3D attackTarget = self.attackTarget;
+			shoot(self, &attackTarget);
+			[self transitionWithState:M_ATTACKING
+			                   moving:0
+			                        n:600
+			                        r:0];
 		}
 		break;
 
 	case M_HOME:
 		// monster has visual contact, heads straight for player and
 		// may want to shoot at any time
-		m.targetYaw = enemyYaw;
-		if (m.trigger < lastmillis) {
+		self.targetYaw = enemyYaw;
+		if (self.trigger < lastmillis) {
 			OFVector3D target;
-			if (!enemylos(m, &target)) {
+			if (!enemylos(self, &target)) {
 				// no visual contact anymore, let monster get
 				// as close as possible then search for player
-				transition(m, M_HOME, 1, 800, 500);
+				[self transitionWithState:M_HOME
+				                   moving:1
+				                        n:800
+				                        r:500];
 			} else {
 				// the closer the monster is the more likely he
 				// wants to shoot
 				if (!rnd((int)disttoenemy / 3 + 1) &&
-				    m.enemy.state == CS_ALIVE) {
+				    self.enemy.state == CS_ALIVE) {
 					// get ready to fire
-					m.attackTarget = target;
-					transition(m, M_AIMING, 0,
-					    monstertypes[m.monsterType].lag,
-					    10);
-				} else
+					self.attackTarget = target;
+					int n =
+					    monstertypes[self.monsterType].lag;
+					[self transitionWithState:M_AIMING
+					                   moving:0
+					                        n:n
+					                        r:10];
+				} else {
 					// track player some more
-					transition(m, M_HOME, 1,
-					    monstertypes[m.monsterType].rate,
-					    0);
+					int n =
+					    monstertypes[self.monsterType].rate;
+					[self transitionWithState:M_HOME
+					                   moving:1
+					                        n:n
+					                        r:0];
+				}
 			}
 		}
 		break;
 	}
 
-	moveplayer(m, 1, false); // use physics to move monster
+	moveplayer(self, 1, false); // use physics to move monster
 }
 
-void
-monsterpain(DynamicEntity *m, int damage, DynamicEntity *d)
+- (void)incurDamage:(int)damage fromEntity:(__kindof DynamicEntity *)d
 {
 	// a monster hit us
-	if (d.monsterState) {
+	if ([d isKindOfClass:Monster.class]) {
+		Monster *m = (Monster *)d;
+
 		// guard for RL guys shooting themselves :)
-		if (m != d) {
+		if (self != m) {
 			// don't attack straight away, first get angry
-			m.anger++;
-			int anger = m.monsterType == d.monsterType ? m.anger / 2
-			                                           : m.anger;
-			if (anger >= monstertypes[m.monsterType].loyalty)
+			self.anger++;
+			int anger =
+			    (self.monsterType == m.monsterType ? self.anger / 2
+			                                       : self.anger);
+			if (anger >= monstertypes[self.monsterType].loyalty)
 				// monster infight if very angry
-				m.enemy = d;
+				self.enemy = m;
 		}
 	} else {
 		// player hit us
-		m.anger = 0;
-		m.enemy = d;
+		self.anger = 0;
+		self.enemy = d;
 	}
+
 	// in this state monster won't attack
-	transition(m, M_PAIN, 0, monstertypes[m.monsterType].pain, 200);
-	if ((m.health -= damage) <= 0) {
-		m.state = CS_DEAD;
-		m.lastAction = lastmillis;
+	[self transitionWithState:M_PAIN
+	                   moving:0
+	                        n:monstertypes[self.monsterType].pain
+	                        r:200];
+
+	if ((self.health -= damage) <= 0) {
+		self.state = CS_DEAD;
+		self.lastAction = lastmillis;
 		numkilled++;
 		player1.frags = numkilled;
-		OFVector3D loc = m.origin;
-		playsound(monstertypes[m.monsterType].diesound, &loc);
+		OFVector3D loc = self.origin;
+		playsound(monstertypes[self.monsterType].diesound, &loc);
 		int remain = monstertotal - numkilled;
 		if (remain > 0 && remain <= 5)
 			conoutf(@"only %d monster(s) remaining", remain);
 	} else {
-		OFVector3D loc = m.origin;
-		playsound(monstertypes[m.monsterType].painsound, &loc);
+		OFVector3D loc = self.origin;
+		playsound(monstertypes[self.monsterType].painsound, &loc);
 	}
 }
 
-void
-endsp(bool allkilled)
++ (void)endSinglePlayerWithAllKilled:(bool)allKilled
 {
-	conoutf(allkilled ? @"you have cleared the map!"
+	conoutf(allKilled ? @"you have cleared the map!"
 	                  : @"you reached the exit!");
 	conoutf(@"score: %d kills in %d seconds", numkilled,
 	    (lastmillis - mtimestart) / 1000);
@@ -372,8 +439,7 @@ endsp(bool allkilled)
 	startintermission();
 }
 
-void
-monsterthink()
++ (void)thinkAll
 {
 	if (m_dmsp && spawnremain && lastmillis > nextmonster) {
 		if (spawnremain-- == monstertotal)
@@ -383,7 +449,7 @@ monsterthink()
 	}
 
 	if (monstertotal && !spawnremain && numkilled == monstertotal)
-		endsp(true);
+		[self endSinglePlayerWithAllKilled:true];
 
 	// equivalent of player entity touch, but only teleports are used
 	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
@@ -395,7 +461,7 @@ monsterthink()
 
 		OFVector3D v =
 		    OFMakeVector3D(e.x, e.y, (float)S(e.x, e.y)->floor);
-		for (DynamicEntity *monster in monsters) {
+		for (Monster *monster in monsters) {
 			if (monster.state == CS_DEAD) {
 				if (lastmillis - monster.lastAction < 2000) {
 					monster.move = 0;
@@ -412,17 +478,17 @@ monsterthink()
 		}
 	}];
 
-	for (DynamicEntity *monster in monsters)
+	for (Monster *monster in monsters)
 		if (monster.state == CS_ALIVE)
-			monsteraction(monster);
+			[monster performAction];
 }
 
-void
-monsterrender()
++ (void)renderAll
 {
-	for (DynamicEntity *monster in monsters)
+	for (Monster *monster in monsters)
 		renderclient(monster, false,
 		    monstertypes[monster.monsterType].mdlname,
 		    monster.monsterType == 5,
 		    monstertypes[monster.monsterType].mscale / 10.0f);
 }
+@end
