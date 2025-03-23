@@ -93,7 +93,7 @@ static struct sphere spheres[MAXSPHERES], *slist = NULL, *sempty = NULL;
 bool sinit = false;
 
 void
-newsphere(const OFVector3D *o, float max, int type)
+newsphere(OFVector3D o, float max, int type)
 {
 	if (!sinit) {
 		for (int i = 0; i < MAXSPHERES; i++) {
@@ -105,7 +105,7 @@ newsphere(const OFVector3D *o, float max, int type)
 	if (sempty) {
 		struct sphere *p = sempty;
 		sempty = p->next;
-		p->o = *o;
+		p->o = o;
 		p->max = max;
 		p->size = 1;
 		p->type = type;
@@ -189,8 +189,7 @@ renderents()
 		if (e.type == NOTUSED)
 			continue;
 
-		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
-		particle_splash(2, 2, 40, &v);
+		particle_splash(2, 2, 40, OFMakeVector3D(e.x, e.y, e.z));
 	}
 
 	int e = closestent();
@@ -272,7 +271,7 @@ readdepth(int w, int h)
 	worldpos.z = (float)worldz;
 	OFVector3D r = OFMakeVector3D(mm[0], mm[4], mm[8]);
 	OFVector3D u = OFMakeVector3D(mm[1], mm[5], mm[9]);
-	setorient(&r, &u);
+	setorient(r, u);
 }
 
 void

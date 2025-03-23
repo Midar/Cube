@@ -221,8 +221,8 @@ localservertoclient(unsigned char *buf, int len)
 			e.y = getint(&p) / DMF;
 			e.z = getint(&p) / DMF;
 			if (gun == GUN_SG)
-				createrays(&s, &e);
-			shootv(gun, &s, &e, d, false);
+				createrays(s, e);
+			shootv(gun, s, e, d, false);
 			break;
 		}
 

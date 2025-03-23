@@ -163,7 +163,7 @@ updateworld(int millis) // main game update loop
 		if (!demoplayback) {
 			if (getclientnum() >= 0)
 				// only shoot when connected to server
-				shoot(player1, &worldpos);
+				shoot(player1, worldpos);
 			// do this first, so we have most accurate information
 			// when our player moves
 			gets2c();

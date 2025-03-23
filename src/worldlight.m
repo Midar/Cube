@@ -199,7 +199,7 @@ cleardlights()
 }
 
 void
-dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
+dodynlight(OFVector3D vold, OFVector3D v, int reach, int strength,
     DynamicEntity *owner)
 {
 	if (!reach)
@@ -208,12 +208,12 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 		reach = reach / 2;
 	if (!reach)
 		return;
-	if (v->x < 0 || v->y < 0 || v->x > ssize || v->y > ssize)
+	if (v.x < 0 || v.y < 0 || v.x > ssize || v.y > ssize)
 		return;
 
 	int creach = reach + 16; // dependant on lightray random offsets!
-	struct block b = { (int)v->x - creach, (int)v->y - creach,
-		creach * 2 + 1, creach * 2 + 1 };
+	struct block b = { (int)v.x - creach, (int)v.y - creach, creach * 2 + 1,
+		creach * 2 + 1 };
 
 	if (b.x < 1)
 		b.x = 1;
@@ -233,9 +233,9 @@ dodynlight(const OFVector3D *vold, const OFVector3D *v, int reach, int strength,
 	[dlights addItem:&copy];
 
 	Entity *l = [Entity entity];
-	l.x = v->x;
-	l.y = v->y;
-	l.z = v->z;
+	l.x = v.x;
+	l.y = v.y;
+	l.z = v.z;
 	l.attr1 = reach;
 	l.type = LIGHT;
 	l.attr2 = strength;

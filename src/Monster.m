@@ -333,8 +333,7 @@ enemylos(Monster *m, OFVector3D *v)
 		if (self.trigger < lastmillis) {
 			self.lastAction = 0;
 			self.attacking = true;
-			OFVector3D attackTarget = self.attackTarget;
-			shoot(self, &attackTarget);
+			shoot(self, self.attackTarget);
 			[self transitionWithState:M_ATTACKING
 			                   moving:0
 			                        n:600
