@@ -111,10 +111,15 @@ static void
 updatechanvol(int chan, const OFVector3D *loc)
 {
 	int vol = soundvol, pan = 255 / 2;
+
 	if (loc) {
-		vdist(dist, v, *loc, player1.origin);
-		vol -= (int)(dist * 3 * soundvol /
-		    255); // simple mono distance attenuation
+		OFVector3D origin = player1.origin;
+		float dist = OFDistanceOfVectors3D(*loc, origin);
+		OFVector3D v = OFSubtractVectors3D(*loc, origin);
+
+		// simple mono distance attenuation
+		vol -= (int)(dist * 3 * soundvol / 255);
+
 		if (stereo && (v.x != 0 || v.y != 0)) {
 			// relative angle of sound along X-Y axis
 			float yaw =
@@ -123,6 +128,7 @@ updatechanvol(int chan, const OFVector3D *loc)
 			pan = (int)(255.9f * (0.5 * sin(yaw) + 0.5f));
 		}
 	}
+
 	vol = (vol * MAXVOL) / 255;
 	Mix_Volume(chan, vol);
 	Mix_SetPanning(chan, 255 - pan, pan);

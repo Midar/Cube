@@ -298,7 +298,7 @@ closestent() // used for delent and edit mode ent display
 			return;
 
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
-		vdist(dist, t, player1.origin, v);
+		float dist = OFDistanceOfVectors3D(player1.origin, v);
 		if (dist < bdist) {
 			best = i;
 			bdist = dist;

@@ -286,10 +286,6 @@ extern bool demoplayback;
 #define PI (3.1415927f)
 #define PI2 (2 * PI)
 
-// simplistic vector ops
-#define vdist(d, v, e, s)                         \
-	OFVector3D v = OFSubtractVectors3D(s, e); \
-	float d = sqrtf(OFDotProductOfVectors3D(v, v));
 #define vreject(v, u, max)                                 \
 	((v).x > (u).x + (max) || (v).x < (u).x - (max) || \
 	    (v).y > (u).y + (max) || (v).y < (u).y - (max))

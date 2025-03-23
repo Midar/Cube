@@ -73,7 +73,7 @@ COMMAND(weapon, ARG_3STR, ^(OFString *a1, OFString *a2, OFString *a3) {
 void
 createrays(const OFVector3D *from, const OFVector3D *to)
 {
-	vdist(dist, dvec, *from, *to);
+	float dist = OFDistanceOfVectors3D(*from, *to);
 	float f = dist * SGSPREAD / 1000;
 	for (int i = 0; i < SGRAYS; i++)
 #define RNDD (rnd(101) - 50) * f
@@ -186,13 +186,19 @@ radialeffect(
 {
 	if (o.state != CS_ALIVE)
 		return;
-	vdist(dist, temp, *v, o.origin);
+
+	OFVector3D origin = o.origin;
+	float dist = OFDistanceOfVectors3D(*v, origin);
+	OFVector3D temp = OFSubtractVectors3D(*v, origin);
 	dist -= 2; // account for eye distance imprecision
+
 	if (dist < RL_DAMRAD) {
 		if (dist < 0)
 			dist = 0;
+
 		int damage = (int)(qdam * (1 - (dist / RL_DAMRAD)));
 		hit(cn, damage, o, at);
+
 		temp =
 		    OFMultiplyVector3D(temp, (RL_DAMRAD - dist) * damage / 800);
 		o.velocity = OFAddVectors3D(o.velocity, temp);
@@ -264,7 +270,9 @@ moveprojectiles(float time)
 		int qdam = guns[p.gun].damage * (p.owner.quadMillis ? 4 : 1);
 		if ([p.owner isKindOfClass:Monster.class])
 			qdam /= MONSTERDAMAGEFACTOR;
-		vdist(dist, v, p.o, p.to);
+		OFVector3D po = p.o, pto = pto;
+		float dist = OFDistanceOfVectors3D(po, pto);
+		OFVector3D v = OFSubtractVectors3D(po, pto);
 		float dtime = dist * 1000 / p.speed;
 		if (time > dtime)
 			dtime = time;
@@ -348,7 +356,8 @@ hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
     const OFVector3D *from, const OFVector3D *to)
 {
 	hit(target, damage, d, at);
-	vdist(dist, v, *from, *to);
+	float dist = OFDistanceOfVectors3D(*from, *to);
+	OFVector3D v = OFSubtractVectors3D(*from, *to);
 	v = OFMultiplyVector3D(v, damage / dist / 50);
 	d.velocity = OFAddVectors3D(d.velocity, v);
 }
@@ -398,7 +407,8 @@ shoot(DynamicEntity *d, const OFVector3D *targ)
 	OFVector3D to = *targ;
 	from.z -= 0.2f; // below eye
 
-	vdist(dist, unitv, from, to);
+	float dist = OFDistanceOfVectors3D(from, to);
+	OFVector3D unitv = OFSubtractVectors3D(from, to);
 	unitv = OFMultiplyVector3D(unitv, 1.0f / dist);
 	OFVector3D kickback =
 	    OFMultiplyVector3D(unitv, guns[d.gunSelect].kickamount * -0.01f);
