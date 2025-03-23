@@ -90,12 +90,12 @@ intersect(DynamicEntity *d, const OFVector3D *from, const OFVector3D *to)
 	const OFVector3D *p;
 	v = OFSubtractVectors3D(v, *from);
 	w = OFSubtractVectors3D(w, *from);
-	float c1 = dotprod(w, v);
+	float c1 = OFDotProductOfVectors3D(w, v);
 
 	if (c1 <= 0)
 		p = from;
 	else {
-		float c2 = dotprod(v, v);
+		float c2 = OFDotProductOfVectors3D(v, v);
 		if (c2 <= c1)
 			p = to;
 		else {
