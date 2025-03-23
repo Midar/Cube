@@ -292,18 +292,19 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 
 	// slowly apply friction and direction to
 	// velocity, gives a smooth movement
-	vmul(pl.velocity, fpsfric - 1);
-	vadd(pl.velocity, d);
-	vdiv(pl.velocity, fpsfric);
-	d = pl.velocity;
-	vmul(d, speed); // d is now frametime based velocity vector
+	OFVector3D velocity = OFMultiplyVector3D(pl.velocity, fpsfric - 1);
+	velocity = OFAddVectors3D(velocity, d);
+	velocity = OFMultiplyVector3D(velocity, 1.0f / fpsfric);
+	pl.velocity = velocity;
+	// d is now frametime based velocity vector
+	d = OFMultiplyVector3D(velocity, speed);
 
 	pl.blocked = false;
 	pl.moving = true;
 
 	if (floating) {
 		// just apply velocity
-		vadd(pl.origin, d);
+		pl.origin = OFAddVectors3D(pl.origin, d);
 		if (pl.jumpNext) {
 			pl.jumpNext = false;
 			pl.velocity =

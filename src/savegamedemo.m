@@ -388,28 +388,24 @@ startdemo()
 VAR(demodelaymsec, 0, 120, 500);
 
 // spline interpolation
-#define catmulrom(z, a, b, c, s, dest)           \
-	{                                        \
-		OFVector3D t1 = b, t2 = c;       \
-                                                 \
-		vsub(t1, z);                     \
-		vmul(t1, 0.5f);                  \
-		vsub(t2, a);                     \
-		vmul(t2, 0.5f);                  \
-                                                 \
-		float s2 = s * s;                \
-		float s3 = s * s2;               \
-                                                 \
-		dest = a;                        \
-		OFVector3D t = b;                \
-                                                 \
-		vmul(dest, 2 * s3 - 3 * s2 + 1); \
-		vmul(t, -2 * s3 + 3 * s2);       \
-		vadd(dest, t);                   \
-		vmul(t1, s3 - 2 * s2 + s);       \
-		vadd(dest, t1);                  \
-		vmul(t2, s3 - s2);               \
-		vadd(dest, t2);                  \
+#define catmulrom(z, a, b, c, s, dest)                                  \
+	{                                                               \
+		OFVector3D t1 = OFSubtractVectors3D(b, z);              \
+		t1 = OFMultiplyVector3D(t1, 0.5f);                      \
+                                                                        \
+		OFVector3D t2 = OFSubtractVectors3D(c, a);              \
+		t2 = OFMultiplyVector3D(t2, 0.5f);                      \
+                                                                        \
+		float s2 = s * s;                                       \
+		float s3 = s * s2;                                      \
+                                                                        \
+		dest = OFMultiplyVector3D(a, 2 * s3 - 3 * s2 + 1);      \
+		OFVector3D t = OFMultiplyVector3D(b, -2 * s3 + 3 * s2); \
+		dest = OFAddVectors3D(dest, t);                         \
+		t1 = OFMultiplyVector3D(t1, s3 - 2 * s2 + s);           \
+		dest = OFAddVectors3D(dest, t1);                        \
+		t2 = OFMultiplyVector3D(t2, s3 - s2);                   \
+		dest = OFAddVectors3D(dest, t2);                        \
 	}
 
 void

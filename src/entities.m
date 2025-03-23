@@ -294,9 +294,9 @@ pickup(int n, DynamicEntity *d)
 		lastjumppad = lastmillis;
 		OFVector3D v = OFMakeVector3D((int)(char)ents[n].attr3 / 10.0f,
 		    (int)(char)ents[n].attr2 / 10.0f, ents[n].attr1 / 10.0f);
-		player1.velocity =
-		    OFMakeVector3D(player1.velocity.x, player1.velocity.y, 0);
-		vadd(player1.velocity, v);
+		player1.velocity = OFAddVectors3D(
+		    OFMakeVector3D(player1.velocity.x, player1.velocity.y, 0),
+		    v);
 		playsoundc(S_JUMPPAD);
 		break;
 	}

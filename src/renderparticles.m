@@ -121,10 +121,9 @@ render_particles(int time)
 			if (pt->gr)
 				p->o.z -= ((lastmillis - p->millis) / 3.0f) *
 				    curtime / (pt->gr * 10000);
-			OFVector3D a = p->d;
-			vmul(a, time);
-			vdiv(a, 20000.0f);
-			vadd(p->o, a);
+			OFVector3D a = OFMultiplyVector3D(p->d, time);
+			a = OFMultiplyVector3D(a, 1.0f / 20000.0f);
+			p->o = OFAddVectors3D(p->o, a);
 			pp = &p->next;
 		}
 	}
@@ -154,10 +153,10 @@ void
 particle_trail(int type, int fade, const OFVector3D *s, const OFVector3D *e)
 {
 	vdist(d, v, *s, *e);
-	vdiv(v, d * 2 + 0.1f);
+	v = OFMultiplyVector3D(v, 1.0f / (d * 2 + 0.1f));
 	OFVector3D p = *s;
 	for (int i = 0; i < ((int)d * 2); i++) {
-		vadd(p, v);
+		p = OFAddVectors3D(p, v);
 		OFVector3D d =
 		    OFMakeVector3D(rnd(11) - 5, rnd(11) - 5, rnd(11) - 5);
 		newparticle(&p, &d, rnd(fade) + fade, type);

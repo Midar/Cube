@@ -77,12 +77,9 @@ createrays(const OFVector3D *from, const OFVector3D *to)
 {
 	vdist(dist, dvec, *from, *to);
 	float f = dist * SGSPREAD / 1000;
-	for (int i = 0; i < SGRAYS; i++) {
+	for (int i = 0; i < SGRAYS; i++)
 #define RNDD (rnd(101) - 50) * f
-		OFVector3D r = OFMakeVector3D(RNDD, RNDD, RNDD);
-		sg[i] = *to;
-		vadd(sg[i], r);
-	}
+		sg[i] = OFAddVectors3D(*to, OFMakeVector3D(RNDD, RNDD, RNDD));
 }
 
 // if lineseg hits entity bounding box
@@ -91,8 +88,8 @@ intersect(DynamicEntity *d, const OFVector3D *from, const OFVector3D *to)
 {
 	OFVector3D v = *to, w = d.origin;
 	const OFVector3D *p;
-	vsub(v, *from);
-	vsub(w, *from);
+	v = OFSubtractVectors3D(v, *from);
+	w = OFSubtractVectors3D(w, *from);
 	float c1 = dotprod(w, v);
 
 	if (c1 <= 0)
@@ -102,9 +99,8 @@ intersect(DynamicEntity *d, const OFVector3D *from, const OFVector3D *to)
 		if (c2 <= c1)
 			p = to;
 		else {
-			float f = c1 / c2;
-			vmul(v, f);
-			vadd(v, *from);
+			v = OFMultiplyVector3D(v, c1 / c2);
+			v = OFAddVectors3D(v, *from);
 			p = &v;
 		}
 	}
@@ -199,8 +195,9 @@ radialeffect(
 			dist = 0;
 		int damage = (int)(qdam * (1 - (dist / RL_DAMRAD)));
 		hit(cn, damage, o, at);
-		vmul(temp, (RL_DAMRAD - dist) * damage / 800);
-		vadd(o.velocity, temp);
+		temp =
+		    OFMultiplyVector3D(temp, (RL_DAMRAD - dist) * damage / 800);
+		o.velocity = OFAddVectors3D(o.velocity, temp);
 	}
 }
 
@@ -273,8 +270,8 @@ moveprojectiles(float time)
 		float dtime = dist * 1000 / p.speed;
 		if (time > dtime)
 			dtime = time;
-		vmul(v, time / dtime);
-		vadd(v, p.o);
+		v = OFMultiplyVector3D(v, time / dtime);
+		v = OFAddVectors3D(v, p.o);
 		if (p.local) {
 			for (id player in players)
 				if (player != [OFNull null])
@@ -354,8 +351,8 @@ hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
 {
 	hit(target, damage, d, at);
 	vdist(dist, v, *from, *to);
-	vmul(v, damage / dist / 50);
-	vadd(d.velocity, v);
+	v = OFMultiplyVector3D(v, damage / dist / 50);
+	d.velocity = OFAddVectors3D(d.velocity, v);
 }
 
 void
@@ -404,17 +401,16 @@ shoot(DynamicEntity *d, const OFVector3D *targ)
 	from.z -= 0.2f; // below eye
 
 	vdist(dist, unitv, from, to);
-	vdiv(unitv, dist);
-	OFVector3D kickback = unitv;
-	vmul(kickback, guns[d.gunSelect].kickamount * -0.01f);
-	vadd(d.velocity, kickback);
+	unitv = OFMultiplyVector3D(unitv, 1.0f / dist);
+	OFVector3D kickback =
+	    OFMultiplyVector3D(unitv, guns[d.gunSelect].kickamount * -0.01f);
+	d.velocity = OFAddVectors3D(d.velocity, kickback);
 	if (d.pitch < 80.0f)
 		d.pitch += guns[d.gunSelect].kickamount * 0.05f;
 
 	if (d.gunSelect == GUN_FIST || d.gunSelect == GUN_BITE) {
-		vmul(unitv, 3); // punch range
-		to = from;
-		vadd(to, unitv);
+		unitv = OFMultiplyVector3D(unitv, 3); // punch range
+		to = OFAddVectors3D(from, unitv);
 	}
 	if (d.gunSelect == GUN_SG)
 		createrays(&from, &to);
