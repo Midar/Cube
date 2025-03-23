@@ -6,7 +6,7 @@
 // following simple scheme (assumes that most values are small).
 
 void
-putint(uchar **p, int n)
+putint(unsigned char **p, int n)
 {
 	if (n < 128 && n > -127) {
 		*(*p)++ = n;
@@ -24,7 +24,7 @@ putint(uchar **p, int n)
 }
 
 int
-getint(uchar **p)
+getint(unsigned char **p)
 {
 	int c = *((char *)*p);
 	(*p)++;
@@ -43,7 +43,7 @@ getint(uchar **p)
 }
 
 void
-sendstring(OFString *t_, uchar **p)
+sendstring(OFString *t_, unsigned char **p)
 {
 	const char *t = t_.UTF8String;
 
@@ -98,10 +98,10 @@ msgsizelookup(int msg)
 
 static OFString *copyname;
 int copysize;
-uchar *copydata = NULL;
+unsigned char *copydata = NULL;
 
 void
-sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata)
+sendmaps(int n, OFString *mapname, int mapsize, unsigned char *mapdata)
 {
 	if (mapsize <= 0 || mapsize > 256 * 256)
 		return;
@@ -109,7 +109,7 @@ sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata)
 	copysize = mapsize;
 	if (copydata)
 		OFFreeMemory(copydata);
-	copydata = (uchar *)OFAllocMemory(1, mapsize);
+	copydata = (unsigned char *)OFAllocMemory(1, mapsize);
 	memcpy(copydata, mapdata, mapsize);
 }
 
@@ -120,14 +120,14 @@ recvmap(int n)
 		return NULL;
 	ENetPacket *packet = enet_packet_create(
 	    NULL, MAXTRANS + copysize, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	putint(&p, SV_RECVMAP);
 	sendstring(copyname, &p);
 	putint(&p, copysize);
 	memcpy(p, copydata, copysize);
 	p += copysize;
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	return packet;
 }
@@ -135,7 +135,7 @@ recvmap(int n)
 #ifdef STANDALONE
 
 void
-localservertoclient(uchar *buf, int len)
+localservertoclient(unsigned char *buf, int len)
 {
 }
 

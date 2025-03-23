@@ -74,7 +74,7 @@ extern void finishstrips();
 extern void setarraypointers();
 
 // client
-extern void localservertoclient(uchar *buf, int len);
+extern void localservertoclient(unsigned char *buf, int len);
 extern void connects(OFString *servername);
 extern void disconnect(bool onlyclean, bool async);
 extern void toserver(OFString *text);
@@ -188,10 +188,10 @@ extern void render_particles(int time);
 // worldio
 extern void save_world(OFString *fname);
 extern void load_world(OFString *mname);
-extern void writemap(OFString *mname, int msize, uchar *mdata);
+extern void writemap(OFString *mname, int msize, unsigned char *mdata);
 extern OFData *readmap(OFString *mname);
 extern void loadgamerest();
-extern void incomingdemodata(uchar *buf, int len, bool extras);
+extern void incomingdemodata(unsigned char *buf, int len, bool extras);
 extern void demoplaybackstep();
 extern void stop();
 extern void stopifrecording();
@@ -226,17 +226,18 @@ extern void localconnect();
 extern void localdisconnect();
 extern void localclienttoserver(struct _ENetPacket *);
 extern void serverslice(int seconds, unsigned int timeout);
-extern void putint(uchar **p, int n);
-extern int getint(uchar **p);
-extern void sendstring(OFString *t, uchar **p);
+extern void putint(unsigned char **p, int n);
+extern int getint(unsigned char **p);
+extern void sendstring(OFString *t, unsigned char **p);
 extern void startintermission();
 extern void restoreserverstate(OFArray<Entity *> *ents);
-extern uchar *retrieveservers(uchar *buf, int buflen);
+extern unsigned char *retrieveservers(unsigned char *buf, int buflen);
 extern char msgsizelookup(int msg);
 extern void serverms(int mode, int numplayers, int minremain,
     OFString *smapname, int seconds, bool isfull);
 extern void servermsinit(OFString *master, OFString *sdesc, bool listen);
-extern void sendmaps(int n, OFString *mapname, int mapsize, uchar *mapdata);
+extern void sendmaps(
+    int n, OFString *mapname, int mapsize, unsigned char *mapdata);
 extern ENetPacket *recvmap(int n);
 
 // weapon
@@ -253,13 +254,13 @@ extern int reloadtime(int gun);
 // entities
 extern void initEntities();
 extern void renderents();
-extern void putitems(uchar **p);
+extern void putitems(unsigned char **p);
 extern void checkquad(int time);
 extern void checkitems();
 extern void realpickup(int n, DynamicEntity *d);
 extern void renderentities();
 extern void resetspawns();
-extern void setspawn(uint i, bool on);
+extern void setspawn(size_t i, bool on);
 extern void teleport(int n, DynamicEntity *d);
 extern void baseammo(int gun);
 

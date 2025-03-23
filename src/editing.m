@@ -327,7 +327,7 @@ tofronttex() // maintain most recently used of the texture lists when applying
 	for (int i = 0; i < 3; i++) {
 		int c = curedittex[i];
 		if (c >= 0) {
-			uchar *p = hdr.texlists[i];
+			unsigned char *p = hdr.texlists[i];
 			int t = p[c];
 			for (int a = c - 1; a >= 0; a--)
 				p[a + 1] = p[a];

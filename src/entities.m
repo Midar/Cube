@@ -338,8 +338,9 @@ checkquad(int time)
 	}
 }
 
+// puts items in network stream and also spawns them locally
 void
-putitems(uchar **p) // puts items in network stream and also spawns them locally
+putitems(unsigned char **p)
 {
 	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
 		if ((e.type >= I_SHELLS && e.type <= I_QUAD) ||
@@ -357,8 +358,8 @@ resetspawns()
 		e.spawned = false;
 }
 void
-setspawn(uint i, bool on)
+setspawn(size_t i, bool on)
 {
-	if (i < (uint)ents.count)
+	if (i < ents.count)
 		ents[i].spawned = on;
 }

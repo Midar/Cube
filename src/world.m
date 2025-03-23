@@ -131,7 +131,7 @@ remip(const struct block *b, int level)
 			// the target cube in the higher mip level
 			struct sqr *r = SWS(v, x / 2, y / 2, vs);
 			*r = *o[0];
-			uchar nums[MAXTYPE];
+			unsigned char nums[MAXTYPE];
 			for (int i = 0; i < MAXTYPE; i++)
 				nums[i] = 0;
 			for (int j = 0; j < 4; j++)
@@ -381,7 +381,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 		e.attr3 = e.attr2;
 	case MONSTER:
 	case TELEDEST:
-		e.attr2 = (uchar)e.attr1;
+		e.attr2 = (unsigned char)e.attr1;
 	case PLAYERSTART:
 		e.attr1 = (int)player1.yaw;
 		break;
@@ -414,8 +414,8 @@ clearents(OFString *name)
 }
 COMMAND(clearents, ARG_1STR)
 
-static uchar
-scalecomp(uchar c, int intens)
+static unsigned char
+scalecomp(unsigned char c, int intens)
 {
 	int n = c * intens / 100;
 	if (n > 255)

@@ -306,7 +306,7 @@ demoblend(int damage)
 }
 
 void
-incomingdemodata(uchar *buf, int len, bool extras)
+incomingdemodata(unsigned char *buf, int len, bool extras)
 {
 	if (!demorecording)
 		return;
@@ -432,7 +432,7 @@ demoplaybackstep()
 			stopreset();
 			return;
 		}
-		uchar buf[MAXTRANS];
+		unsigned char buf[MAXTRANS];
 		gzread(f, buf, len);
 		localservertoclient(buf, len); // update game state
 

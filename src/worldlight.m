@@ -108,7 +108,7 @@ lightray(float bx, float by, Entity *light)
 			struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 			int light = l >> PRECBITS;
 			if (light > s->r)
-				s->r = s->g = s->b = (uchar)light;
+				s->r = s->g = s->b = (unsigned char)light;
 			if (SOLID(s))
 				return;
 			x += stepx;

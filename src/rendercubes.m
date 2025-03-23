@@ -149,11 +149,13 @@ render_flat(int wtex, int x, int y, int size, int h, struct sqr *l1,
 			curvert -= 2;
 			nquads--;
 		} else {
-			uchar *p3 = (uchar *)(&verts[curvert - 1].r);
+			unsigned char *p3 =
+			    (unsigned char *)(&verts[curvert - 1].r);
 			ol3r = p3[0];
 			ol3g = p3[1];
 			ol3b = p3[2];
-			uchar *p4 = (uchar *)(&verts[curvert - 2].r);
+			unsigned char *p4 =
+			    (unsigned char *)(&verts[curvert - 2].r);
 			ol4r = p4[0];
 			ol4g = p4[1];
 			ol4b = p4[2];

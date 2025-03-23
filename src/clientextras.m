@@ -189,8 +189,8 @@ sendmap(OFString *mapname)
 		return;
 	ENetPacket *packet = enet_packet_create(
 	    NULL, MAXTRANS + mapdata.count, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	putint(&p, SV_SENDMAP);
 	sendstring(mapname, &p);
 	putint(&p, mapdata.count);
@@ -201,7 +201,7 @@ sendmap(OFString *mapname)
 	}
 	memcpy(p, mapdata.items, mapdata.count);
 	p += mapdata.count;
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	sendpackettoserv(packet);
 	conoutf(@"sending map %@ to server...", mapname);
@@ -217,10 +217,10 @@ getmap()
 {
 	ENetPacket *packet =
 	    enet_packet_create(NULL, MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	putint(&p, SV_RECVMAP);
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	sendpackettoserv(packet);
 	conoutf(@"requesting map from server...");

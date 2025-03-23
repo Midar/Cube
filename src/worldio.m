@@ -7,8 +7,8 @@
 struct persistent_entity {
 	short x, y, z; // cube aligned position
 	short attr1;
-	uchar type; // type is one of the above
-	uchar attr2, attr3, attr4;
+	unsigned char type; // type is one of the above
+	unsigned char attr2, attr3, attr4;
 };
 
 void
@@ -139,7 +139,7 @@ toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 // these two are used by getmap/sendmap.. transfers compressed maps directly
 
 void
-writemap(OFString *mname, int msize, uchar *mdata)
+writemap(OFString *mname, int msize, unsigned char *mdata)
 {
 	setnames(mname);
 	backup(cgzname, bakname);

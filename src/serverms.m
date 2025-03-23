@@ -56,20 +56,20 @@ httpgetrecieve(ENetBuffer *buf)
 	}
 }
 
-static uchar *
-stripheader(uchar *b)
+static unsigned char *
+stripheader(unsigned char *b)
 {
 	char *s = strstr((char *)b, "\n\r\n");
 	if (!s)
 		s = strstr((char *)b, "\n\n");
-	return s ? (uchar *)s : b;
+	return s ? (unsigned char *)s : b;
 }
 
 static ENetAddress masterserver = { ENET_HOST_ANY, 80 };
 static int updmaster = 0;
 static OFString *masterbase;
 static OFString *masterpath;
-static uchar masterrep[MAXTRANS];
+static unsigned char masterrep[MAXTRANS];
 static ENetBuffer masterb;
 
 static void
@@ -97,8 +97,8 @@ checkmasterreply()
 		printf("masterserver reply: %s\n", stripheader(masterrep));
 }
 
-uchar *
-retrieveservers(uchar *buf, int buflen)
+unsigned char *
+retrieveservers(unsigned char *buf, int buflen)
 {
 	OFString *path =
 	    [OFString stringWithFormat:@"%@retrieve.do?item=list", masterpath];
@@ -126,7 +126,7 @@ serverms(int mode, int numplayers, int minremain, OFString *smapname,
 	// reply all server info requests
 	ENetBuffer buf;
 	ENetAddress addr;
-	uchar pong[MAXTRANS], *p;
+	unsigned char pong[MAXTRANS], *p;
 	int len;
 	enet_uint32 events = ENET_SOCKET_WAIT_RECEIVE;
 	buf.data = pong;

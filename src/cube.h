@@ -33,16 +33,24 @@ enum {
 };
 
 struct sqr {
-	uchar type;             // one of the above
-	char floor, ceil;       // height, in cubes
-	uchar wtex, ftex, ctex; // wall/floor/ceil texture ids
-	uchar r, g, b;          // light value at upper left vertex
-	uchar vdelta;           // vertex delta, used for heightfield cubes
-	char defer; // used in mipmapping, when true this cube is not a perfect
-	            // mip
-	char occluded; // true when occluded
-	uchar utex;    // upper wall tex id
-	uchar tag;     // used by triggers
+	// one of the above
+	unsigned char type;
+	// height, in cubes
+	char floor, ceil;
+	// wall/floor/ceil texture ids
+	unsigned char wtex, ftex, ctex;
+	// light value at upper left vertex
+	unsigned char r, g, b;
+	// vertex delta, used for heightfield cubes
+	unsigned char vdelta;
+	// used in mipmapping, when true this cube is not a perfect mip
+	char defer;
+	// true when occluded
+	char occluded;
+	// upper wall tex id
+	unsigned char utex;
+	// used by triggers
+	unsigned char tag;
 };
 
 // hardcoded texture numbers
@@ -87,7 +95,7 @@ struct header {
 	int sfactor;    // in bits
 	int numents;
 	char maptitle[128];
-	uchar texlists[3][256];
+	unsigned char texlists[3][256];
 	int waterlevel;
 	int reserved[15];
 };
@@ -237,7 +245,7 @@ enum {
 
 struct vertex {
 	float u, v, x, y, z;
-	uchar r, g, b, a;
+	unsigned char r, g, b, a;
 };
 
 // globals ooh naughty

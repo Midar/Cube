@@ -130,8 +130,8 @@ void
 pingservers()
 {
 	ENetBuffer buf;
-	uchar ping[MAXTRANS];
-	uchar *p;
+	unsigned char ping[MAXTRANS];
+	unsigned char *p;
 
 	for (ServerInfo *si in servers) {
 		if (si.address.host == ENET_HOST_ANY)
@@ -173,7 +173,7 @@ checkpings()
 	enet_uint32 events = ENET_SOCKET_WAIT_RECEIVE;
 	ENetBuffer buf;
 	ENetAddress addr;
-	uchar ping[MAXTRANS], *p;
+	unsigned char ping[MAXTRANS], *p;
 	char text[MAXTRANS];
 	buf.data = ping;
 	buf.dataLength = sizeof(ping);
@@ -266,8 +266,8 @@ void
 updatefrommaster()
 {
 	const int MAXUPD = 32000;
-	uchar buf[MAXUPD];
-	uchar *reply = retrieveservers(buf, MAXUPD);
+	unsigned char buf[MAXUPD];
+	unsigned char *reply = retrieveservers(buf, MAXUPD);
 	if (!*reply || strstr((char *)reply, "<html>") ||
 	    strstr((char *)reply, "<HTML>"))
 		conoutf(@"master server not replying");

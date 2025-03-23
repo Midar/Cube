@@ -113,7 +113,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 
 #if 0
 	for (int i = 0; i < s->w * s->h * 3; i++) {
-		uchar *p = (uchar *)s->pixels + i;
+		unsigned char *p = (unsigned char *)s->pixels + i;
 		*p = 255 - *p;
 	}
 #endif

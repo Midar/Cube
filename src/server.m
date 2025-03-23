@@ -68,11 +68,11 @@ send2(bool rel, int cn, int a, int b)
 {
 	ENetPacket *packet =
 	    enet_packet_create(NULL, 32, rel ? ENET_PACKET_FLAG_RELIABLE : 0);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	putint(&p, a);
 	putint(&p, b);
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	if (cn < 0)
 		process(packet, -1);
@@ -87,11 +87,11 @@ sendservmsg(OFString *msg)
 {
 	ENetPacket *packet = enet_packet_create(
 	    NULL, _MAXDEFSTR + 10, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	putint(&p, SV_SERVMSG);
 	sendstring(msg, &p);
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	multicast(packet, -1);
 	if (packet->referenceCount == 0)
@@ -117,10 +117,11 @@ resetitems()
 
 // server side item pickup, acknowledge first client that gets it
 static void
-pickup(uint i, int sec, int sender)
+pickup(size_t i, int sec, int sender)
 {
-	if (i >= (uint)sents.count)
+	if (i >= sents.count)
 		return;
+
 	if (sents[i].spawned) {
 		sents[i].spawned = false;
 		sents[i].spawnsecs = sec;
@@ -178,14 +179,14 @@ vote(OFString *map, int reqmode, int sender)
 void
 process(ENetPacket *packet, int sender) // sender may be -1
 {
-	if (ENET_NET_TO_HOST_16(*(ushort *)packet->data) !=
+	if (ENET_NET_TO_HOST_16(*(unsigned short *)packet->data) !=
 	    packet->dataLength) {
 		disconnect_client(sender, @"packet length");
 		return;
 	}
 
-	uchar *end = packet->data + packet->dataLength;
-	uchar *p = packet->data + 2;
+	unsigned char *end = packet->data + packet->dataLength;
+	unsigned char *p = packet->data + 2;
 	char text[MAXTRANS];
 	int cn = -1, type;
 
@@ -300,8 +301,8 @@ send_welcome(int n)
 {
 	ENetPacket *packet =
 	    enet_packet_create(NULL, MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
-	uchar *start = packet->data;
-	__block uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	__block unsigned char *p = start + 2;
 	putint(&p, SV_INITS2C);
 	putint(&p, n);
 	putint(&p, PROTOCOL_VERSION);
@@ -320,7 +321,7 @@ send_welcome(int n)
 		}];
 		putint(&p, -1);
 	}
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	send_(n, packet);
 }

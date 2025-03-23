@@ -14,7 +14,7 @@ struct md2_header {
 };
 
 struct md2_vertex {
-	uchar vertex[3], lightNormalIndex;
+	unsigned char vertex[3], lightNormalIndex;
 };
 
 struct md2_frame {
@@ -128,7 +128,7 @@ snap(int sn, float f)
 	    (struct md2_frame *)((char *)_frames + _frameSize * frame);
 	float sc = 16.0f / scale;
 	for (int vi = 0; vi < _numVerts; vi++) {
-		uchar *cv = (uchar *)&cf->vertices[vi].vertex;
+		unsigned char *cv = (unsigned char *)&cf->vertices[vi].vertex;
 		OFVector3D *v = &(_mverts[frame])[vi];
 		v->x = (snap(sn, cv[0] * cf->scale[0]) + cf->translate[0]) / sc;
 		v->y =

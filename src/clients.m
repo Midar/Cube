@@ -282,8 +282,8 @@ c2sinfo(DynamicEntity *d)
 	if (lastmillis - lastupdate < 40)
 		return; // don't update faster than 25fps
 	ENetPacket *packet = enet_packet_create(NULL, MAXTRANS, 0);
-	uchar *start = packet->data;
-	uchar *p = start + 2;
+	unsigned char *start = packet->data;
+	unsigned char *p = start + 2;
 	bool serveriteminitdone = false;
 	// suggest server to change map
 	if (toservermap.length > 0) {
@@ -354,7 +354,7 @@ c2sinfo(DynamicEntity *d)
 			lastping = lastmillis;
 		}
 	}
-	*(ushort *)start = ENET_HOST_TO_NET_16(p - start);
+	*(unsigned short *)start = ENET_HOST_TO_NET_16(p - start);
 	enet_packet_resize(packet, p - start);
 	incomingdemodata(start, p - start, true);
 	if (clienthost) {

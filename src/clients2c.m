@@ -64,14 +64,14 @@ updatepos(DynamicEntity *d)
 
 // processes any updates from the server
 void
-localservertoclient(uchar *buf, int len)
+localservertoclient(unsigned char *buf, int len)
 {
-	if (ENET_NET_TO_HOST_16(*(ushort *)buf) != len)
+	if (ENET_NET_TO_HOST_16(*(unsigned short *)buf) != len)
 		neterr(@"packet length");
 	incomingdemodata(buf, len, false);
 
-	uchar *end = buf + len;
-	uchar *p = buf + 2;
+	unsigned char *end = buf + len;
+	unsigned char *p = buf + 2;
 	char text[MAXTRANS];
 	int cn = -1, type;
 	DynamicEntity *d = nil;
@@ -284,9 +284,9 @@ localservertoclient(uchar *buf, int len)
 			break;
 
 		case SV_ITEMSPAWN: {
-			uint i = getint(&p);
+			unsigned int i = getint(&p);
 			setspawn(i, true);
-			if (i >= (uint)ents.count)
+			if (i >= ents.count)
 				break;
 			OFVector3D v =
 			    OFMakeVector3D(ents[i].x, ents[i].y, ents[i].z);
@@ -332,9 +332,9 @@ localservertoclient(uchar *buf, int len)
 
 		case SV_EDITENT: // coop edit of ent
 		{
-			uint i = getint(&p);
+			unsigned int i = getint(&p);
 
-			while ((uint)ents.count <= i) {
+			while (ents.count <= i) {
 				Entity *e = [Entity entity];
 				e.type = NOTUSED;
 				[ents addObject:e];
