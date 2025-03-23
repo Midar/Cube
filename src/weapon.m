@@ -73,7 +73,7 @@ COMMAND(weapon, ARG_3STR, ^(OFString *a1, OFString *a2, OFString *a3) {
 void
 createrays(OFVector3D from, OFVector3D to)
 {
-	float dist = OFDistanceOfVectors3D(from, to);
+	float dist = OFDistanceOfVectors3D(to, from);
 	float f = dist * SGSPREAD / 1000;
 	for (int i = 0; i < SGRAYS; i++)
 #define RNDD (rnd(101) - 50) * f
@@ -185,8 +185,8 @@ radialeffect(
 		return;
 
 	OFVector3D origin = o.origin;
-	float dist = OFDistanceOfVectors3D(v, origin);
-	OFVector3D temp = OFSubtractVectors3D(v, origin);
+	float dist = OFDistanceOfVectors3D(origin, v);
+	OFVector3D temp = OFSubtractVectors3D(origin, v);
 	dist -= 2; // account for eye distance imprecision
 
 	if (dist < RL_DAMRAD) {
@@ -195,7 +195,6 @@ radialeffect(
 
 		int damage = (int)(qdam * (1 - (dist / RL_DAMRAD)));
 		hit(cn, damage, o, at);
-
 		temp =
 		    OFMultiplyVector3D(temp, (RL_DAMRAD - dist) * damage / 800);
 		o.velocity = OFAddVectors3D(o.velocity, temp);
@@ -267,14 +266,14 @@ moveprojectiles(float time)
 		int qdam = guns[p.gun].damage * (p.owner.quadMillis ? 4 : 1);
 		if ([p.owner isKindOfClass:Monster.class])
 			qdam /= MONSTERDAMAGEFACTOR;
-		OFVector3D po = p.o, pto = pto;
-		float dist = OFDistanceOfVectors3D(po, pto);
-		OFVector3D v = OFSubtractVectors3D(po, pto);
+		OFVector3D po = p.o, pto = p.to;
+		float dist = OFDistanceOfVectors3D(pto, po);
+		OFVector3D v = OFSubtractVectors3D(pto, po);
 		float dtime = dist * 1000 / p.speed;
 		if (time > dtime)
 			dtime = time;
 		v = OFMultiplyVector3D(v, time / dtime);
-		v = OFAddVectors3D(v, p.o);
+		v = OFAddVectors3D(v, po);
 		if (p.local) {
 			for (id player in players)
 				if (player != [OFNull null])
@@ -350,8 +349,8 @@ hitpush(int target, int damage, DynamicEntity *d, DynamicEntity *at,
     OFVector3D from, OFVector3D to)
 {
 	hit(target, damage, d, at);
-	float dist = OFDistanceOfVectors3D(from, to);
-	OFVector3D v = OFSubtractVectors3D(from, to);
+	float dist = OFDistanceOfVectors3D(to, from);
+	OFVector3D v = OFSubtractVectors3D(to, from);
 	v = OFMultiplyVector3D(v, damage / dist / 50);
 	d.velocity = OFAddVectors3D(d.velocity, v);
 }
@@ -401,8 +400,8 @@ shoot(DynamicEntity *d, OFVector3D targ)
 	OFVector3D to = targ;
 	from.z -= 0.2f; // below eye
 
-	float dist = OFDistanceOfVectors3D(from, to);
-	OFVector3D unitv = OFSubtractVectors3D(from, to);
+	float dist = OFDistanceOfVectors3D(to, from);
+	OFVector3D unitv = OFSubtractVectors3D(to, from);
 	unitv = OFMultiplyVector3D(unitv, 1.0f / dist);
 	OFVector3D kickback =
 	    OFMultiplyVector3D(unitv, guns[d.gunSelect].kickamount * -0.01f);

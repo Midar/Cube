@@ -321,7 +321,7 @@ checkitems()
 
 		OFVector3D v = OFMakeVector3D(
 		    e.x, e.y, (float)S(e.x, e.y)->floor + player1.eyeHeight);
-		float dist = OFDistanceOfVectors3D(player1.origin, v);
+		float dist = OFDistanceOfVectors3D(v, player1.origin);
 
 		if (dist < (e.type == TELEPORT ? 4 : 2.5))
 			pickup(i, player1);

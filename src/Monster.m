@@ -272,7 +272,7 @@ enemylos(Monster *m, OFVector3D *v)
 	}
 
 	float disttoenemy =
-	    OFDistanceOfVectors3D(self.origin, self.enemy.origin);
+	    OFDistanceOfVectors3D(self.enemy.origin, self.origin);
 	self.pitch =
 	    atan2(self.enemy.origin.z - self.origin.z, disttoenemy) * 180 / PI;
 
@@ -470,7 +470,7 @@ enemylos(Monster *m, OFVector3D *v)
 			} else {
 				v.z += monster.eyeHeight;
 				float dist =
-				    OFDistanceOfVectors3D(monster.origin, v);
+				    OFDistanceOfVectors3D(v, monster.origin);
 				v.z -= monster.eyeHeight;
 
 				if (dist < 4)

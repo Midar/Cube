@@ -114,8 +114,8 @@ updatechanvol(int chan, const OFVector3D *loc)
 
 	if (loc) {
 		OFVector3D origin = player1.origin;
-		float dist = OFDistanceOfVectors3D(*loc, origin);
-		OFVector3D v = OFSubtractVectors3D(*loc, origin);
+		float dist = OFDistanceOfVectors3D(origin, *loc);
+		OFVector3D v = OFSubtractVectors3D(origin, *loc);
 
 		// simple mono distance attenuation
 		vol -= (int)(dist * 3 * soundvol / 255);

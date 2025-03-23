@@ -498,7 +498,7 @@ demoplaybackstep()
 				fixwrap(c, player1);
 				fixwrap(z, player1);
 				float dist =
-				    OFDistanceOfVectors3D(z.origin, c.origin);
+				    OFDistanceOfVectors3D(c.origin, z.origin);
 				// if teleport or spawn, don't interpolate
 				if (dist < 16) {
 					catmulrom(z.origin, a.origin, b.origin,

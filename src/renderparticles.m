@@ -150,8 +150,8 @@ particle_splash(int type, int num, int fade, OFVector3D p)
 void
 particle_trail(int type, int fade, OFVector3D s, OFVector3D e)
 {
-	float d = OFDistanceOfVectors3D(s, e);
-	OFVector3D v = OFSubtractVectors3D(s, e);
+	float d = OFDistanceOfVectors3D(e, s);
+	OFVector3D v = OFSubtractVectors3D(e, s);
 	v = OFMultiplyVector3D(v, 1.0f / (d * 2 + 0.1f));
 	for (int i = 0; i < ((int)d * 2); i++) {
 		s = OFAddVectors3D(s, v);
