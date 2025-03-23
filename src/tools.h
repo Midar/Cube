@@ -36,8 +36,6 @@
 # define __cdecl
 #endif
 
-#define fast_f2nat(val) ((int)(val))
-
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -31,9 +31,8 @@ lightray(float bx, float by, Entity *light)
 	int l = light.attr2 << PRECBITS;
 	int stepx = (int)(dx / (float)steps * PRECF);
 	int stepy = (int)(dy / (float)steps * PRECF);
-	int stepl =
-	    fast_f2nat(l / (float)steps); // incorrect: light will fade quicker
-	                                  // if near edge of the world
+	// incorrect: light will fade quicker if near edge of the world
+	int stepl = l / (float)steps;
 
 	if (hasoverbright) {
 		l /= lightscale;
@@ -54,9 +53,9 @@ lightray(float bx, float by, Entity *light)
 				return;
 
 			int g = light.attr3 << PRECBITS;
-			int stepg = fast_f2nat(g / (float)steps);
+			int stepg = g / (float)steps;
 			int b = light.attr4 << PRECBITS;
-			int stepb = fast_f2nat(b / (float)steps);
+			int stepb = b / (float)steps;
 			g /= lightscale;
 			stepg /= lightscale;
 			b /= lightscale;

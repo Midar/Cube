@@ -35,15 +35,12 @@ computeraytable(float vx, float vy)
 
 	for (int i = 0; i < NUMRAYS; i++) {
 		float angle = i * PI2 / NUMRAYS;
-		if ((apitch > 45 // must be bigger if fov>120
-		        || (angle < byaw && angle > syaw) ||
+		// try to avoid tracing ray if outside of frustrum
+		// apitch must be bigger if fov > 120
+		if ((apitch > 45 || (angle < byaw && angle > syaw) ||
 		        (angle < byaw - PI2 && angle > syaw - PI2) ||
 		        (angle < byaw + PI2 && angle > syaw + PI2)) &&
-		    !OUTBORD(vx, vy) &&
-		    !SOLID(S(fast_f2nat(vx),
-		        fast_f2nat(vy)))) // try to avoid tracing ray if outside
-		                          // of frustrum
-		{
+		    !OUTBORD(vx, vy) && !SOLID(S((int)vx, (int)vy))) {
 			float ray = i * 8 / (float)NUMRAYS;
 			float dx, dy;
 			if (ray > 1 && ray < 3) {
@@ -66,7 +63,7 @@ computeraytable(float vx, float vy)
 				sy += dy;
 				// 90% of time spend in this function is on this
 				// line
-				if (SOLID(S(fast_f2nat(sx), fast_f2nat(sy)))) {
+				if (SOLID(S((int)sx, (int)sy))) {
 					rdist[i] = (float)(fabs(sx - vx) +
 					    fabs(sy - vy));
 					break;
@@ -183,9 +180,9 @@ isoccluded(float vx, float vy, float cx, float cy,
 			l = ca(cx - vx, cy + csize - vy);
 		} // H
 	}
-	int si = fast_f2nat(h * (NUMRAYS / 8)) +
-	    NUMRAYS; // get indexes into occlusion map from angles
-	int ei = fast_f2nat(l * (NUMRAYS / 8)) + NUMRAYS + 1;
+	// get indexes into occlusion map from angles
+	int si = h * (NUMRAYS / 8) + NUMRAYS;
+	int ei = l * (NUMRAYS / 8) + NUMRAYS + 1;
 	if (ei <= si)
 		ei += NUMRAYS;
 

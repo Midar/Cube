@@ -198,7 +198,7 @@ los(float lx, float ly, float lz, float bx, float by, float bz, OFVector3D *v)
 	float y = ly;
 	int i = 0;
 	for (;;) {
-		struct sqr *s = S(fast_f2nat(x), fast_f2nat(y));
+		struct sqr *s = S((int)x, (int)y);
 		if (SOLID(s))
 			break;
 		float floor = s->floor;

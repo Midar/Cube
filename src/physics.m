@@ -100,10 +100,10 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 	const float fy1 = d.origin.y - d.radius;
 	const float fx2 = d.origin.x + d.radius;
 	const float fy2 = d.origin.y + d.radius;
-	const int x1 = fast_f2nat(fx1);
-	const int y1 = fast_f2nat(fy1);
-	const int x2 = fast_f2nat(fx2);
-	const int y2 = fast_f2nat(fy2);
+	const int x1 = fx1;
+	const int y1 = fy1;
+	const int x2 = fx2;
+	const int y2 = fy2;
 	float hi = 127, lo = -128;
 	// big monsters are afraid of heights, unless angry :)
 	float minfloor =
