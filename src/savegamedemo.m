@@ -245,12 +245,13 @@ loadgamerest()
 	[Monster restoreAll];
 
 	int nplayers = gzgeti();
-	loopi(nplayers) if (!gzget())
-	{
-		DynamicEntity *d = getclient(i);
-		assert(d);
-		gzread(f, data.mutableItems, data.count);
-		[d setFromSerializedData:data];
+	for (int i = 0; i < nplayers; i++) {
+		if (!gzget()) {
+			DynamicEntity *d = getclient(i);
+			assert(d);
+			gzread(f, data.mutableItems, data.count);
+			[d setFromSerializedData:data];
+		}
 	}
 
 	conoutf(@"savegame restored");
@@ -321,7 +322,8 @@ incomingdemodata(uchar *buf, int len, bool extras)
 		gzputi(player1.health);
 		gzputi(player1.armour);
 		gzput(player1.armourType);
-		loopi(NUMGUNS) gzput(player1.ammo[i]);
+		for (int i = 0; i < NUMGUNS; i++)
+			gzput(player1.ammo[i]);
 		gzput(player1.state);
 		gzputi(bdamage);
 		bdamage = 0;
@@ -448,7 +450,8 @@ demoplaybackstep()
 			target.health = gzgeti();
 			target.armour = gzgeti();
 			target.armourType = gzget();
-			loopi(NUMGUNS) target.ammo[i] = gzget();
+			for (int i = 0; i < NUMGUNS; i++)
+				target.ammo[i] = gzget();
 			target.state = gzget();
 			target.lastMove = playbacktime;
 			if ((bdamage = gzgeti()))

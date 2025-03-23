@@ -198,8 +198,8 @@ updateworld(int millis) // main game update loop
 void
 entinmap(DynamicEntity *d)
 {
-	loopi(100) // try max 100 times
-	{
+	// try max 100 times
+	for (int i = 0; i < 100; i++) {
 		float dx = (rnd(21) - 10) / 10.0f * i; // increasing distance
 		float dy = (rnd(21) - 10) / 10.0f * i;
 		OFVector3D old = d.origin;
@@ -221,7 +221,8 @@ void
 spawnplayer(DynamicEntity *d)
 {
 	int r = fixspawn-- > 0 ? 4 : rnd(10) + 1;
-	loopi(r) spawncycle = findentity(PLAYERSTART, spawncycle + 1);
+	for (int i = 0; i < r; i++)
+		spawncycle = findentity(PLAYERSTART, spawncycle + 1);
 	if (spawncycle != -1) {
 		d.origin = OFMakeVector3D(
 		    ents[spawncycle].x, ents[spawncycle].y, ents[spawncycle].z);

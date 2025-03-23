@@ -112,11 +112,10 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 	}
 
 #if 0
-		loopi(s->w * s->h * 3)
-		{
-			uchar *p = (uchar *)s->pixels + i;
-			*p = 255 - *p;
-		}
+	for (int i = 0; i < s->w * s->h * 3; i++) {
+		uchar *p = (uchar *)s->pixels + i;
+		*p = 255 - *p;
+	}
 #endif
 	glBindTexture(GL_TEXTURE_2D, tnum);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -179,7 +178,9 @@ static OFString *mapname[256][MAXFRAMES];
 void
 purgetextures()
 {
-	loopi(256) loop(j, MAXFRAMES) mapping[i][j] = 0;
+	for (int i = 0; i < 256; i++)
+		for (int j = 0; j < MAXFRAMES; j++)
+			mapping[i][j] = 0;
 }
 
 int curtexnum = 0;
@@ -221,8 +222,8 @@ lookuptexture(int tex, int *xs, int *ys)
 	if (tid == 0)
 		return 1; // crosshair :)
 
-	loopi(curtex) // lazily happens once per "texture" command, basically
-	{
+	// lazily happens once per "texture" command, basically
+	for (int i = 0; i < curtex; i++) {
 		if ([mapname[tex][frame] isEqual:texname[i]]) {
 			mapping[tex][frame] = tid = i + FIRSTTEX;
 			*xs = texx[i];

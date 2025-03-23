@@ -318,7 +318,8 @@ void
 render_world(
     float vx, float vy, float vh, int yaw, int pitch, float fov, int w, int h)
 {
-	loopi(LARGEST_FACTOR) stats[i] = 0;
+	for (int i = 0; i < LARGEST_FACTOR; i++)
+		stats[i] = 0;
 	min_lod = MIN_LOD + abs(pitch) / 12;
 	yaw = 360 - yaw;
 	float widef = fov / 75.0f;

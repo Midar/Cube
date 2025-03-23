@@ -77,8 +77,7 @@ createrays(const OFVector3D *from, const OFVector3D *to)
 {
 	vdist(dist, dvec, *from, *to);
 	float f = dist * SGSPREAD / 1000;
-	loopi(SGRAYS)
-	{
+	for (int i = 0; i < SGRAYS; i++) {
 #define RNDD (rnd(101) - 50) * f
 		OFVector3D r = OFMakeVector3D(RNDD, RNDD, RNDD);
 		sg[i] = *to;
@@ -168,7 +167,7 @@ newprojectile(const OFVector3D *from, const OFVector3D *to, float speed,
 	}
 }
 
-void
+static void
 hit(int target, int damage, __kindof DynamicEntity *d, DynamicEntity *at)
 {
 	OFVector3D o = d.origin;
@@ -205,7 +204,7 @@ radialeffect(
 	}
 }
 
-void
+static void
 splash(Projectile *p, const OFVector3D *v, const OFVector3D *vold,
     int notthisplayer, int notthismonster, int qdam)
 {
@@ -322,7 +321,8 @@ shootv(int gun, const OFVector3D *from, const OFVector3D *to, DynamicEntity *d,
 		break;
 
 	case GUN_SG: {
-		loopi(SGRAYS) particle_splash(0, 5, 200, &sg[i]);
+		for (int i = 0; i < SGRAYS; i++)
+			particle_splash(0, 5, 200, &sg[i]);
 		break;
 	}
 
@@ -371,7 +371,9 @@ raydamage(DynamicEntity *o, const OFVector3D *from, const OFVector3D *to,
 		qdam /= MONSTERDAMAGEFACTOR;
 	if (d.gunSelect == GUN_SG) {
 		int damage = 0;
-		loop(r, SGRAYS) if (intersect(o, from, &sg[r])) damage += qdam;
+		for (int r = 0; r < SGRAYS; r++)
+			if (intersect(o, from, &sg[r]))
+				damage += qdam;
 		if (damage)
 			hitpush(i, damage, o, d, from, to);
 	} else if (intersect(o, from, to))

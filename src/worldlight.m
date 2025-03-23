@@ -61,8 +61,7 @@ lightray(float bx, float by, Entity *light)
 			stepg /= lightscale;
 			b /= lightscale;
 			stepb /= lightscale;
-			loopi(steps)
-			{
+			for (int i = 0; i < steps; i++) {
 				struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 				int tl = (l >> PRECBITS) + s->r;
 				s->r = tl > 255 ? 255 : tl;
@@ -90,8 +89,7 @@ lightray(float bx, float by, Entity *light)
 			if (OUTBORD(x >> PRECBITS, y >> PRECBITS))
 				return;
 
-			loopi(steps)
-			{
+			for (int i = 0; i < steps; i++) {
 				struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 				int tl = (l >> PRECBITS) + s->r;
 				s->r = s->g = s->b = tl > 255 ? 255 : tl;
@@ -106,8 +104,7 @@ lightray(float bx, float by, Entity *light)
 	} else // the old (white) light code, here for the few people with old
 	       // video cards that don't support overbright
 	{
-		loopi(steps)
-		{
+		for (int i = 0; i < steps; i++) {
 			struct sqr *s = S(x >> PRECBITS, y >> PRECBITS);
 			int light = l >> PRECBITS;
 			if (light > s->r)
@@ -150,19 +147,20 @@ calclightsource(Entity *l)
 void
 postlightarea(const struct block *a)
 {
-	loop(x, a->xs) loop(y, a->ys) // assumes area not on edge of world
-	{
-		struct sqr *s = S(x + a->x, y + a->y);
+	// assumes area not on edge of world
+	for (int x = 0; x < a->xs; x++)
+		for (int y = 0; y < a->ys; y++) {
+			struct sqr *s = S(x + a->x, y + a->y);
 #define median(m)                                                            \
 	s->m =                                                               \
 	    (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +            \
 	        SW(s, -1, 0)->m * 2 + SW(s, 0, -1)->m * 2 + SW(s, 1, 1)->m + \
 	        SW(s, 1, -1)->m + SW(s, -1, 1)->m + SW(s, -1, -1)->m) /      \
 	    14; // median is 4/2/1 instead
-		median(r);
-		median(g);
-		median(b);
-	}
+			median(r);
+			median(g);
+			median(b);
+		}
 
 	remip(a, 0);
 }
@@ -170,10 +168,11 @@ postlightarea(const struct block *a)
 void
 calclight()
 {
-	loop(x, ssize) loop(y, ssize)
-	{
-		struct sqr *s = S(x, y);
-		s->r = s->g = s->b = 10;
+	for (int x = 0; x < ssize; x++) {
+		for (int y = 0; y < ssize; y++) {
+			struct sqr *s = S(x, y);
+			s->r = s->g = s->b = 10;
+		}
 	}
 
 	for (Entity *e in ents)

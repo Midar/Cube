@@ -10,11 +10,13 @@ endianswap(
 {
 	if (*((char *)&stride))
 		return;
-	loop(w, length) loop(i, stride / 2)
-	{
-		uchar *p = (uchar *)memory + w * stride;
-		uchar t = p[i];
-		p[i] = p[stride - i - 1];
-		p[stride - i - 1] = t;
+
+	for (int w = 0; w < length; w++) {
+		for (int i = 0; i < stride / 2; i++) {
+			uchar *p = (uchar *)memory + w * stride;
+			uchar t = p[i];
+			p[i] = p[stride - i - 1];
+			p[stride - i - 1] = t;
+		}
 	}
 }

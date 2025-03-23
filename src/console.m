@@ -95,11 +95,9 @@ renderconsole()
 		i++;
 	}
 
-	loopj(nd)
-	{
+	for (int j = 0; j < nd; j++)
 		draw_text(refs[j], FONTH / 3,
 		    (FONTH / 4 * 5) * (nd - j - 1) + FONTH / 3, 2);
-	}
 }
 
 // keymap is defined externally in keymap.cfg

@@ -127,8 +127,7 @@ snap(int sn, float f)
 	struct md2_frame *cf =
 	    (struct md2_frame *)((char *)_frames + _frameSize * frame);
 	float sc = 16.0f / scale;
-	loop(vi, _numVerts)
-	{
+	for (int vi = 0; vi < _numVerts; vi++) {
 		uchar *cv = (uchar *)&cf->vertices[vi].vertex;
 		OFVector3D *v = &(_mverts[frame])[vi];
 		v->x = (snap(sn, cv[0] * cf->scale[0]) + cf->translate[0]) / sc;
@@ -149,9 +148,9 @@ snap(int sn, float f)
                    snap:(int)sn
                basetime:(int)basetime
 {
-	loopi(range) if (!_mverts[frame + i])[self scaleWithFrame:frame + i
-	                                                    scale:sc
-	                                                     snap:sn];
+	for (int i = 0; i < range; i++)
+		if (!_mverts[frame + i])
+			[self scaleWithFrame:frame + i scale:sc snap:sn];
 
 	glPushMatrix();
 	glTranslatef(position.x, position.y, position.z);
@@ -192,8 +191,7 @@ snap(int sn, float f)
 				numVertex = -numVertex;
 			}
 
-			loopi(numVertex)
-			{
+			for (int i = 0; i < numVertex; i++) {
 				float tu = *((float *)command++);
 				float tv = *((float *)command++);
 				glTexCoord2f(tu, tv);

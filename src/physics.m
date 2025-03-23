@@ -358,8 +358,8 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 		// extra smoothness when lifting up stairs
 		const float rise = speed / moveres / 1.2f;
 
-		loopi(moveres) // discrete steps collision detection & sliding
-		{
+		// discrete steps collision detection & sliding
+		for (int i = 0; i < moveres; i++) {
 			// try move forward
 			pl.origin = OFAddVector3D(pl.origin,
 			    OFMakeVector3D(f * d.x, f * d.y, f * d.z));
@@ -441,7 +441,9 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 void
 moveplayer(DynamicEntity *pl, int moveres, bool local)
 {
-	loopi(physicsrepeat) moveplayer4(pl, moveres, local,
-	    i ? curtime / physicsrepeat
-	      : curtime - curtime / physicsrepeat * (physicsrepeat - 1));
+	for (int i = 0; i < physicsrepeat; i++)
+		moveplayer4(pl, moveres, local,
+		    i ? curtime / physicsrepeat
+		      : curtime -
+		            curtime / physicsrepeat * (physicsrepeat - 1));
 }

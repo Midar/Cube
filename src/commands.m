@@ -240,8 +240,7 @@ execute(OFString *string, bool isDown)
 	for (bool cont = true; cont;) {
 		// for each ; seperated statement
 		int numargs = MAXWORDS;
-		loopi(MAXWORDS)
-		{
+		for (int i = 0; i < MAXWORDS; i++) {
 			// collect all argument values
 			w[i] = @"";
 			if (i > numargs)
@@ -421,8 +420,7 @@ loopa(OFString *times, OFString *body)
 {
 	int t = times.cube_intValue;
 
-	loopi(t)
-	{
+	for (int i = 0; i < t; i++) {
 		intset(@"i", i);
 		execute(body, true);
 	}
@@ -477,8 +475,7 @@ at(OFString *s_, OFString *pos)
 	char *copy __attribute__((__cleanup__(cleanup))) =
 	    strdup(s_.UTF8String);
 	char *s = copy;
-	loopi(n)
-	{
+	for (int i = 0; i < n; i++) {
 		s += strcspn(s, " \0");
 		s += strspn(s, " ");
 	}

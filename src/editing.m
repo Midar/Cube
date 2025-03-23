@@ -30,15 +30,16 @@ OF_CONSTRUCTOR()
 int selh = 0;
 bool selset = false;
 
-#define loopselxy(b)                                               \
-	{                                                          \
-		makeundo();                                        \
-		loop(x, sel->xs) loop(y, sel->ys)                  \
-		{                                                  \
-			struct sqr *s = S(sel->x + x, sel->y + y); \
-			b;                                         \
-		}                                                  \
-		remip(sel, 0);                                     \
+#define loopselxy(b)                                                       \
+	{                                                                  \
+		makeundo();                                                \
+		for (int x = 0; x < sel->xs; x++) {                        \
+			for (int y = 0; y < sel->ys; y++) {                \
+				struct sqr *s = S(sel->x + x, sel->y + y); \
+				b;                                         \
+			}                                                  \
+		}                                                          \
+		remip(sel, 0);                                             \
 	}
 
 int cx, cy, ch;
@@ -291,8 +292,10 @@ void
 copy()
 {
 	EDITSELMP;
+
 	if (copybuf)
 		OFFreeMemory(copybuf);
+
 	copybuf = blockcopy(&sel);
 }
 
@@ -321,8 +324,7 @@ void
 tofronttex() // maintain most recently used of the texture lists when applying
              // texture
 {
-	loopi(3)
-	{
+	for (int i = 0; i < 3; i++) {
 		int c = curedittex[i];
 		if (c >= 0) {
 			uchar *p = hdr.texlists[i];
@@ -371,6 +373,7 @@ void
 editheight(int flr, int amount)
 {
 	EDITSEL;
+
 	bool isfloor = flr == 0;
 	editheightxy(isfloor, amount, &sel);
 	addmsg(1, 7, SV_EDITH, sel.x, sel.y, sel.xs, sel.ys, isfloor, amount);
@@ -400,12 +403,15 @@ void
 edittex(int type, int dir)
 {
 	EDITSEL;
+
 	if (type < 0 || type > 3)
 		return;
+
 	if (type != lasttype) {
 		tofronttex();
 		lasttype = type;
 	}
+
 	int atype = type == 3 ? 1 : type;
 	int i = curedittex[atype];
 	i = i < 0 ? 0 : i + dir;
@@ -419,28 +425,31 @@ void
 replace()
 {
 	EDITSELMP;
-	loop(x, ssize) loop(y, ssize)
-	{
-		struct sqr *s = S(x, y);
-		switch (lasttype) {
-		case 0:
-			if (s->ftex == rtex.ftex)
-				s->ftex = lasttex;
-			break;
-		case 1:
-			if (s->wtex == rtex.wtex)
-				s->wtex = lasttex;
-			break;
-		case 2:
-			if (s->ctex == rtex.ctex)
-				s->ctex = lasttex;
-			break;
-		case 3:
-			if (s->utex == rtex.utex)
-				s->utex = lasttex;
-			break;
+
+	for (int x = 0; x < ssize; x++) {
+		for (int y = 0; y < ssize; y++) {
+			struct sqr *s = S(x, y);
+			switch (lasttype) {
+			case 0:
+				if (s->ftex == rtex.ftex)
+					s->ftex = lasttex;
+				break;
+			case 1:
+				if (s->wtex == rtex.wtex)
+					s->wtex = lasttex;
+				break;
+			case 2:
+				if (s->ctex == rtex.ctex)
+					s->ctex = lasttex;
+				break;
+			case 3:
+				if (s->utex == rtex.utex)
+					s->utex = lasttex;
+				break;
+			}
 		}
 	}
+
 	struct block b = { 0, 0, ssize, ssize };
 	remip(&b, 0);
 }
@@ -455,12 +464,14 @@ void
 edittype(int type)
 {
 	EDITSEL;
+
 	if (type == CORNER &&
 	    (sel.xs != sel.ys || sel.xs == 3 || (sel.xs > 4 && sel.xs != 8) ||
 	        sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
 		conoutf(@"corner selection must be power of 2 aligned");
 		return;
 	}
+
 	edittypexy(type, &sel);
 	addmsg(1, 6, SV_EDITS, sel.x, sel.y, sel.xs, sel.ys, type);
 }
@@ -509,8 +520,10 @@ editequalisexy(bool isfloor, const struct block *sel)
 void
 equalize(int flr)
 {
-	bool isfloor = flr == 0;
+	bool isfloor = (flr == 0);
+
 	EDITSEL;
+
 	editequalisexy(isfloor, &sel);
 	addmsg(1, 6, SV_EDITE, sel.x, sel.y, sel.xs, sel.ys, isfloor);
 }
@@ -527,6 +540,7 @@ void
 setvdelta(int delta)
 {
 	EDITSEL;
+
 	setvdeltaxy(delta, &sel);
 	addmsg(1, 6, SV_EDITD, sel.x, sel.y, sel.xs, sel.ys, delta);
 }
@@ -540,7 +554,9 @@ archvertex(int span, int vert, int delta)
 {
 	if (!archvinit) {
 		archvinit = true;
-		loop(s, MAXARCHVERT) loop(v, MAXARCHVERT) archverts[s][v] = 0;
+		for (int s = 0; s < MAXARCHVERT; s++)
+			for (int v = 0; v < MAXARCHVERT; v++)
+				archverts[s][v] = 0;
 	}
 	if (span >= MAXARCHVERT || vert >= MAXARCHVERT || span < 0 || vert < 0)
 		return;
@@ -551,12 +567,15 @@ void
 arch(int sidedelta, int _a)
 {
 	EDITSELMP;
+
 	sel.xs++;
 	sel.ys++;
+
 	if (sel.xs > MAXARCHVERT)
 		sel.xs = MAXARCHVERT;
 	if (sel.ys > MAXARCHVERT)
 		sel.ys = MAXARCHVERT;
+
 	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
 	struct block *sel = sel_;
@@ -572,13 +591,16 @@ void
 slope(int xd, int yd)
 {
 	EDITSELMP;
+
 	int off = 0;
 	if (xd < 0)
 		off -= xd * sel.xs;
 	if (yd < 0)
 		off -= yd * sel.ys;
+
 	sel.xs++;
 	sel.ys++;
+
 	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
 	struct block *sel = sel_;
@@ -590,15 +612,22 @@ void
 perlin(int scale, int seed, int psize)
 {
 	EDITSELMP;
+
 	sel.xs++;
 	sel.ys++;
+
 	makeundo();
+
 	sel.xs--;
 	sel.ys--;
+
 	perlinarea(&sel, scale, seed, psize);
+
 	sel.xs++;
 	sel.ys++;
+
 	remipmore(&sel, 0);
+
 	sel.xs--;
 	sel.ys--;
 }
@@ -607,13 +636,15 @@ VARF(
     fullbright, 0, 0, 1, if (fullbright) {
 	    if (noteditmode())
 		    return;
-	    loopi(mipsize) world[i].r = world[i].g = world[i].b = 176;
+	    for (int i = 0; i < mipsize; i++)
+		    world[i].r = world[i].g = world[i].b = 176;
     });
 
 void
 edittag(int tag)
 {
 	EDITSELMP;
+
 	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
 	struct block *sel = sel_;
@@ -624,6 +655,7 @@ void
 newent(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4)
 {
 	EDITSEL;
+
 	newentity(sel.x, sel.y, (int)player1.origin.z, what,
 	    [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
 	    [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);

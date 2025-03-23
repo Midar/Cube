@@ -61,8 +61,7 @@ rendermenu()
 		title = m.name;
 	int mdisp = m.items.count;
 	int w = 0;
-	loopi(mdisp)
-	{
+	for (int i = 0; i < mdisp; i++) {
 		int x = text_width(m.items[i].text);
 		if (x > w)
 			w = x;
@@ -83,8 +82,7 @@ rendermenu()
 		blendbox(
 		    x - FONTH, bh - 10, x + w + FONTH, bh + FONTH + 10, false);
 	}
-	loopj(mdisp)
-	{
+	for (int j = 0; j < mdisp; j++) {
 		draw_text(m.items[j].text, x, y, 2);
 		y += step;
 	}

@@ -33,8 +33,7 @@ computeraytable(float vx, float vy)
 	float byaw = (player1.yaw - 90 + af) / 360 * PI2;
 	float syaw = (player1.yaw - 90 - af) / 360 * PI2;
 
-	loopi(NUMRAYS)
-	{
+	for (int i = 0; i < NUMRAYS; i++) {
 		float angle = i * PI2 / NUMRAYS;
 		if ((apitch > 45 // must be bigger if fov>120
 		        || (angle < byaw && angle > syaw) ||

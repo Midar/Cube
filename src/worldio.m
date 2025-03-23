@@ -61,15 +61,17 @@ nhf(struct sqr *s)
 void
 voptimize() // reset vdeltas on non-hf cubes
 {
-	loop(x, ssize) loop(y, ssize)
-	{
-		struct sqr *s = S(x, y);
-		if (x && y) {
-			if (nhf(s) && nhf(S(x - 1, y)) &&
-			    nhf(S(x - 1, y - 1)) && nhf(S(x, y - 1)))
+	for (int x = 0; x < ssize; x++) {
+		for (int y = 0; y < ssize; y++) {
+			struct sqr *s = S(x, y);
+
+			if (x && y) {
+				if (nhf(s) && nhf(S(x - 1, y)) &&
+				    nhf(S(x - 1, y - 1)) && nhf(S(x, y - 1)))
+					s->vdelta = 0;
+			} else
 				s->vdelta = 0;
-		} else
-			s->vdelta = 0;
+		}
 	}
 }
 
@@ -84,23 +86,25 @@ topt(struct sqr *s, bool *wf, bool *uf, int *wt, int *ut)
 	*wf = true;
 	*uf = true;
 	if (SOLID(s)) {
-		loopi(4) if (!SOLID(o[i]))
-		{
-			*wf = false;
-			*wt = s->wtex;
-			*ut = s->utex;
-			return;
+		for (int i = 0; i < 4; i++) {
+			if (!SOLID(o[i])) {
+				*wf = false;
+				*wt = s->wtex;
+				*ut = s->utex;
+				return;
+			}
 		}
 	} else {
-		loopi(4) if (!SOLID(o[i]))
-		{
-			if (o[i]->floor < s->floor) {
-				*wt = s->wtex;
-				*wf = false;
-			}
-			if (o[i]->ceil > s->ceil) {
-				*ut = s->utex;
-				*uf = false;
+		for (int i = 0; i < 4; i++) {
+			if (!SOLID(o[i])) {
+				if (o[i]->floor < s->floor) {
+					*wt = s->wtex;
+					*wf = false;
+				}
+				if (o[i]->ceil > s->ceil) {
+					*ut = s->utex;
+					*uf = false;
+				}
 			}
 		}
 	}
@@ -122,8 +126,7 @@ toptimize() // FIXME: only does 2x2, make atleast for 4x4 also
 			    &ut);
 			topt(s[3] = SWS(s[0], 1, 0, ssize), &wf[3], &uf[3], &wt,
 			    &ut);
-			loopi(4)
-			{
+			for (int i = 0; i < 4; i++) {
 				if (wf[i])
 					s[i]->wtex = wt;
 				if (uf[i])
@@ -210,8 +213,7 @@ save_world(OFString *mname)
 			sc = 0;         \
 		}                       \
 	}
-	loopk(cubicsize)
-	{
+	for (int k = 0; k < cubicsize; k++) {
 		struct sqr *s = &world[k];
 #define c(f) (s->f == t->f)
 		// 4 types of blocks, to compress a bit:
@@ -285,8 +287,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 		hdr.waterlevel = -100000;
 	}
 	[ents removeAllObjects];
-	loopi(hdr.numents)
-	{
+	for (int i = 0; i < hdr.numents; i++) {
 		struct persistent_entity tmp;
 		gzread(f, &tmp, sizeof(struct persistent_entity));
 		endianswap(&tmp, sizeof(short), 4);
@@ -312,10 +313,10 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	free(world);
 	setupworld(hdr.sfactor);
 	char texuse[256];
-	loopi(256) texuse[i] = 0;
+	for (int i = 0; i < 256; i++)
+		texuse[i] = 0;
 	struct sqr *t = NULL;
-	loopk(cubicsize)
-	{
+	for (int k = 0; k < cubicsize; k++) {
 		struct sqr *s = &world[k];
 		int type = gzgetc(f);
 		switch (type) {
@@ -382,13 +383,14 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	calclight();
 	settagareas();
 	int xs, ys;
-	loopi(256) if (texuse[i]) lookuptexture(i, &xs, &ys);
+	for (int i = 0; i < 256; i++)
+		if (texuse[i])
+			lookuptexture(i, &xs, &ys);
 	conoutf(@"read map %@ (%d milliseconds)", cgzname,
 	    SDL_GetTicks() - lastmillis);
 	conoutf(@"%s", hdr.maptitle);
 	startmap(mname);
-	loopl(256)
-	{
+	for (int l = 0; l < 256; l++) {
 		// can this be done smarter?
 		OFString *aliasname =
 		    [OFString stringWithFormat:@"level_trigger_%d", l];

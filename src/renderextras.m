@@ -95,8 +95,7 @@ void
 newsphere(const OFVector3D *o, float max, int type)
 {
 	if (!sinit) {
-		loopi(MAXSPHERES)
-		{
+		for (int i = 0; i < MAXSPHERES; i++) {
 			spheres[i].next = sempty;
 			sempty = &spheres[i];
 		}
@@ -218,8 +217,7 @@ loadsky(OFString *basename)
 	static const OFString *side[] = { @"ft", @"bk", @"lf", @"rt", @"dn",
 		@"up" };
 	int texnum = 14;
-	loopi(6)
-	{
+	for (int i = 0; i < 6; i++) {
 		OFString *path = [OFString
 		    stringWithFormat:@"packages/%@_%@.jpg", basename, side[i]];
 

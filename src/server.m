@@ -253,7 +253,8 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			}
 			int size = msgsizelookup(type);
 			assert(size != -1);
-			loopi(size - 2) getint(&p);
+			for (int i = 0; i < size - 2; i++)
+				getint(&p);
 			break;
 		}
 
@@ -280,7 +281,8 @@ process(ENetPacket *packet, int sender) // sender may be -1
 				disconnect_client(sender, @"tag type");
 				return;
 			}
-			loopi(size - 1) getint(&p);
+			for (int i = 0; i < size - 1; i++)
+				getint(&p);
 		}
 		}
 	}
@@ -546,7 +548,8 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 		serverhost = enet_host_create(&address, MAXCLIENTS, 0, uprate);
 		if (!serverhost)
 			fatal(@"could not create server host\n");
-		loopi(MAXCLIENTS) serverhost->peers[i].data = (void *)-1;
+		for (int i = 0; i < MAXCLIENTS; i++)
+			serverhost->peers[i].data = (void *)-1;
 	}
 
 	resetserverifempty();

@@ -146,12 +146,14 @@ updatevol()
 {
 	if (nosound)
 		return;
-	loopi(MAXCHAN) if (soundlocs[i].inuse)
-	{
-		if (Mix_Playing(i))
-			updatechanvol(i, &soundlocs[i].loc);
-		else
-			soundlocs[i].inuse = false;
+
+	for (int i = 0; i < MAXCHAN; i++) {
+		if (soundlocs[i].inuse) {
+			if (Mix_Playing(i))
+				updatechanvol(i, &soundlocs[i].loc);
+			else
+				soundlocs[i].inuse = false;
+		}
 	}
 }
 

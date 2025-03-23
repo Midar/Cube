@@ -213,8 +213,7 @@ addmsg(int rel, int num, int type, ...)
 
 	va_list marker;
 	va_start(marker, type);
-	loopi(num - 1)
-	{
+	for (int i = 0; i < num - 1; i++) {
 		int tmp = va_arg(marker, int);
 		[msg addItem:&tmp];
 	}
@@ -345,8 +344,8 @@ c2sinfo(DynamicEntity *d)
 			// send messages collected during the previous frames
 			if (*(int *)[msg itemAtIndex:1])
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			loopi(*(int *)[msg itemAtIndex:0])
-			    putint(&p, *(int *)[msg itemAtIndex:i + 2]);
+			for (int i = 0; i < *(int *)[msg itemAtIndex:0]; i++)
+				putint(&p, *(int *)[msg itemAtIndex:i + 2]);
 		}
 		[messages removeAllObjects];
 		if (lastmillis - lastping > 250) {

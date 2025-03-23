@@ -19,38 +19,47 @@ void
 settag(int tag, int type)
 {
 	int maxx = 0, maxy = 0, minx = ssize, miny = ssize;
-	loop(x, ssize) loop(y, ssize)
-	{
-		struct sqr *s = S(x, y);
-		if (s->tag) {
-			if (tag) {
-				if (tag == s->tag)
-					s->type = SPACE;
-				else
-					continue;
-			} else {
-				s->type = type ? SOLID : SPACE;
+	for (int x = 0; x < ssize; x++) {
+		for (int y = 0; y < ssize; y++) {
+			struct sqr *s = S(x, y);
+
+			if (s->tag) {
+				if (tag) {
+					if (tag == s->tag)
+						s->type = SPACE;
+					else
+						continue;
+				} else
+					s->type = type ? SOLID : SPACE;
+
+				if (x > maxx)
+					maxx = x;
+				if (y > maxy)
+					maxy = y;
+				if (x < minx)
+					minx = x;
+				if (y < miny)
+					miny = y;
 			}
-			if (x > maxx)
-				maxx = x;
-			if (y > maxy)
-				maxy = y;
-			if (x < minx)
-				minx = x;
-			if (y < miny)
-				miny = y;
 		}
 	}
-	struct block b = { minx, miny, maxx - minx + 1, maxy - miny + 1 };
-	if (maxx)
-		remip(&b, 0); // remip minimal area of changed geometry
+
+	if (maxx) {
+		// remip minimal area of changed geometry
+		struct block b = { minx, miny, maxx - minx + 1,
+			maxy - miny + 1 };
+		remip(&b, 0);
+	}
 }
 
+// reset for editing or map saving
 void
 resettagareas()
 {
 	settag(0, 0);
-} // reset for editing or map saving
+}
+
+// set for playing
 void
 settagareas()
 {
@@ -60,7 +69,7 @@ settagareas()
 		if (ents[i].type == CARROT)
 			setspawn(i, true);
 	}];
-} // set for playing
+}
 
 void
 trigger(int tag, int type, bool savegame)
@@ -123,42 +132,56 @@ remip(const struct block *b, int level)
 			struct sqr *r = SWS(v, x / 2, y / 2, vs);
 			*r = *o[0];
 			uchar nums[MAXTYPE];
-			loopi(MAXTYPE) nums[i] = 0;
-			loopj(4) nums[o[j]->type]++;
+			for (int i = 0; i < MAXTYPE; i++)
+				nums[i] = 0;
+			for (int j = 0; j < 4; j++)
+				nums[o[j]->type]++;
 			// cube contains both solid and space, treated
 			// specially in the renderer
 			r->type = SEMISOLID;
-			loopk(MAXTYPE) if (nums[k] == 4) r->type = k;
+			for (int k = 0; k < MAXTYPE; k++)
+				if (nums[k] == 4)
+					r->type = k;
 			if (!SOLID(r)) {
 				int floor = 127, ceil = -128;
-				loopi(4) if (!SOLID(o[i]))
-				{
-					int fh = o[i]->floor;
-					int ch = o[i]->ceil;
-					if (r->type == SEMISOLID) {
-						if (o[i]->type == FHF)
-							// crap hack, needed
-							// for rendering large
-							// mips next to hfs
-							fh -= o[i]->vdelta / 4 +
-							    2;
-						if (o[i]->type == CHF)
-							// FIXME: needs to
-							// somehow take into
-							// account middle
-							// vertices on higher
-							// mips
-							ch += o[i]->vdelta / 4 +
-							    2;
+				for (int i = 0; i < 4; i++) {
+					if (!SOLID(o[i])) {
+						int fh = o[i]->floor;
+						int ch = o[i]->ceil;
+						if (r->type == SEMISOLID) {
+							if (o[i]->type == FHF)
+								// crap hack,
+								// needed for
+								// rendering
+								// large mips
+								// next to hfs
+								fh -=
+								    o[i]->vdelta /
+								        4 +
+								    2;
+							if (o[i]->type == CHF)
+								// FIXME: needs
+								// to somehow
+								// take into
+								// account
+								// middle
+								// vertices on
+								// higher mips
+								ch +=
+								    o[i]->vdelta /
+								        4 +
+								    2;
+						}
+						if (fh < floor)
+							// take lowest floor and
+							// highest ceil, so we
+							// never have to see
+							// missing lower/upper
+							// from the side
+							floor = fh;
+						if (ch > ceil)
+							ceil = ch;
 					}
-					if (fh < floor)
-						// take lowest floor and
-						// highest ceil, so we never
-						// have to see missing
-						// lower/upper from the side
-						floor = fh;
-					if (ch > ceil)
-						ceil = ch;
 				}
 				r->floor = floor;
 				r->ceil = ceil;
@@ -169,8 +192,7 @@ remip(const struct block *b, int level)
 				goto mip;
 			r->defer = 1;
 			if (SOLID(r)) {
-				loopi(3)
-				{
+				for (int i = 0; i < 3; i++) {
 					if (o[i]->wtex != o[3]->wtex)
 						// on an all solid cube, only
 						// thing that needs to be equal
@@ -179,8 +201,7 @@ remip(const struct block *b, int level)
 						goto c;
 				}
 			} else {
-				loopi(3)
-				{
+				for (int i = 0; i < 3; i++) {
 					// perfect mip even if light is not
 					// exactly equal
 					if (o[i]->type != o[3]->type ||
@@ -228,7 +249,9 @@ remip(const struct block *b, int level)
 			{
 				// if any of the constituents is not perfect,
 				// then this one isn't either
-				loopi(4) if (o[i]->defer) goto c;
+				for (int i = 0; i < 4; i++)
+					if (o[i]->defer)
+						goto c;
 			}
 		mip:
 			r->defer = 0;
@@ -322,7 +345,9 @@ delent()
 int
 findtype(OFString *what)
 {
-	loopi(MAXENTTYPES) if ([what isEqual:entnames[i]]) return i;
+	for (int i = 0; i < MAXENTTYPES; i++)
+		if ([what isEqual:entnames[i]])
+			return i;
 	conoutf(@"unknown entity type \"%@\"", what);
 	return NOTUSED;
 }
@@ -428,7 +453,9 @@ findentity(int type, int index)
 	for (int i = index; i < ents.count; i++)
 		if (ents[i].type == type)
 			return i;
-	loopj(index) if (ents[j].type == type) return j;
+	for (int j = 0; j < index; j++)
+		if (ents[j].type == type)
+			return j;
 	return -1;
 }
 
@@ -442,8 +469,7 @@ setupworld(int factor)
 	mipsize = cubicsize * 134 / 100;
 	struct sqr *w = world =
 	    OFAllocZeroedMemory(mipsize, sizeof(struct sqr));
-	loopi(LARGEST_FACTOR * 2)
-	{
+	for (int i = 0; i < LARGEST_FACTOR * 2; i++) {
 		wmip[i] = w;
 		w += cubicsize >> (i * 2);
 	}
@@ -470,18 +496,19 @@ empty_world(int factor, bool force)
 		factor = LARGEST_FACTOR;
 	setupworld(factor);
 
-	loop(x, ssize) loop(y, ssize)
-	{
-		struct sqr *s = S(x, y);
-		s->r = s->g = s->b = 150;
-		s->ftex = DEFAULT_FLOOR;
-		s->ctex = DEFAULT_CEIL;
-		s->wtex = s->utex = DEFAULT_WALL;
-		s->type = SOLID;
-		s->floor = 0;
-		s->ceil = 16;
-		s->vdelta = 0;
-		s->defer = 0;
+	for (int x = 0; x < ssize; x++) {
+		for (int y = 0; y < ssize; y++) {
+			struct sqr *s = S(x, y);
+			s->r = s->g = s->b = 150;
+			s->ftex = DEFAULT_FLOOR;
+			s->ctex = DEFAULT_CEIL;
+			s->wtex = s->utex = DEFAULT_WALL;
+			s->type = SOLID;
+			s->floor = 0;
+			s->ceil = 16;
+			s->vdelta = 0;
+			s->defer = 0;
+		}
 	}
 
 	strncpy(hdr.head, "CUBE", 4);
@@ -490,10 +517,11 @@ empty_world(int factor, bool force)
 	hdr.sfactor = sfactor;
 
 	if (copy) {
-		loop(x, ssize / 2) loop(y, ssize / 2)
-		{
-			*S(x + ssize / 4, y + ssize / 4) =
-			    *SWS(oldworld, x, y, ssize / 2);
+		for (int x = 0; x < ssize / 2; x++) {
+			for (int y = 0; y < ssize / 2; y++) {
+				*S(x + ssize / 4, y + ssize / 4) =
+				    *SWS(oldworld, x, y, ssize / 2);
+			}
 		}
 
 		for (Entity *e in ents) {
@@ -504,8 +532,11 @@ empty_world(int factor, bool force)
 		char buffer[128] = "Untitled Map by Unknown";
 		memcpy(hdr.maptitle, buffer, 128);
 		hdr.waterlevel = -100000;
-		loopi(15) hdr.reserved[i] = 0;
-		loopk(3) loopi(256) hdr.texlists[k][i] = i;
+		for (int i = 0; i < 15; i++)
+			hdr.reserved[i] = 0;
+		for (int k = 0; k < 3; k++)
+			for (int i = 0; i < 256; i++)
+				hdr.texlists[k][i] = i;
 		[ents removeAllObjects];
 		struct block b = { 8, 8, ssize - 16, ssize - 16 };
 		edittypexy(SPACE, &b);

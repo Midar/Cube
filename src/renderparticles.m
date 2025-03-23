@@ -21,8 +21,7 @@ static void
 newparticle(const OFVector3D *o, const OFVector3D *d, int fade, int type)
 {
 	if (!parinit) {
-		loopi(MAXPARTICLES)
-		{
+		for (int i = 0; i < MAXPARTICLES; i++) {
 			particles[i].next = parempty;
 			parempty = &particles[i];
 		}
@@ -138,8 +137,7 @@ render_particles(int time)
 void
 particle_splash(int type, int num, int fade, const OFVector3D *p)
 {
-	loopi(num)
-	{
+	for (int i = 0; i < num; i++) {
 		const int radius = type == 5 ? 50 : 150;
 		int x, y, z;
 		do {
@@ -158,8 +156,7 @@ particle_trail(int type, int fade, const OFVector3D *s, const OFVector3D *e)
 	vdist(d, v, *s, *e);
 	vdiv(v, d * 2 + 0.1f);
 	OFVector3D p = *s;
-	loopi((int)d * 2)
-	{
+	for (int i = 0; i < ((int)d * 2); i++) {
 		vadd(p, v);
 		OFVector3D d =
 		    OFMakeVector3D(rnd(11) - 5, rnd(11) - 5, rnd(11) - 5);
