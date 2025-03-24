@@ -4,9 +4,9 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
+#import "Player.h"
 
 #ifdef OF_BIG_ENDIAN
 static const int islittleendian = 0;
@@ -18,7 +18,7 @@ static gzFile f = NULL;
 bool demorecording = false;
 bool demoplayback = false;
 bool demoloading = false;
-static OFMutableArray<DynamicEntity *> *playerhistory;
+static OFMutableArray<Player *> *playerhistory;
 int democlientnum = 0;
 
 extern void startdemo();
@@ -105,7 +105,7 @@ savestate(OFIRI *IRI)
 	gzwrite(f, (void *)"CUBESAVE", 8);
 	gzputc(f, islittleendian);
 	gzputi(SAVEGAMEVERSION);
-	OFData *data = [player1 dataBySerializing];
+	OFData *data = [Player.player1 dataBySerializing];
 	gzputi(data.count);
 	char map[_MAXDEFSTR] = { 0 };
 	memcpy(map, getclientmap().UTF8String,
@@ -219,8 +219,8 @@ loadgamerest()
 	    [OFMutableData dataWithCapacity:DynamicEntity.serializedSize];
 	[data increaseCountBy:DynamicEntity.serializedSize];
 	gzread(f, data.mutableItems, data.count);
-	[player1 setFromSerializedData:data];
-	player1.lastAction = lastmillis;
+	[Player.player1 setFromSerializedData:data];
+	Player.player1.lastAction = lastmillis;
 
 	int nmonsters = gzgeti();
 	OFArray<Monster *> *monsters = Monster.monsters;
@@ -231,7 +231,7 @@ loadgamerest()
 		gzread(f, data.mutableItems, data.count);
 		[monster setFromSerializedData:data];
 		// lazy, could save id of enemy instead
-		monster.enemy = player1;
+		monster.enemy = Player.player1;
 		// also lazy, but no real noticable effect on game
 		monster.lastAction = monster.trigger = lastmillis + 500;
 		if (monster.state == CS_DEAD)
@@ -242,7 +242,7 @@ loadgamerest()
 	int nplayers = gzgeti();
 	for (int i = 0; i < nplayers; i++) {
 		if (!gzget()) {
-			DynamicEntity *d = getclient(i);
+			Player *d = getclient(i);
 			assert(d);
 			gzread(f, data.mutableItems, data.count);
 			[d setFromSerializedData:data];
@@ -300,8 +300,11 @@ demoblend(int damage)
 void
 incomingdemodata(unsigned char *buf, int len, bool extras)
 {
+	Player *player1 = Player.player1;
+
 	if (!demorecording)
 		return;
+
 	gzputi(lastmillis - starttime);
 	gzputi(len);
 	gzwrite(f, buf, len);
@@ -370,7 +373,7 @@ startdemo()
 	demoplayback = true;
 	starttime = lastmillis;
 	conoutf(@"now playing demo");
-	setclient(democlientnum, [player1 copy]);
+	setclient(democlientnum, [Player.player1 copy]);
 	readdemotime();
 }
 
@@ -421,7 +424,7 @@ demoplaybackstep()
 		gzread(f, buf, len);
 		localservertoclient(buf, len); // update game state
 
-		DynamicEntity *target = players[democlientnum];
+		Player *target = players[democlientnum];
 		assert(target);
 
 		int extras;
@@ -452,7 +455,7 @@ demoplaybackstep()
 		if (extras &&
 		    (playerhistory.count == 0 ||
 		        playerhistory.lastObject.lastUpdate != playbacktime)) {
-			DynamicEntity *d = [target copy];
+			Player *d = [target copy];
 			d.lastUpdate = playbacktime;
 
 			if (playerhistory == nil)
@@ -475,13 +478,13 @@ demoplaybackstep()
 	size_t count = playerhistory.count;
 	for (ssize_t i = count - 1; i >= 0; i--) {
 		if (playerhistory[i].lastUpdate < itime) {
-			DynamicEntity *a = playerhistory[i];
-			DynamicEntity *b = a;
+			Player *a = playerhistory[i];
+			Player *b = a;
 
 			if (i + 1 < playerhistory.count)
 				b = playerhistory[i + 1];
 
-			player1 = b;
+			Player.player1 = b;
 			// interpolate pos & angles
 			if (a != b) {
 				DynamicEntity *c = b;
@@ -494,15 +497,15 @@ demoplaybackstep()
 				//	printf("* %d\n", lastmillis);
 				float bf = (itime - a.lastUpdate) /
 				    (float)(b.lastUpdate - a.lastUpdate);
-				fixwrap(a, player1);
-				fixwrap(c, player1);
-				fixwrap(z, player1);
+				fixwrap(a, b);
+				fixwrap(c, b);
+				fixwrap(z, b);
 				float dist =
 				    OFDistanceOfVectors3D(c.origin, z.origin);
 				// if teleport or spawn, don't interpolate
 				if (dist < 16) {
 					catmulrom(z.origin, a.origin, b.origin,
-					    c.origin, bf, player1.origin);
+					    c.origin, bf, b.origin);
 					OFVector3D vz = OFMakeVector3D(
 					    z.yaw, z.pitch, z.roll);
 					OFVector3D va = OFMakeVector3D(
@@ -511,9 +514,8 @@ demoplaybackstep()
 					    b.yaw, b.pitch, b.roll);
 					OFVector3D vc = OFMakeVector3D(
 					    c.yaw, c.pitch, c.roll);
-					OFVector3D vp1 =
-					    OFMakeVector3D(player1.yaw,
-					        player1.pitch, player1.roll);
+					OFVector3D vp1 = OFMakeVector3D(
+					    b.yaw, b.pitch, b.roll);
 					catmulrom(vz, va, vb, vc, bf, vp1);
 					z.yaw = vz.x;
 					z.pitch = vz.y;
@@ -527,9 +529,9 @@ demoplaybackstep()
 					c.yaw = vc.x;
 					c.pitch = vc.y;
 					c.roll = vc.z;
-					player1.yaw = vp1.x;
-					player1.pitch = vp1.y;
-					player1.roll = vp1.z;
+					b.yaw = vp1.x;
+					b.pitch = vp1.y;
+					b.roll = vp1.z;
 				}
 				fixplayer1range();
 			}

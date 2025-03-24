@@ -7,6 +7,7 @@
 #import "Entity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
+#import "Player.h"
 
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
@@ -17,13 +18,11 @@ COMMAND(mode, ARG_1INT, ^(int n) {
 
 bool intermission = false;
 
-DynamicEntity *player1;  // our client
 OFMutableArray *players; // other clients
 
 void
 initPlayers()
 {
-	player1 = [[DynamicEntity alloc] init];
 	players = [[OFMutableArray alloc] init];
 }
 
@@ -44,13 +43,12 @@ getclientmap()
 void
 respawnself()
 {
-	spawnplayer(player1);
+	spawnplayer(Player.player1);
 	showscores(false);
 }
 
 static void
-arenacount(
-    DynamicEntity *d, int *alive, int *dead, OFString **lastteam, bool *oneteam)
+arenacount(Player *d, int *alive, int *dead, OFString **lastteam, bool *oneteam)
 {
 	if (d.state != CS_DEAD) {
 		(*alive)++;
@@ -82,7 +80,7 @@ arenarespawn()
 			if (player != [OFNull null])
 				arenacount(
 				    player, &alive, &dead, &lastteam, &oneteam);
-		arenacount(player1, &alive, &dead, &lastteam, &oneteam);
+		arenacount(Player.player1, &alive, &dead, &lastteam, &oneteam);
 		if (dead > 0 && (alive <= 1 || (m_teammode && oneteam))) {
 			conoutf(
 			    @"arena round is over! next round in 5 seconds...");
@@ -93,7 +91,7 @@ arenarespawn()
 				conoutf(@"everyone died!");
 			arenarespawnwait = lastmillis + 5000;
 			arenadetectwait = lastmillis + 10000;
-			player1.roll = 0;
+			Player.player1.roll = 0;
 		}
 	}
 }
@@ -103,28 +101,29 @@ extern int democlientnum;
 void
 otherplayers()
 {
-	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
-		if (player == [OFNull null])
-			return;
+	[players
+	    enumerateObjectsUsingBlock:^(Player *player, size_t i, bool *stop) {
+		    if ([player isKindOfClass:Player.class])
+			    return;
 
-		const int lagtime = lastmillis - [player lastUpdate];
-		if (lagtime > 1000 && [player state] == CS_ALIVE) {
-			[player setState:CS_LAGGED];
-			return;
-		}
+		    const int lagtime = lastmillis - player.lastUpdate;
+		    if (lagtime > 1000 && player.state == CS_ALIVE) {
+			    player.state = CS_LAGGED;
+			    return;
+		    }
 
-		if (lagtime && [player state] != CS_DEAD &&
-		    (!demoplayback || i != democlientnum))
-			// use physics to extrapolate player position
-			moveplayer(player, 2, false);
-	}];
+		    if (lagtime && player.state != CS_DEAD &&
+		        (!demoplayback || i != democlientnum))
+			    // use physics to extrapolate player position
+			    moveplayer(player, 2, false);
+	    }];
 }
 
 void
 respawn()
 {
-	if (player1.state == CS_DEAD) {
-		player1.attacking = false;
+	if (Player.player1.state == CS_DEAD) {
+		Player.player1.attacking = false;
 		if (m_arena) {
 			conoutf(@"waiting for new round to start...");
 			return;
@@ -160,6 +159,7 @@ updateworld(int millis) // main game update loop
 			arenarespawn();
 		moveprojectiles((float)curtime);
 		demoplaybackstep();
+		Player *player1 = Player.player1;
 		if (!demoplayback) {
 			if (getclientnum() >= 0)
 				// only shoot when connected to server
@@ -171,6 +171,7 @@ updateworld(int millis) // main game update loop
 		otherplayers();
 		if (!demoplayback) {
 			[Monster thinkAll];
+
 			if (player1.state == CS_DEAD) {
 				if (lastmillis - player1.lastAction < 2000) {
 					player1.move = player1.strafe = 0;
@@ -182,6 +183,7 @@ updateworld(int millis) // main game update loop
 				moveplayer(player1, 20, true);
 				checkitems();
 			}
+
 			// do this last, to reduce the effective frame lag
 			c2sinfo(player1);
 		}
@@ -213,7 +215,7 @@ int fixspawn = 2;
 
 // place at random spawn. also used by monsters!
 void
-spawnplayer(DynamicEntity *d)
+spawnplayer(Player *d)
 {
 	int r = fixspawn-- > 0 ? 4 : rnd(10) + 1;
 	for (int i = 0; i < r; i++)
@@ -236,6 +238,7 @@ spawnplayer(DynamicEntity *d)
 
 #define dir(name, v, d, s, os)                                    \
 	COMMAND(name, ARG_DOWN, ^(bool isDown) {                  \
+		Player *player1 = Player.player1;                 \
 		player1.s = isDown;                               \
 		player1.v = isDown ? d : (player1.os ? -(d) : 0); \
 		player1.lastMove = lastmillis;                    \
@@ -251,12 +254,12 @@ COMMAND(attack, ARG_DOWN, ^(bool on) {
 		return;
 	if (editmode)
 		editdrag(on);
-	else if ((player1.attacking = on))
+	else if ((Player.player1.attacking = on))
 		respawn();
 })
 
 COMMAND(jump, ARG_DOWN, ^(bool on) {
-	if (!intermission && (player1.jumpNext = on))
+	if (!intermission && (Player.player1.jumpNext = on))
 		respawn();
 })
 
@@ -268,6 +271,7 @@ void
 fixplayer1range()
 {
 	const float MAXPITCH = 90.0f;
+	Player *player1 = Player.player1;
 	if (player1.pitch > MAXPITCH)
 		player1.pitch = MAXPITCH;
 	if (player1.pitch < -MAXPITCH)
@@ -281,6 +285,7 @@ fixplayer1range()
 void
 mousemove(int dx, int dy)
 {
+	Player *player1 = Player.player1;
 	if (player1.state == CS_DEAD || intermission)
 		return;
 	const float SENSF = 33.0f; // try match quake sens
@@ -295,14 +300,15 @@ mousemove(int dx, int dy)
 void
 selfdamage(int damage, int actor, DynamicEntity *act)
 {
+	Player *player1 = Player.player1;
 	if (player1.state != CS_ALIVE || editmode || intermission)
 		return;
 	damageblend(damage);
 	demoblend(damage);
 	// let armour absorb when possible
 	int ad = damage * (player1.armourType + 1) * 20 / 100;
-	if (ad > player1.armour)
-		ad = player1.armour;
+	if (ad > Player.player1.armour)
+		ad = Player.player1.armour;
 	player1.armour -= ad;
 	damage -= ad;
 	float droll = damage / 0.5f;
@@ -321,7 +327,7 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 			conoutf(@"you suicided!");
 			addmsg(1, 2, SV_FRAGS, --player1.frags);
 		} else {
-			DynamicEntity *a = getclient(actor);
+			Player *a = getclient(actor);
 			if (a != nil) {
 				if (isteam(a.team, player1.team))
 					conoutf(@"you got fragged by a "
@@ -351,7 +357,7 @@ timeupdate(int timeremain)
 {
 	if (!timeremain) {
 		intermission = true;
-		player1.attacking = false;
+		Player.player1.attacking = false;
 		conoutf(@"intermission:");
 		conoutf(@"game has ended!");
 		showscores(true);
@@ -360,7 +366,7 @@ timeupdate(int timeremain)
 	}
 }
 
-DynamicEntity *
+Player *
 getclient(int cn) // ensure valid entity
 {
 	if (cn < 0 || cn >= MAXCLIENTS) {
@@ -373,7 +379,7 @@ getclient(int cn) // ensure valid entity
 
 	id player = players[cn];
 	if (player == [OFNull null]) {
-		player = [DynamicEntity entity];
+		player = [Player player];
 		players[cn] = player;
 	}
 
@@ -408,8 +414,8 @@ startmap(OFString *name) // called just after a map load
 	[Monster resetAll];
 	projreset();
 	spawncycle = -1;
-	spawnplayer(player1);
-	player1.frags = 0;
+	spawnplayer(Player.player1);
+	Player.player1.frags = 0;
 	for (id player in players)
 		if (player != [OFNull null])
 			[player setFrags:0];

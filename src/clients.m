@@ -3,7 +3,7 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
+#import "Player.h"
 
 static ENetHost *clienthost = NULL;
 static int connecting = 0;
@@ -69,7 +69,7 @@ newname(OFString *name)
 	if (name.length > 16)
 		name = [name substringToIndex:16];
 
-	player1.name = name;
+	Player.player1.name = name;
 }
 
 COMMAND(name, ARG_1STR, ^(OFString *name) {
@@ -84,7 +84,7 @@ newteam(OFString *name)
 	if (name.length > 5)
 		name = [name substringToIndex:5];
 
-	player1.team = name;
+	Player.player1.team = name;
 }
 
 COMMAND(team, ARG_1STR, ^(OFString *name) {
@@ -94,8 +94,8 @@ COMMAND(team, ARG_1STR, ^(OFString *name) {
 void
 writeclientinfo(OFStream *stream)
 {
-	[stream writeFormat:@"name \"%@\"\nteam \"%@\"\n", player1.name,
-	        player1.team];
+	[stream writeFormat:@"name \"%@\"\nteam \"%@\"\n", Player.player1.name,
+	        Player.player1.team];
 }
 
 void
@@ -149,7 +149,7 @@ disconnect(bool onlyclean, bool async)
 	disconnecting = 0;
 	clientnum = -1;
 	c2sinit = false;
-	player1.lifeSequence = 0;
+	Player.player1.lifeSequence = 0;
 	[players removeAllObjects];
 
 	localdisconnect();
@@ -180,7 +180,7 @@ static OFString *ctext;
 void
 toserver(OFString *text)
 {
-	conoutf(@"%@:\f %@", player1.name, text);
+	conoutf(@"%@:\f %@", Player.player1.name, text);
 	ctext = text;
 }
 
@@ -281,7 +281,7 @@ sendpackettoserv(void *packet)
 
 // send update to the server
 void
-c2sinfo(DynamicEntity *d)
+c2sinfo(Player *d)
 {
 	if (clientnum < 0)
 		return; // we haven't had a welcome message from the server yet
@@ -342,9 +342,9 @@ c2sinfo(DynamicEntity *d)
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
 			c2sinit = true;
 			putint(&p, SV_INITC2S);
-			sendstring(player1.name, &p);
-			sendstring(player1.team, &p);
-			putint(&p, player1.lifeSequence);
+			sendstring(Player.player1.name, &p);
+			sendstring(Player.player1.team, &p);
+			putint(&p, Player.player1.lifeSequence);
 		}
 		for (OFData *msg in messages) {
 			// send messages collected during the previous frames

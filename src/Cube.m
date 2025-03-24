@@ -3,7 +3,7 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
+#import "Player.h"
 
 OF_APPLICATION_DELEGATE(Cube)
 
@@ -215,6 +215,8 @@ VARP(minmillis, 0, 5, 1000);
 	for (;;) {
 		@autoreleasepool {
 			[OFRunLoop.mainRunLoop runUntilDate:past];
+
+			Player *player1 = Player.player1;
 
 			int millis = SDL_GetTicks() * gamespeed / 100;
 			if (millis - lastmillis > 200)

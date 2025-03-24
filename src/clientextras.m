@@ -3,8 +3,8 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "Monster.h"
+#import "Player.h"
 
 // render players & monsters
 // very messy ad-hoc handling of animation frames, should be made more
@@ -90,7 +90,7 @@ renderclients()
 		if (player != [OFNull null] &&
 		    (!demoplayback || i != democlientnum))
 			renderclient(player,
-			    isteam(player1.team, [player team]),
+			    isteam(Player.player1.team, [player team]),
 			    @"monster/ogro", false, 1.0f);
 	}];
 }
@@ -108,8 +108,8 @@ showscores(bool on)
 
 static OFMutableArray<OFString *> *scoreLines;
 
-void
-renderscore(DynamicEntity *d)
+static void
+renderscore(Player *d)
 {
 	OFString *lag = [OFString stringWithFormat:@"%d", d.lag];
 	OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
@@ -131,8 +131,8 @@ static OFString *teamName[maxTeams];
 static int teamScore[maxTeams];
 static size_t teamsUsed;
 
-void
-addteamscore(DynamicEntity *d)
+static void
+addteamscore(Player *d)
 {
 	for (size_t i = 0; i < teamsUsed; i++) {
 		if ([teamName[i] isEqual:d.team]) {
@@ -155,18 +155,18 @@ renderscores()
 		return;
 	[scoreLines removeAllObjects];
 	if (!demoplayback)
-		renderscore(player1);
-	for (id player in players)
-		if (player != [OFNull null])
+		renderscore(Player.player1);
+	for (Player *player in players)
+		if ([player isKindOfClass:Player.class])
 			renderscore(player);
 	sortmenu();
 	if (m_teammode) {
 		teamsUsed = 0;
-		for (id player in players)
-			if (player != [OFNull null])
+		for (Player *player in players)
+			if ([player isKindOfClass:Player.class])
 				addteamscore(player);
 		if (!demoplayback)
-			addteamscore(player1);
+			addteamscore(Player.player1);
 		OFMutableString *teamScores = [OFMutableString string];
 		for (size_t j = 0; j < teamsUsed; j++)
 			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],

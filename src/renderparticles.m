@@ -2,7 +2,7 @@
 
 #include "cube.h"
 
-#import "DynamicEntity.h"
+#import "Player.h"
 
 #define MAXPARTICLES 10500
 const int NUMPARTCUTOFF = 20;
@@ -56,8 +56,8 @@ void
 render_particles(int time)
 {
 	if (demoplayback && demotracking)
-		newparticle(
-		    player1.origin, OFMakeVector3D(0, 0, 0), 100000000, 8);
+		newparticle(Player.player1.origin, OFMakeVector3D(0, 0, 0),
+		    100000000, 8);
 
 	glDepthMask(GL_FALSE);
 	glEnable(GL_BLEND);

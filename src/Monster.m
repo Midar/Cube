@@ -4,8 +4,8 @@
 
 #include "cube.h"
 
-#import "DynamicEntity.h"
 #import "Entity.h"
+#import "Player.h"
 
 static OFMutableArray<Monster *> *monsters;
 static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
@@ -101,7 +101,7 @@ monstertypes[NUMMONSTERTYPES] = {
 	self.trigger = lastmillis + trigger;
 	self.targetYaw = self.yaw = (float)yaw;
 	self.move = move;
-	self.enemy = player1;
+	self.enemy = Player.player1;
 	self.gunSelect = t->gun;
 	self.maxSpeed = (float)t->speed;
 	self.health = t->health;
@@ -256,7 +256,7 @@ enemylos(Monster *m, OFVector3D *v)
 - (void)performAction
 {
 	if (self.enemy.state == CS_DEAD) {
-		self.enemy = player1;
+		self.enemy = Player.player1;
 		self.anger = 0;
 	}
 	[self normalizeWithAngle:self.targetYaw];
@@ -417,7 +417,7 @@ enemylos(Monster *m, OFVector3D *v)
 		self.state = CS_DEAD;
 		self.lastAction = lastmillis;
 		numkilled++;
-		player1.frags = numkilled;
+		Player.player1.frags = numkilled;
 		OFVector3D loc = self.origin;
 		playsound(monstertypes[self.monsterType].diesound, &loc);
 		int remain = monstertotal - numkilled;

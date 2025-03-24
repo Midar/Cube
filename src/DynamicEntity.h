@@ -21,11 +21,8 @@
 // bounding box size
 @property (nonatomic) float radius, eyeHeight, aboveEye;
 @property (nonatomic) int lastUpdate, lag, ping;
-// sequence id for each respawn, used in damage test
-@property (nonatomic) int lifeSequence;
 // one of CS_* below
 @property (nonatomic) int state;
-@property (nonatomic) int frags;
 @property (nonatomic) int health, armour, armourType, quadMillis;
 @property (nonatomic) int gunSelect, gunWait;
 @property (nonatomic) int lastAction, lastAttackGun, lastMove;
@@ -33,7 +30,7 @@
 @property (nonatomic) bool attacking;
 // used by physics to signal ai
 @property (nonatomic) bool blocked, moving;
-@property (copy, nonatomic) OFString *name, *team;
+@property (copy, nonatomic) OFString *name;
 
 + (instancetype)entity;
 - (OFData *)dataBySerializing;

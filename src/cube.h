@@ -8,8 +8,9 @@
 
 #define _MAXDEFSTR 260
 
-@class Entity;
 @class DynamicEntity;
+@class Entity;
+@class Player;
 
 @interface Cube: OFObject <OFApplicationDelegate>
 @property (class, readonly, nonatomic) Cube *sharedInstance;
@@ -256,8 +257,6 @@ extern struct sqr *world, *wmip[];
 extern struct header hdr;      // current map header
 extern int sfactor, ssize;     // ssize = 2^sfactor
 extern int cubicsize, mipsize; // cubicsize = ssize^2
-// special client ent that receives input and acts as camera
-extern DynamicEntity *player1;
 // all the other clients (in multiplayer)
 extern OFMutableArray *players;
 extern bool editmode;

@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "Monster.h"
+#import "Player.h"
 
 struct dynent {
 	OFVector3D origin, velocity;
@@ -58,7 +59,7 @@ struct dynent {
 	_eyeHeight = 3.2f;
 	_aboveEye = 0.7f;
 	_lastUpdate = lastmillis;
-	_name = _team = @"";
+	_name = @"";
 	_state = CS_ALIVE;
 
 	[self resetToSpawnState];
@@ -98,9 +99,7 @@ struct dynent {
 	copy->_lastUpdate = _lastUpdate;
 	copy->_lag = _lag;
 	copy->_ping = _ping;
-	copy->_lifeSequence = _lifeSequence;
 	copy->_state = _state;
-	copy->_frags = _frags;
 	copy->_health = _health;
 	copy->_armour = _armour;
 	copy->_armourType = _armourType;
@@ -118,7 +117,6 @@ struct dynent {
 	copy->_blocked = _blocked;
 	copy->_moving = _moving;
 	copy->_name = [_name copy];
-	copy->_team = [_team copy];
 
 	return copy;
 }
@@ -150,9 +148,7 @@ struct dynent {
 		.lastUpdate = _lastUpdate,
 		.lag = _lag,
 		.ping = _ping,
-		.lifeSequence = _lifeSequence,
 		.state = _state,
-		.frags = _frags,
 		.health = _health,
 		.armour = _armour,
 		.armourType = _armourType,
@@ -166,6 +162,19 @@ struct dynent {
 		.blocked = _blocked,
 		.moving = _moving };
 
+	for (int i = 0; i < NUMGUNS; i++)
+		data.ammo[i] = _ammo[i];
+
+	memcpy(data.name, _name.UTF8String, min(_name.UTF8StringLength, 259));
+
+	if ([self isKindOfClass:Player.class]) {
+		Player *player = (Player *)self;
+		data.lifeSequence = player.lifeSequence,
+		data.frags = player.frags;
+		memcpy(data.team, player.team.UTF8String,
+		    min(player.team.UTF8StringLength, 259));
+	}
+
 	if ([self isKindOfClass:Monster.class]) {
 		Monster *monster = (Monster *)self;
 		data.monsterState = monster.monsterState;
@@ -175,12 +184,6 @@ struct dynent {
 		data.attackTarget = monster.attackTarget;
 		data.anger = monster.anger;
 	}
-
-	for (int i = 0; i < NUMGUNS; i++)
-		data.ammo[i] = _ammo[i];
-
-	memcpy(data.name, _name.UTF8String, min(_name.UTF8StringLength, 259));
-	memcpy(data.team, _team.UTF8String, min(_team.UTF8StringLength, 259));
 
 	return [OFData dataWithItems:&data count:sizeof(data)];
 }
@@ -217,9 +220,8 @@ struct dynent {
 	_lastUpdate = d.lastUpdate;
 	_lag = d.lag;
 	_ping = d.ping;
-	_lifeSequence = d.lifeSequence;
 	_state = d.state;
-	_frags = d.frags;
+
 	_health = d.health;
 	_armour = d.armour;
 	_armourType = d.armourType;
@@ -237,6 +239,15 @@ struct dynent {
 	_blocked = d.blocked;
 	_moving = d.moving;
 
+	_name = [[OFString alloc] initWithUTF8String:d.name];
+
+	if ([self isKindOfClass:Player.class]) {
+		Player *player = (Player *)self;
+		player.lifeSequence = d.lifeSequence;
+		player.frags = d.frags;
+		player.team = @(d.team);
+	}
+
 	if ([self isKindOfClass:Monster.class]) {
 		Monster *monster = (Monster *)self;
 		monster.monsterState = d.monsterState;
@@ -246,9 +257,6 @@ struct dynent {
 		monster.attackTarget = d.attackTarget;
 		monster.anger = d.anger;
 	}
-
-	_name = [[OFString alloc] initWithUTF8String:d.name];
-	_team = [[OFString alloc] initWithUTF8String:d.team];
 }
 
 - (void)resetMovement

@@ -3,7 +3,7 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
+#import "Player.h"
 
 #define NUMRAYS 512
 
@@ -21,6 +21,8 @@ COMMAND(toggleocull, ARG_NONE, ^{
 void
 computeraytable(float vx, float vy)
 {
+	Player *player1 = Player.player1;
+
 	if (!ocull)
 		return;
 

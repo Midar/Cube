@@ -4,6 +4,7 @@
 
 #import "DynamicEntity.h"
 #import "Entity.h"
+#import "Player.h"
 
 extern int clientnum;
 extern bool c2sinit, senditemstoserver;
@@ -37,6 +38,7 @@ changemap(OFString *name) // request map change, server may ignore
 void
 updatepos(DynamicEntity *d)
 {
+	Player *player1 = Player.player1;
 	const float r = player1.radius + d.radius;
 	const float dx = player1.origin.x - d.origin.x;
 	const float dy = player1.origin.y - d.origin.y;
@@ -182,12 +184,13 @@ localservertoclient(unsigned char *buf, int len)
 
 		// another client either connected or changed name/team
 		case SV_INITC2S: {
+			Player *d_ = (Player *)d;
 			sgetstr();
-			if (d.name.length > 0) {
+			if (d_.name.length > 0) {
 				// already connected
-				if (![d.name isEqual:@(text)])
+				if (![d_.name isEqual:@(text)])
 					conoutf(@"%@ is now known as %s",
-					    d.name, text);
+					    d_.name, text);
 			} else {
 				// new client
 
@@ -195,10 +198,10 @@ localservertoclient(unsigned char *buf, int len)
 				c2sinit = false;
 				conoutf(@"connected: %s", text);
 			}
-			d.name = @(text);
+			d_.name = @(text);
 			sgetstr();
-			d.team = @(text);
-			d.lifeSequence = getint(&p);
+			d_.team = @(text);
+			d_.lifeSequence = getint(&p);
 			break;
 		}
 
@@ -231,7 +234,7 @@ localservertoclient(unsigned char *buf, int len)
 			int damage = getint(&p);
 			int ls = getint(&p);
 			if (target == clientnum) {
-				if (ls == player1.lifeSequence)
+				if (ls == Player.player1.lifeSequence)
 					selfdamage(damage, cn, d);
 			} else {
 				OFVector3D loc = getclient(target).origin;
@@ -241,23 +244,24 @@ localservertoclient(unsigned char *buf, int len)
 		}
 
 		case SV_DIED: {
+			Player *d_ = (Player *)d;
 			int actor = getint(&p);
 			if (actor == cn) {
-				conoutf(@"%@ suicided", d.name);
+				conoutf(@"%@ suicided", d_.name);
 			} else if (actor == clientnum) {
 				int frags;
-				if (isteam(player1.team, d.team)) {
+				if (isteam(Player.player1.team, d_.team)) {
 					frags = -1;
 					conoutf(@"you fragged a teammate (%@)",
-					    d.name);
+					    d_.name);
 				} else {
 					frags = 1;
-					conoutf(@"you fragged %@", d.name);
+					conoutf(@"you fragged %@", d_.name);
 				}
-				addmsg(
-				    1, 2, SV_FRAGS, (player1.frags += frags));
+				addmsg(1, 2, SV_FRAGS,
+				    (Player.player1.frags += frags));
 			} else {
-				DynamicEntity *a = getclient(actor);
+				Player *a = getclient(actor);
 				if (a != nil) {
 					if (isteam(a.team, d.name))
 						conoutf(@"%@ fragged his "
@@ -268,9 +272,9 @@ localservertoclient(unsigned char *buf, int len)
 						    a.name, d.name);
 				}
 			}
-			OFVector3D loc = d.origin;
+			OFVector3D loc = d_.origin;
 			playsound(S_DIE1 + rnd(2), &loc);
-			d.lifeSequence++;
+			d_.lifeSequence++;
 			break;
 		}
 
@@ -295,7 +299,7 @@ localservertoclient(unsigned char *buf, int len)
 		}
 		// server acknowledges that I picked up this item
 		case SV_ITEMACC:
-			realpickup(getint(&p), player1);
+			realpickup(getint(&p), Player.player1);
 			break;
 
 		case SV_EDITH: // coop editing messages, should be extended to
@@ -361,8 +365,8 @@ localservertoclient(unsigned char *buf, int len)
 
 		case SV_PONG:
 			addmsg(0, 2, SV_CLIENTPING,
-			    player1.ping =
-			        (player1.ping * 5 + lastmillis - getint(&p)) /
+			    Player.player1.ping = (Player.player1.ping * 5 +
+			                              lastmillis - getint(&p)) /
 			        6);
 			break;
 

@@ -1,7 +1,7 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
+#import "Player.h"
 
 #include <SDL_mixer.h>
 
@@ -113,7 +113,7 @@ updatechanvol(int chan, const OFVector3D *loc)
 	int vol = soundvol, pan = 255 / 2;
 
 	if (loc) {
-		OFVector3D origin = player1.origin;
+		OFVector3D origin = Player.player1.origin;
 		float dist = OFDistanceOfVectors3D(origin, *loc);
 		OFVector3D v = OFSubtractVectors3D(origin, *loc);
 
@@ -122,8 +122,8 @@ updatechanvol(int chan, const OFVector3D *loc)
 
 		if (stereo && (v.x != 0 || v.y != 0)) {
 			// relative angle of sound along X-Y axis
-			float yaw =
-			    -atan2(v.x, v.y) - player1.yaw * (PI / 180.0f);
+			float yaw = -atan2(v.x, v.y) -
+			    Player.player1.yaw * (PI / 180.0f);
 			// range is from 0 (left) to 255 (right)
 			pan = (int)(255.9f * (0.5 * sin(yaw) + 0.5f));
 		}

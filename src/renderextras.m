@@ -3,8 +3,8 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "Entity.h"
+#import "Player.h"
 
 void
 line(int x1, int y1, float z1, int x2, int y2, float z2)
@@ -327,6 +327,8 @@ VARP(crosshairfx, 0, 1, 1);
 void
 gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 {
+	Player *player1 = Player.player1;
+
 	readmatrices();
 	if (editmode) {
 		if (cursordepth == 1.0f)

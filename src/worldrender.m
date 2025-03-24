@@ -4,7 +4,7 @@
 
 #include "cube.h"
 
-#import "DynamicEntity.h"
+#import "Player.h"
 
 void
 render_wall(struct sqr *o, struct sqr *s, int x1, int y1, int x2, int y2,
@@ -133,6 +133,7 @@ render_seg_new(
 	int ry = vyy + lodbot;
 
 	float fsize = (float)(1 << mip);
+	Player *player1 = Player.player1;
 	for (int ox = x; ox < xs; ox++) {
 		// first collect occlusion information for this block
 		for (int oy = y; oy < ys; oy++) {

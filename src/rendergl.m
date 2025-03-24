@@ -5,9 +5,9 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
+#import "Player.h"
 
 #ifdef DARWIN
 # define GL_COMBINE_EXT GL_COMBINE_ARB
@@ -345,6 +345,8 @@ VARFP(gamma, 30, 100, 300, {
 void
 transplayer()
 {
+	Player *player1 = Player.player1;
+
 	glLoadIdentity();
 
 	glRotated(player1.roll, 0.0, 0.0, 1.0);
@@ -372,6 +374,8 @@ OFString *hudgunnames[] = { @"hudguns/fist", @"hudguns/shotg",
 void
 drawhudmodel(int start, int end, float speed, int base)
 {
+	Player *player1 = Player.player1;
+
 	rendermodel(hudgunnames[player1.gunSelect], start, end, 0, 1.0f,
 	    OFMakeVector3D(
 	        player1.origin.x, player1.origin.z, player1.origin.y),
@@ -381,6 +385,8 @@ drawhudmodel(int start, int end, float speed, int base)
 void
 drawhudgun(float fovy, float aspect, int farplane)
 {
+	Player *player1 = Player.player1;
+
 	if (!hudgun /*|| !player1.gunSelect*/)
 		return;
 
@@ -410,6 +416,7 @@ drawhudgun(float fovy, float aspect, int farplane)
 void
 gl_drawframe(int w, int h, float curfps)
 {
+	Player *player1 = Player.player1;
 	float hf = hdr.waterlevel - 0.3f;
 	float fovy = (float)fov * h / w;
 	float aspect = w / (float)h;

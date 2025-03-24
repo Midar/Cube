@@ -6,6 +6,7 @@
 #import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
+#import "Player.h"
 #import "Projectile.h"
 
 static const int MONSTERDAMAGEFACTOR = 4;
@@ -34,6 +35,8 @@ selectgun(int a, int b, int c)
 	if (a < -1 || b < -1 || c < -1 || a >= NUMGUNS || b >= NUMGUNS ||
 	    c >= NUMGUNS)
 		return;
+
+	Player *player1 = Player.player1;
 	int s = player1.gunSelect;
 	if (a >= 0 && s != a && player1.ammo[a])
 		s = a;
@@ -112,11 +115,11 @@ playerincrosshair()
 	if (demoplayback)
 		return NULL;
 
-	for (id player in players) {
-		if (player == [OFNull null])
+	OFVector3D o = Player.player1.origin;
+	for (Player *player in players) {
+		if (![Player isKindOfClass:Player.class])
 			continue;
 
-		OFVector3D o = player1.origin;
 		if (intersect(player, o, worldpos))
 			return [player name];
 	}
@@ -162,12 +165,13 @@ static void
 hit(int target, int damage, __kindof DynamicEntity *d, DynamicEntity *at)
 {
 	OFVector3D o = d.origin;
-	if (d == player1)
-		selfdamage(damage, at == player1 ? -1 : -2, at);
+	if (d == Player.player1)
+		selfdamage(damage, (at == Player.player1) ? -1 : -2, at);
 	else if ([d isKindOfClass:Monster.class])
 		[d incurDamage:damage fromEntity:at];
-	else {
-		addmsg(1, 4, SV_DAMAGE, target, damage, d.lifeSequence);
+	else if ([d isKindOfClass:Player.class]) {
+		addmsg(1, 4, SV_DAMAGE, target, damage,
+		    ((Player *)d).lifeSequence);
 		playsound(S_PAIN1 + rnd(5), &o);
 	}
 	particle_splash(3, damage, 1000, o);
@@ -219,7 +223,7 @@ splash(Projectile *p, OFVector3D v, OFVector3D vold, int notthisplayer,
 		if (!p.local)
 			return;
 
-		radialeffect(player1, v, -1, qdam, p.owner);
+		radialeffect(Player.player1, v, -1, qdam, p.owner);
 
 		[players enumerateObjectsUsingBlock:^(
 		    id player, size_t i, bool *stop) {
@@ -279,8 +283,8 @@ moveprojectiles(float time)
 				if (player != [OFNull null])
 					projdamage(player, p, v, i, -1, qdam);
 
-			if (p.owner != player1)
-				projdamage(player1, p, v, -1, -1, qdam);
+			if (p.owner != Player.player1)
+				projdamage(Player.player1, p, v, -1, -1, qdam);
 
 			for (Monster *monster in Monster.monsters)
 				if (!vreject(monster.origin, v, 10.0f) &&
@@ -310,7 +314,7 @@ void
 shootv(int gun, OFVector3D from, OFVector3D to, DynamicEntity *d, bool local)
 {
 	OFVector3D loc = d.origin;
-	playsound(guns[gun].sound, d == player1 ? NULL : &loc);
+	playsound(guns[gun].sound, (d == Player.player1) ? NULL : &loc);
 	int pspeed = 25;
 	switch (gun) {
 	case GUN_FIST:
@@ -438,5 +442,5 @@ shoot(DynamicEntity *d, OFVector3D targ)
 			raydamage(monster, from, to, d, -2);
 
 	if ([d isKindOfClass:Monster.class])
-		raydamage(player1, from, to, d, -1);
+		raydamage(Player.player1, from, to, d, -1);
 }

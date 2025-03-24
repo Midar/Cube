@@ -7,6 +7,7 @@
 #import "DynamicEntity.h"
 #import "Monster.h"
 #import "OFString+Cube.h"
+#import "Player.h"
 
 bool editmode = false;
 
@@ -58,6 +59,7 @@ VAR(editing, 0, 0, 1);
 void
 toggleedit()
 {
+	Player *player1 = Player.player1;
 	if (player1.state == CS_DEAD)
 		return; // do not allow dead players to edit to avoid state
 		        // confusion
@@ -157,6 +159,7 @@ sheight(struct sqr *s, struct sqr *t, float z)
 void
 cursorupdate() // called every frame from hud
 {
+	Player *player1 = Player.player1;
 	flrceil = ((int)(player1.pitch >= 0)) * 2;
 
 	volatile float x =
@@ -626,7 +629,7 @@ COMMAND(newent, ARG_5STR,
     ^(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4) {
 	    EDITSEL;
 
-	    newentity(sel.x, sel.y, (int)player1.origin.z, what,
+	    newentity(sel.x, sel.y, (int)Player.player1.origin.z, what,
 	        [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
 	        [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
     })

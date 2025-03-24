@@ -3,9 +3,9 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
+#import "Player.h"
 
 extern OFString *entnames[]; // lookup from map entities above to strings
 
@@ -298,7 +298,7 @@ closestent() // used for delent and edit mode ent display
 			return;
 
 		OFVector3D v = OFMakeVector3D(e.x, e.y, e.z);
-		float dist = OFDistanceOfVectors3D(v, player1.origin);
+		float dist = OFDistanceOfVectors3D(v, Player.player1.origin);
 		if (dist < bdist) {
 			best = i;
 			bdist = dist;
@@ -383,7 +383,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	case TELEDEST:
 		e.attr2 = (unsigned char)e.attr1;
 	case PLAYERSTART:
-		e.attr1 = (int)player1.yaw;
+		e.attr1 = (int)Player.player1.yaw;
 		break;
 	}
 	addmsg(1, 10, SV_EDITENT, ents.count, type, e.x, e.y, e.z, e.attr1,

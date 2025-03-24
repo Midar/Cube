@@ -3,10 +3,10 @@
 #include "cube.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "MD2.h"
 #import "MapModelInfo.h"
 #import "OFString+Cube.h"
+#import "Player.h"
 
 static OFMutableDictionary<OFString *, MD2 *> *mdllookup = nil;
 static OFMutableArray<MD2 *> *mapmodels = nil;
@@ -90,8 +90,8 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 {
 	MD2 *m = loadmodel(mdl);
 
-	if (isoccluded(player1.origin.x, player1.origin.y, position.x - rad,
-	        position.z - rad, rad * 2))
+	if (isoccluded(Player.player1.origin.x, Player.player1.origin.y,
+	        position.x - rad, position.z - rad, rad * 2))
 		return;
 
 	delayedload(m);

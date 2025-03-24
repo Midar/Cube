@@ -10,6 +10,7 @@
 #import "Entity.h"
 #import "MapModelInfo.h"
 #import "Monster.h"
+#import "Player.h"
 
 // collide with player or monster
 static bool
@@ -179,8 +180,8 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 			return false;
 	}
 
-	if (d != player1)
-		if (!plcollide(d, player1, &headspace, &hi, &lo))
+	if (d != Player.player1)
+		if (!plcollide(d, Player.player1, &headspace, &hi, &lo))
 			return false;
 
 	// this loop can be a performance bottleneck with many monster on a slow

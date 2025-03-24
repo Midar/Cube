@@ -5,8 +5,8 @@
 #import "Menu.h"
 
 #import "Command.h"
-#import "DynamicEntity.h"
 #import "MenuItem.h"
+#import "Player.h"
 
 static OFMutableArray<OFNumber *> *menuStack;
 static OFMutableArray<Menu *> *menus;
@@ -16,7 +16,7 @@ void
 menuset(int menu)
 {
 	if ((vmenu = menu) >= 1)
-		[player1 resetMovement];
+		[Player.player1 resetMovement];
 	if (vmenu == 1)
 		menus[1].menusel = 0;
 }
