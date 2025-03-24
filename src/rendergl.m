@@ -1,5 +1,7 @@
 // rendergl.cpp: core opengl rendering stuff
 
+#define gamma math_gamma
+
 #include "cube.h"
 
 #import "Command.h"
@@ -323,6 +325,8 @@ addstrip(int tex, int start, int n)
 	struct strip s = { .tex = tex, .start = start, .num = n };
 	[strips addItem:&s];
 }
+
+#undef gamma
 
 VARFP(gamma, 30, 100, 300, {
 	float f = gamma / 100.0f;

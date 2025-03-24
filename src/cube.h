@@ -2,9 +2,7 @@
 
 #import <ObjFW/ObjFW.h>
 
-#define gamma gamma__
 #include <SDL2/SDL.h>
-#undef gamma
 
 #include "tools.h"
 
