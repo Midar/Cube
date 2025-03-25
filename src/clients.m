@@ -4,6 +4,7 @@
 
 #import "Command.h"
 #import "Player.h"
+#import "Variable.h"
 
 static ENetHost *clienthost = NULL;
 static int connecting = 0;

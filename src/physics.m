@@ -11,6 +11,7 @@
 #import "MapModelInfo.h"
 #import "Monster.h"
 #import "Player.h"
+#import "Variable.h"
 
 // collide with player or monster
 static bool

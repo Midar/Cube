@@ -2,6 +2,7 @@
 
 #import "Command.h"
 #import "Player.h"
+#import "Variable.h"
 
 #include <SDL_mixer.h>
 

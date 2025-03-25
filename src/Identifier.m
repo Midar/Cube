@@ -10,22 +10,9 @@ static OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
 		identifiers = [[OFMutableDictionary alloc] init];
 }
 
-+ (void)addIdentifier:(__kindof Identifier *)identifier
++ (OFMutableDictionary<OFString *, __kindof Identifier *> *)identifiers
 {
-	identifiers[identifier.name] = identifier;
-}
-
-+ (__kindof Identifier *)identifierForName:(OFString *)name
-{
-	return identifiers[name];
-}
-
-+ (void)enumerateIdentifiersUsingBlock:(void (^)(__kindof Identifier *))block
-{
-	[identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		block(identifier);
-	}];
+	return identifiers;
 }
 
 - (instancetype)initWithName:(OFString *)name

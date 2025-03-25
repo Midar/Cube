@@ -18,12 +18,12 @@ cleanup(char **string)
 void
 alias(OFString *name, OFString *action)
 {
-	Alias *alias = [Identifier identifierForName:name];
+	Alias *alias = Identifier.identifiers[name];
 
 	if (alias == nil)
-		[Identifier addIdentifier:[Alias aliasWithName:name
-		                                        action:action
-		                                     persisted:true]];
+		Identifier.identifiers[name] = [Alias aliasWithName:name
+		                                             action:action
+		                                          persisted:true];
 	else {
 		if ([alias isKindOfClass:Alias.class])
 			alias.action = action;
@@ -37,23 +37,10 @@ COMMAND(alias, ARG_2STR, ^(OFString *name, OFString *action) {
 	alias(name, action);
 })
 
-int
-variable(OFString *name, int min, int cur, int max, int *storage,
-    void (*function)(), bool persisted)
-{
-	[Identifier addIdentifier:[Variable variableWithName:name
-	                                                 min:min
-	                                                 max:max
-	                                             storage:storage
-	                                            function:function
-	                                           persisted:persisted]];
-	return cur;
-}
-
 void
 setvar(OFString *name, int i)
 {
-	Variable *variable = [Identifier identifierForName:name];
+	Variable *variable = Identifier.identifiers[name];
 
 	if ([variable isKindOfClass:Variable.class])
 		*variable.storage = i;
@@ -62,7 +49,7 @@ setvar(OFString *name, int i)
 int
 getvar(OFString *name)
 {
-	Variable *variable = [Identifier identifierForName:name];
+	Variable *variable = Identifier.identifiers[name];
 
 	if ([variable isKindOfClass:Variable.class])
 		return *variable.storage;
@@ -73,13 +60,13 @@ getvar(OFString *name)
 bool
 identexists(OFString *name)
 {
-	return ([Identifier identifierForName:name] != nil);
+	return (Identifier.identifiers[name] != nil);
 }
 
 OFString *
 getalias(OFString *name)
 {
-	Alias *alias = [Identifier identifierForName:name];
+	Alias *alias = Identifier.identifiers[name];
 
 	if ([alias isKindOfClass:Alias.class])
 		return alias.action;
@@ -153,7 +140,7 @@ OFString *
 lookup(OFString *n)
 {
 	__kindof Identifier *identifier =
-	    [Identifier identifierForName:[n substringFromIndex:1]];
+	    Identifier.identifiers[[n substringFromIndex:1]];
 
 	if ([identifier isKindOfClass:Variable.class]) {
 		return [OFString stringWithFormat:@"%d", *[identifier storage]];
@@ -260,7 +247,7 @@ execute(OFString *string, bool isDown)
 		if (c.length == 0)
 			continue;
 
-		val = executeIdentifier([Identifier identifierForName:c],
+		val = executeIdentifier(Identifier.identifiers[c],
 		    [OFArray arrayWithObjects:w count:numargs], isDown);
 	}
 
@@ -292,8 +279,8 @@ complete(OFMutableString *s)
 	}
 
 	__block int idx = 0;
-	[Identifier enumerateIdentifiersUsingBlock:^(
-	    __kindof Identifier *identifier) {
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
+	    OFString *name, __kindof Identifier *identifier, bool *stop) {
 		if (strncmp(identifier.name.UTF8String, s.UTF8String + 1,
 		        completesize) == 0 &&
 		    idx++ == completeidx)
@@ -359,29 +346,29 @@ writecfg()
 	writeclientinfo(stream);
 	[stream writeString:@"\n"];
 
-	[Identifier
-	    enumerateIdentifiersUsingBlock:^(__kindof Identifier *identifier) {
-		    if (![identifier isKindOfClass:Variable.class] ||
-		        ![identifier persisted])
-			    return;
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
+	    OFString *name, __kindof Identifier *identifier, bool *stop) {
+		if (![identifier isKindOfClass:Variable.class] ||
+		    ![identifier persisted])
+			return;
 
-		    [stream writeFormat:@"%@ %d\n", identifier.name,
-		            *[identifier storage]];
-	    }];
+		[stream writeFormat:@"%@ %d\n", identifier.name,
+		        *[identifier storage]];
+	}];
 	[stream writeString:@"\n"];
 
 	writebinds(stream);
 	[stream writeString:@"\n"];
 
-	[Identifier
-	    enumerateIdentifiersUsingBlock:^(__kindof Identifier *identifier) {
-		    if (![identifier isKindOfClass:Alias.class] ||
-		        [identifier.name hasPrefix:@"nextmap_"])
-			    return;
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
+	    OFString *name, __kindof Identifier *identifier, bool *stop) {
+		if (![identifier isKindOfClass:Alias.class] ||
+		    [identifier.name hasPrefix:@"nextmap_"])
+			return;
 
-		    [stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
-		            [identifier action]];
-	    }];
+		[stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
+		        [identifier action]];
+	}];
 
 	[stream close];
 }

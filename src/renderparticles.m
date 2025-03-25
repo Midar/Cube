@@ -3,6 +3,7 @@
 #include "cube.h"
 
 #import "Player.h"
+#import "Variable.h"
 
 #define MAXPARTICLES 10500
 const int NUMPARTCUTOFF = 20;

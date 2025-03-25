@@ -4,6 +4,7 @@
 
 #import "Command.h"
 #import "Player.h"
+#import "Variable.h"
 
 OF_APPLICATION_DELEGATE(Cube)
 

@@ -6,6 +6,7 @@
 
 #import "Entity.h"
 #import "Player.h"
+#import "Variable.h"
 
 static OFMutableArray<Monster *> *monsters;
 static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;

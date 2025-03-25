@@ -8,6 +8,7 @@
 #import "Monster.h"
 #import "OFString+Cube.h"
 #import "Player.h"
+#import "Variable.h"
 
 #ifdef DARWIN
 # define GL_COMBINE_EXT GL_COMBINE_ARB

@@ -5,6 +5,7 @@
 #import "Command.h"
 #import "Entity.h"
 #import "Player.h"
+#import "Variable.h"
 
 void
 line(int x1, int y1, float z1, int x2, int y2, float z2)

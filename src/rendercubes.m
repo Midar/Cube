@@ -4,6 +4,7 @@
 #include "cube.h"
 
 #import "Command.h"
+#import "Variable.h"
 
 static struct vertex *verts = NULL;
 int curvert;

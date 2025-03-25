@@ -5,8 +5,6 @@ extern "C" {
 #endif
 
 // command
-extern int variable(OFString *name, int min, int cur, int max, int *storage,
-    void (*fun)(), bool persist);
 extern void setvar(OFString *name, int i);
 extern int getvar(OFString *name);
 extern bool identexists(OFString *name);

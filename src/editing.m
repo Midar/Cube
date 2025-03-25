@@ -8,6 +8,7 @@
 #import "Monster.h"
 #import "OFString+Cube.h"
 #import "Player.h"
+#import "Variable.h"
 
 bool editmode = false;
 
@@ -15,17 +16,27 @@ bool editmode = false;
 // invariant: all code assumes that these are kept inside MINBORD distance of
 // the edge of the map
 
-struct block sel;
+struct block sel = { 0, 0, 0, 0 };
 
 OF_CONSTRUCTOR()
 {
 	enqueueInit(^{
-		sel = (struct block) {
-			variable(@"selx", 0, 0, 4096, &sel.x, NULL, false),
-			variable(@"sely", 0, 0, 4096, &sel.y, NULL, false),
-			variable(@"selxs", 0, 0, 4096, &sel.xs, NULL, false),
-			variable(@"selys", 0, 0, 4096, &sel.ys, NULL, false),
-		};
+		static const struct {
+			OFString *name;
+			int *storage;
+		} vars[4] = { { @"selx", &sel.x }, { @"sely", &sel.y },
+			{ @"selxs", &sel.xs }, { @"selys", &sel.ys } };
+
+		for (size_t i = 0; i < 4; i++) {
+			Variable *variable =
+			    [Variable variableWithName:vars[i].name
+			                           min:0
+			                           max:4096
+			                       storage:vars[i].storage
+			                      function:NULL
+			                     persisted:false];
+			Identifier.identifiers[vars[i].name] = variable;
+		}
 	});
 }
 

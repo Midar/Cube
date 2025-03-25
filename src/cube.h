@@ -331,51 +331,6 @@ enum {
 	ARG_VARI
 };
 
-// nasty macros for registering script functions, abuses globals to avoid
-// excessive infrastructure
-#define VARP(name, min, cur, max)                                       \
-	int name;                                                       \
-	OF_CONSTRUCTOR()                                                \
-	{                                                               \
-		enqueueInit(^{                                          \
-			name = variable(                                \
-			    @ #name, min, cur, max, &name, NULL, true); \
-		});                                                     \
-	}
-#define VAR(name, min, cur, max)                                         \
-	int name;                                                        \
-	OF_CONSTRUCTOR()                                                 \
-	{                                                                \
-		enqueueInit(^{                                           \
-			name = variable(                                 \
-			    @ #name, min, cur, max, &name, NULL, false); \
-		});                                                      \
-	}
-#define VARF(name, min, cur, max, body)                                        \
-	void var_##name();                                                     \
-	static int name;                                                       \
-	OF_CONSTRUCTOR()                                                       \
-	{                                                                      \
-		enqueueInit(^{                                                 \
-			name = variable(                                       \
-			    @ #name, min, cur, max, &name, var_##name, false); \
-		});                                                            \
-	}                                                                      \
-	void var_##name() { body; }
-#define VARFP(name, min, cur, max, body)                                      \
-	void var_##name();                                                    \
-	static int name;                                                      \
-	OF_CONSTRUCTOR()                                                      \
-	{                                                                     \
-		enqueueInit(^{                                                \
-			name = variable(                                      \
-			    @ #name, min, cur, max, &name, var_##name, true); \
-		});                                                           \
-	}                                                                     \
-	void var_##name() { body; }
-
-#define ATOI(s) strtol(s, NULL, 0) // supports hexadecimal numbers
-
 #ifdef WIN32
 # define WIN32_LEAN_AND_MEAN
 # include "windows.h"

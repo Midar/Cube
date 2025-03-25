@@ -5,6 +5,7 @@
 #import "DynamicEntity.h"
 #import "Entity.h"
 #import "Monster.h"
+#import "Variable.h"
 
 extern bool hasoverbright;
 

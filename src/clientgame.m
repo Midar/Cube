@@ -8,6 +8,7 @@
 #import "Monster.h"
 #import "OFString+Cube.h"
 #import "Player.h"
+#import "Variable.h"
 
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);

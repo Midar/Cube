@@ -2,15 +2,15 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-#define COMMAND(name, nargs, block_)                                         \
-	OF_CONSTRUCTOR()                                                     \
-	{                                                                    \
-		enqueueInit(^{                                               \
-			[Identifier                                          \
-			    addIdentifier:[Command commandWithName:@ #name   \
-			                            argumentsTypes:nargs     \
-			                                     block:block_]]; \
-		});                                                          \
+#define COMMAND(name, nargs, block_)                          \
+	OF_CONSTRUCTOR()                                      \
+	{                                                     \
+		enqueueInit(^{                                \
+			Identifier.identifiers[@ #name] =     \
+			    [Command commandWithName:@ #name  \
+			              argumentsTypes:nargs    \
+			                       block:block_]; \
+		});                                           \
 	}
 
 @interface Command: Identifier

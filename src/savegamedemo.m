@@ -7,6 +7,7 @@
 #import "Entity.h"
 #import "Monster.h"
 #import "Player.h"
+#import "Variable.h"
 
 #ifdef OF_BIG_ENDIAN
 static const int islittleendian = 0;
