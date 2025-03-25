@@ -2,6 +2,7 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
+OF_DIRECT_MEMBERS
 @interface KeyMapping: OFObject
 @property (readonly) int code;
 @property (readonly, nonatomic) OFString *name;

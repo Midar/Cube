@@ -279,7 +279,8 @@ localservertoclient(unsigned char *buf, int len)
 		}
 
 		case SV_FRAGS:
-			[players[cn] setFrags:getint(&p)];
+			OFAssert([players[cn] isKindOfClass:Player.class]);
+			((Player *)players[cn]).frags = getint(&p);
 			break;
 
 		case SV_ITEMPICKUP:
@@ -371,7 +372,8 @@ localservertoclient(unsigned char *buf, int len)
 			break;
 
 		case SV_CLIENTPING:
-			[players[cn] setPing:getint(&p)];
+			OFAssert([players[cn] isKindOfClass:Player.class]);
+			((Player *)players[cn]).ping = getint(&p);
 			break;
 
 		case SV_GAMEMODE:

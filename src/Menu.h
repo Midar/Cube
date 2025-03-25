@@ -4,6 +4,7 @@ OF_ASSUME_NONNULL_BEGIN
 
 @class MenuItem;
 
+OF_DIRECT_MEMBERS
 @interface Menu: OFObject
 @property (readonly, nonatomic) OFString *name;
 @property (readonly) OFMutableArray<MenuItem *> *items;

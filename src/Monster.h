@@ -1,5 +1,6 @@
 #import "DynamicEntity.h"
 
+OF_DIRECT_MEMBERS
 @interface Monster: DynamicEntity
 @property (class, readonly, nonatomic) OFMutableArray<Monster *> *monsters;
 // one of M_*

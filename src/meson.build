@@ -70,6 +70,7 @@ executable('client',
 executable('server',
   [
     'Client.m',
+    'Entity.m',
     'ServerEntity.m',
     'server.m',
     'serverms.m',

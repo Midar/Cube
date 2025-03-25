@@ -1,6 +1,7 @@
 #import <ObjFW/ObjFW.h>
 
 // map entity
+OF_DIRECT_MEMBERS
 @interface Entity: OFObject
 @property (nonatomic) short x, y, z; // cube aligned position
 @property (nonatomic) short attr1;

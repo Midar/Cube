@@ -12,6 +12,7 @@
 @class Entity;
 @class Player;
 
+OF_DIRECT_MEMBERS
 @interface Cube: OFObject <OFApplicationDelegate>
 @property (class, readonly, nonatomic) Cube *sharedInstance;
 @property (readonly, nonatomic) SDL_Window *window;

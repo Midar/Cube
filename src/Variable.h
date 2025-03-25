@@ -74,9 +74,9 @@ OF_ASSUME_NONNULL_BEGIN
 	static void var_##name() { body; }
 
 @interface Variable: Identifier
-@property (readonly, nonatomic) int min, max;
-@property (readonly, nonatomic) int *storage;
-@property (readonly, nullable, nonatomic) void (*function)();
+@property (direct, readonly, nonatomic) int min, max;
+@property (direct, readonly, nonatomic) int *storage;
+@property (direct, readonly, nullable, nonatomic) void (*function)();
 @property (readonly, nonatomic) bool persisted;
 
 + (instancetype)variableWithName:(OFString *)name
@@ -84,16 +84,17 @@ OF_ASSUME_NONNULL_BEGIN
                              max:(int)max
                          storage:(int *)storage
                         function:(void (*_Nullable)())function
-                       persisted:(bool)persisted;
+                       persisted:(bool)persisted OF_DIRECT;
 - (instancetype)initWithName:(OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name
                          min:(int)min
                          max:(int)max
                      storage:(int *)storage
                     function:(void (*_Nullable)())function
-                   persisted:(bool)persisted;
-- (void)printValue;
-- (void)setValue:(int)value;
+                   persisted:(bool)persisted OF_DESIGNATED_INITIALIZER
+    OF_DIRECT;
+- (void)printValue OF_DIRECT;
+- (void)setValue:(int)value OF_DIRECT;
 @end
 
 OF_ASSUME_NONNULL_END

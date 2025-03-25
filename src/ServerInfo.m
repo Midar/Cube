@@ -27,16 +27,16 @@
 	return self;
 }
 
-- (OFComparisonResult)compare:(id)otherObject
+- (OFComparisonResult)compare:(ServerInfo *)otherObject
 {
 	if (![otherObject isKindOfClass:ServerInfo.class])
 		@throw [OFInvalidArgumentException exception];
 
-	if (_ping > [otherObject ping])
+	if (_ping > otherObject.ping)
 		return OFOrderedDescending;
-	if (_ping < [otherObject ping])
+	if (_ping < otherObject.ping)
 		return OFOrderedAscending;
 
-	return [_name compare:[otherObject name]];
+	return [_name compare:otherObject.name];
 }
 @end

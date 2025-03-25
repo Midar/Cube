@@ -2,6 +2,7 @@
 
 #include <enet/enet.h>
 
+OF_DIRECT_MEMBERS
 @interface ServerInfo: OFObject <OFComparing>
 @property (readonly, nonatomic) OFString *name;
 @property (copy, nonatomic) OFString *full;

@@ -1,5 +1,6 @@
 #import "DynamicEntity.h"
 
+OF_DIRECT_MEMBERS
 @interface Player: DynamicEntity
 // special client ent that receives input and acts as camera
 @property (class, nonatomic) Player *player1;

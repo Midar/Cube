@@ -13,6 +13,7 @@ OF_ASSUME_NONNULL_BEGIN
 		});                                           \
 	}
 
+OF_DIRECT_MEMBERS
 @interface Command: Identifier
 @property (readonly, nonatomic) int argumentsTypes;
 
@@ -22,7 +23,7 @@ OF_ASSUME_NONNULL_BEGIN
 - (instancetype)initWithName:(OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName:(OFString *)name
               argumentsTypes:(int)argumentsTypes
-                       block:(id)block;
+                       block:(id)block OF_DESIGNATED_INITIALIZER;
 - (int)callWithArguments:(OFArray<OFString *> *)arguments isDown:(bool)isDown;
 @end
 

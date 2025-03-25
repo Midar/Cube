@@ -2,6 +2,7 @@
 
 #import "cube.h"
 
+OF_DIRECT_MEMBERS
 @interface ResolverResult: OFObject
 @property (readonly, nonatomic) OFString *query;
 @property (readonly, nonatomic) ENetAddress address;

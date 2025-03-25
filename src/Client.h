@@ -3,6 +3,7 @@
 #import "cube.h"
 
 // server side version of "dynent" type
+OF_DIRECT_MEMBERS
 @interface Client: OFObject
 @property (nonatomic) int type;
 @property (nonatomic) ENetPeer *peer;

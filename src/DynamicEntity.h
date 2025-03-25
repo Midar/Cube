@@ -2,37 +2,36 @@
 
 // players & monsters
 @interface DynamicEntity: OFObject <OFCopying>
-@property (class, readonly, nonatomic) size_t serializedSize;
+@property (class, direct, readonly, nonatomic) size_t serializedSize;
 
-@property (nonatomic) OFVector3D origin, velocity;
+@property (direct, nonatomic) OFVector3D origin, velocity;
 // used as OFVector3D in one place
-@property (nonatomic) float yaw, pitch, roll;
+@property (direct, nonatomic) float yaw, pitch, roll;
 // cubes per second, 24 for player
-@property (nonatomic) float maxSpeed;
+@property (direct, nonatomic) float maxSpeed;
 // from his eyes
-@property (nonatomic) bool outsideMap;
-@property (nonatomic) bool inWater;
-@property (nonatomic) bool onFloor, jumpNext;
-@property (nonatomic) int move, strafe;
+@property (direct, nonatomic) bool outsideMap;
+@property (direct, nonatomic) bool inWater;
+@property (direct, nonatomic) bool onFloor, jumpNext;
+@property (direct, nonatomic) int move, strafe;
 // see input code
-@property (nonatomic) bool k_left, k_right, k_up, k_down;
+@property (direct, nonatomic) bool k_left, k_right, k_up, k_down;
 // used for fake gravity
-@property (nonatomic) int timeInAir;
+@property (direct, nonatomic) int timeInAir;
 // bounding box size
-@property (nonatomic) float radius, eyeHeight, aboveEye;
-@property (nonatomic) int lastUpdate, lag, ping;
+@property (direct, nonatomic) float radius, eyeHeight, aboveEye;
+@property (direct, nonatomic) int lastUpdate, lag, ping;
 // one of CS_* below
-@property (nonatomic) int state;
-@property (nonatomic) int health, armour, armourType, quadMillis;
-@property (nonatomic) int gunSelect, gunWait;
-@property (nonatomic) int lastAction, lastAttackGun, lastMove;
-@property (readonly, nonatomic) int *ammo;
-@property (nonatomic) bool attacking;
+@property (direct, nonatomic) int state;
+@property (direct, nonatomic) int health, armour, armourType, quadMillis;
+@property (direct, nonatomic) int gunSelect, gunWait;
+@property (direct, nonatomic) int lastAction, lastAttackGun, lastMove;
+@property (direct, readonly, nonatomic) int *ammo;
+@property (direct, nonatomic) bool attacking;
 // used by physics to signal ai
-@property (nonatomic) bool blocked, moving;
-@property (copy, nonatomic) OFString *name;
+@property (direct, nonatomic) bool blocked, moving;
+@property (direct, copy, nonatomic) OFString *name;
 
-+ (instancetype)entity;
 - (OFData *)dataBySerializing;
 - (void)setFromSerializedData:(OFData *)data;
 - (void)resetMovement;

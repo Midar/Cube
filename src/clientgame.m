@@ -417,9 +417,9 @@ startmap(OFString *name) // called just after a map load
 	spawncycle = -1;
 	spawnplayer(Player.player1);
 	Player.player1.frags = 0;
-	for (id player in players)
-		if (player != [OFNull null])
-			[player setFrags:0];
+	for (Player *player in players)
+		if ([player isKindOfClass:Player.class])
+			player.frags = 0;
 	resetspawns();
 	clientmap = name;
 	if (editmode)

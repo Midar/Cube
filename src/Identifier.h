@@ -3,8 +3,8 @@
 OF_ASSUME_NONNULL_BEGIN
 
 @interface Identifier: OFObject
-@property (readonly, copy, nonatomic) OFString *name;
-@property (class, readonly, nonatomic)
+@property (direct, readonly, copy, nonatomic) OFString *name;
+@property (class, direct, readonly, nonatomic)
     OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
 
 - (instancetype)init OF_UNAVAILABLE;

@@ -1,5 +1,6 @@
 #import <ObjFW/ObjFW.h>
 
+OF_DIRECT_MEMBERS
 @interface ConsoleLine: OFObject
 @property (readonly, copy) OFString *text;
 @property (readonly) int outtime;
