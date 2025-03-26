@@ -40,7 +40,7 @@ setnames(OFString *name)
 	cgzname = [[OFString alloc]
 	    initWithFormat:@"packages/%@/%@.cgz", pakname, mapname];
 	bakname = [[OFString alloc] initWithFormat:@"packages/%@/%@_%d.BAK",
-	                            pakname, mapname, lastmillis];
+	    pakname, mapname, lastmillis];
 	pcfname = [[OFString alloc]
 	    initWithFormat:@"packages/%@/package.cfg", pakname];
 	mcfname = [[OFString alloc]

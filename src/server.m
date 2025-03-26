@@ -102,7 +102,7 @@ void
 disconnect_client(int n, OFString *reason)
 {
 	[OFStdOut writeFormat:@"disconnecting client (%@) [%@]\n",
-	          clients[n].hostname, reason];
+	    clients[n].hostname, reason];
 	enet_peer_disconnect(clients[n].peer);
 	clients[n].type = ST_EMPTY;
 	send2(true, -1, SV_CDIS, n);
@@ -490,7 +490,7 @@ serverslice(int seconds,
 			if ((intptr_t)event.peer->data < 0)
 				break;
 			[OFStdOut writeFormat:@"disconnected client (%@)\n",
-			          clients[(size_t)event.peer->data].hostname];
+			    clients[(size_t)event.peer->data].hostname];
 			clients[(size_t)event.peer->data].type = ST_EMPTY;
 			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);
 			event.peer->data = (void *)-1;

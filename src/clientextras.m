@@ -114,10 +114,9 @@ renderscore(Player *d)
 {
 	OFString *lag = [OFString stringWithFormat:@"%d", d.lag];
 	OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
-	OFString *line =
-	    [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@", d.frags,
-	              (d.state == CS_LAGGED ? @"LAG" : lag), d.ping, d.team,
-	              (d.state == CS_DEAD ? name : d.name)];
+	OFString *line = [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@",
+	    d.frags, (d.state == CS_LAGGED ? @"LAG" : lag), d.ping, d.team,
+	    (d.state == CS_DEAD ? name : d.name)];
 
 	if (scoreLines == nil)
 		scoreLines = [[OFMutableArray alloc] init];
@@ -171,7 +170,7 @@ renderscores()
 		OFMutableString *teamScores = [OFMutableString string];
 		for (size_t j = 0; j < teamsUsed; j++)
 			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
-			            teamScore[j]];
+			    teamScore[j]];
 		menumanual(0, scoreLines.count, @"");
 		menumanual(0, scoreLines.count + 1, teamScores);
 	}
@@ -208,7 +207,7 @@ COMMAND(sendmap, ARG_1STR, (^(OFString *mapname) {
 	OFString *msg =
 	    [OFString stringWithFormat:@"[map %@ uploaded to server, "
 	                               @"\"getmap\" to receive it]",
-	              mapname];
+	        mapname];
 	toserver(msg);
 }))
 

@@ -353,7 +353,7 @@ writecfg()
 			return;
 
 		[stream writeFormat:@"%@ %d\n", identifier.name,
-		        *[identifier storage]];
+		    *[identifier storage]];
 	}];
 	[stream writeString:@"\n"];
 
@@ -367,7 +367,7 @@ writecfg()
 			return;
 
 		[stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
-		        [identifier action]];
+		    [identifier action]];
 	}];
 
 	[stream close];

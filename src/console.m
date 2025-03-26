@@ -184,8 +184,7 @@ keypress(int code, bool isDown)
 			case SDLK_BACKSPACE:
 			case SDLK_LEFT:
 				if (commandbuf.length > 0)
-					[commandbuf
-					    deleteCharactersInRange:
+					[commandbuf deleteCharactersInRange:
 					        OFMakeRange(
 					            commandbuf.length - 1, 1)];
 
@@ -277,5 +276,5 @@ writebinds(OFStream *stream)
 	for (KeyMapping *mapping in keyMappings)
 		if (mapping.action.length > 0)
 			[stream writeFormat:@"bind \"%@\" [%@]\n", mapping.name,
-			        mapping.action];
+			    mapping.action];
 }

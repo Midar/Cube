@@ -30,7 +30,7 @@ httpgetsend(ENetAddress *ad, OFString *hostname, OFString *req, OFString *ref,
 	                                               @"Host: %@\n"
 	                                               @"Referer: %@\n"
 	                                               @"User-Agent: %@\n\n",
-	                              req, hostname, ref, agent];
+	    req, hostname, ref, agent];
 	buf.data = (void *)httpget.UTF8String;
 	buf.dataLength = httpget.UTF8StringLength;
 	[OFStdOut writeFormat:@"sending request to %@...\n", hostname];
@@ -140,9 +140,8 @@ serverms(int mode, int numplayers, int minremain, OFString *smapname,
 		putint(&p, mode);
 		putint(&p, numplayers);
 		putint(&p, minremain);
-		OFString *mname =
-		    [OFString stringWithFormat:@"%@%@",
-		              (isfull ? @"[FULL] " : @""), smapname];
+		OFString *mname = [OFString stringWithFormat:@"%@%@",
+		    (isfull ? @"[FULL] " : @""), smapname];
 		sendstring(mname, &p);
 		sendstring(serverdesc, &p);
 		buf.dataLength = p - pong;

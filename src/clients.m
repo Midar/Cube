@@ -96,7 +96,7 @@ void
 writeclientinfo(OFStream *stream)
 {
 	[stream writeFormat:@"name \"%@\"\nteam \"%@\"\n", Player.player1.name,
-	        Player.player1.team];
+	    Player.player1.team];
 }
 
 void

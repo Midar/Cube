@@ -221,8 +221,7 @@ refreshservers()
 	    ServerInfo *si, size_t i, bool *stop) {
 		if (si.address.host != ENET_HOST_ANY && si.ping != 9999) {
 			if (si.protocol != PROTOCOL_VERSION)
-				si.full = [OFString
-				    stringWithFormat:
+				si.full = [OFString stringWithFormat:
 				        @"%@ [different cube protocol]",
 				    si.name];
 			else
@@ -232,8 +231,7 @@ refreshservers()
 				    si.map.length > 0 ? si.map : @"[unknown]",
 				    modestr(si.mode), si.name, si.sdesc];
 		} else
-			si.full = [OFString
-			    stringWithFormat:
+			si.full = [OFString stringWithFormat:
 			        (si.address.host != ENET_HOST_ANY
 			                ? @"%@ [waiting for server response]"
 			                : @"%@ [unknown host]\t"),

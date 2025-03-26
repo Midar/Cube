@@ -84,14 +84,12 @@ VARP(minmillis, 0, 5, 1000);
 		_userDataIRI =
 		    [OFFileManager.defaultManager currentDirectoryIRI];
 
-		[OFFileManager.defaultManager
-		    createDirectoryAtIRI:
+		[OFFileManager.defaultManager createDirectoryAtIRI:
 		        [_userDataIRI IRIByAppendingPathComponent:@"demos"]
-		           createParents:true];
-		[OFFileManager.defaultManager
-		    createDirectoryAtIRI:
+		                                     createParents:true];
+		[OFFileManager.defaultManager createDirectoryAtIRI:
 		        [_userDataIRI IRIByAppendingPathComponent:@"savegames"]
-		           createParents:true];
+		                                     createParents:true];
 
 		if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 			fatal(@"Unable to initialize SDL");
@@ -153,23 +151,23 @@ VARP(minmillis, 0, 5, 1000);
 		        &xs, &ys, false) ||
 		    !installtex(3,
 		        [_gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/martin/base.png"],
+		                @"data/martin/base.png"],
 		        &xs, &ys, false) ||
 		    !installtex(6,
 		        [_gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/martin/ball1.png"],
+		                @"data/martin/ball1.png"],
 		        &xs, &ys, false) ||
 		    !installtex(7,
 		        [_gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/martin/smoke.png"],
+		                @"data/martin/smoke.png"],
 		        &xs, &ys, false) ||
 		    !installtex(8,
 		        [_gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/martin/ball2.png"],
+		                @"data/martin/ball2.png"],
 		        &xs, &ys, false) ||
 		    !installtex(9,
 		        [_gameDataIRI IRIByAppendingPathComponent:
-		                          @"data/martin/ball3.png"],
+		                @"data/martin/ball3.png"],
 		        &xs, &ys, false) ||
 		    !installtex(4,
 		        [_gameDataIRI

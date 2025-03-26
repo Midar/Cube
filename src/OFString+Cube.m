@@ -2,8 +2,7 @@
 
 #include "cube.h"
 
-@implementation
-OFString (Cube)
+@implementation OFString (Cube)
 - (int)cube_intValue
 {
 	@try {

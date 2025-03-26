@@ -199,8 +199,8 @@ renderents()
 		closeent =
 		    [OFString stringWithFormat:@"closest entity = %@ (%d, %d, "
 		                               @"%d, %d), selection = (%d, %d)",
-		              entnames[c.type], c.attr1, c.attr2, c.attr3,
-		              c.attr4, getvar(@"selxs"), getvar(@"selys")];
+		        entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
+		        getvar(@"selxs"), getvar(@"selys")];
 	}
 }
 
