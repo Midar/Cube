@@ -108,8 +108,8 @@ struct header {
 #define LARGEST_FACTOR 11 // 10 is already insane
 #define SOLID(x) ((x)->type == SOLID)
 #define MINBORD 2 // 2 cubes from the edge of the world are always solid
-#define OUTBORD(x, y)                                                \
-	((x) < MINBORD || (y) < MINBORD || (x) >= ssize - MINBORD || \
+#define OUTBORD(x, y)							\
+	((x) < MINBORD || (y) < MINBORD || (x) >= ssize - MINBORD ||	\
 	    (y) >= ssize - MINBORD)
 
 struct block {
@@ -255,16 +255,16 @@ extern "C" {
 #endif
 // map data, the mips are sequential 2D arrays in memory
 extern struct sqr *world, *wmip[];
-extern struct header hdr;      // current map header
-extern int sfactor, ssize;     // ssize = 2^sfactor
-extern int cubicsize, mipsize; // cubicsize = ssize^2
+extern struct header hdr;	// current map header
+extern int sfactor, ssize;	// ssize = 2^sfactor
+extern int cubicsize, mipsize;	// cubicsize = ssize^2
 // all the other clients (in multiplayer)
 extern OFMutableArray *players;
 extern bool editmode;
 extern OFMutableArray<Entity *> *ents; // map entities
-extern OFVector3D worldpos; // current target of the crosshair in the world
-extern int lastmillis;      // last time
-extern int curtime;         // current frame time
+extern OFVector3D worldpos;	// current target of the crosshair in the world
+extern int lastmillis;		// last time
+extern int curtime;		// current frame time
 extern int gamemode, nextmode;
 extern int xtraverts;
 extern bool demoplayback;
@@ -284,22 +284,22 @@ extern bool demoplayback;
 #define PI (3.1415927f)
 #define PI2 (2 * PI)
 
-#define vreject(v, u, max)                                 \
-	((v).x > (u).x + (max) || (v).x < (u).x - (max) || \
+#define vreject(v, u, max)					\
+	((v).x > (u).x + (max) || (v).x < (u).x - (max) ||	\
 	    (v).y > (u).y + (max) || (v).y < (u).y - (max))
-#define vlinterp(v, f, u, g)                   \
-	{                                      \
-		(v).x = (v).x * f + (u).x * g; \
-		(v).y = (v).y * f + (u).y * g; \
-		(v).z = (v).z * f + (u).z * g; \
+#define vlinterp(v, f, u, g)			\
+	{					\
+		(v).x = (v).x * f + (u).x * g;	\
+		(v).y = (v).y * f + (u).y * g;	\
+		(v).z = (v).z * f + (u).z * g;	\
 	}
 
-#define sgetstr()                        \
-	{                                \
-		char *t = text;          \
-		do {                     \
-			*t = getint(&p); \
-		} while (*t++);          \
+#define sgetstr()				\
+	{					\
+		char *t = text;			\
+		do {				\
+			*t = getint(&p);	\
+		} while (*t++);			\
 	} // used by networking
 
 #define m_noitems (gamemode >= 4)

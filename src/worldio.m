@@ -170,8 +170,8 @@ readmap(OFString *mname)
 void
 save_world(OFString *mname)
 {
-	resettagareas(); // wouldn't be able to reproduce tagged areas
-	                 // otherwise
+	// wouldn't be able to reproduce tagged areas otherwise
+	resettagareas();
 	voptimize();
 	toptimize();
 	if (mname.length == 0)
@@ -203,16 +203,16 @@ save_world(OFString *mname)
 	}
 	struct sqr *t = NULL;
 	int sc = 0;
-#define spurge                          \
-	while (sc) {                    \
-		gzputc(f, 255);         \
-		if (sc > 255) {         \
-			gzputc(f, 255); \
-			sc -= 255;      \
-		} else {                \
-			gzputc(f, sc);  \
-			sc = 0;         \
-		}                       \
+#define spurge				\
+	while (sc) {			\
+		gzputc(f, 255);		\
+		if (sc > 255) {		\
+			gzputc(f, 255);	\
+			sc -= 255;	\
+		} else {		\
+			gzputc(f, sc);	\
+			sc = 0;		\
+		}			\
 	}
 	for (int k = 0; k < cubicsize; k++) {
 		struct sqr *s = &world[k];
@@ -262,9 +262,10 @@ COMMAND(savemap, ARG_1STR, ^ (OFString *mname) {
 	save_world(mname);
 })
 
+// still supports all map formats that have existed since the earliest cube
+// betas!
 void
-load_world(OFString *mname) // still supports all map formats that have existed
-                            // since the earliest cube betas!
+load_world(OFString *mname)
 {
 	stopifrecording();
 	cleardlights();

@@ -2,15 +2,15 @@
 
 OF_ASSUME_NONNULL_BEGIN
 
-#define COMMAND(name, nargs, block_)				\
-	OF_CONSTRUCTOR()					\
-	{							\
-		enqueueInit(^ {					\
-			Identifier.identifiers[@#name] =	\
-			    [Command commandWithName: @#name	\
-			              argumentsTypes: nargs	\
-			                       block: block_];	\
-		});						\
+#define COMMAND(name, nargs, block_)					\
+	OF_CONSTRUCTOR()						\
+	{								\
+		enqueueInit(^ {						\
+			Identifier.identifiers[@#name] = [Command	\
+			    commandWithName: @#name			\
+			     argumentsTypes: nargs			\
+				      block: block_];			\
+		});							\
 	}
 
 OF_DIRECT_MEMBERS
@@ -18,12 +18,12 @@ OF_DIRECT_MEMBERS
 @property (readonly, nonatomic) int argumentsTypes;
 
 + (instancetype)commandWithName: (OFString *)name
-                 argumentsTypes: (int)argumentsTypes
-                          block: (id)block;
+		 argumentsTypes: (int)argumentsTypes
+			  block: (id)block;
 - (instancetype)initWithName: (OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName: (OFString *)name
-              argumentsTypes: (int)argumentsTypes
-                       block: (id)block OF_DESIGNATED_INITIALIZER;
+	      argumentsTypes: (int)argumentsTypes
+		       block: (id)block OF_DESIGNATED_INITIALIZER;
 - (int)callWithArguments: (OFArray<OFString *> *)arguments isDown: (bool)isDown;
 @end
 

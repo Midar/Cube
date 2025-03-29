@@ -125,9 +125,9 @@ render_seg_new(
 	int sz = ssize >> mip;
 	int vxx = ((int)vx + (1 << mip) / 2) >> mip;
 	int vyy = ((int)vy + (1 << mip) / 2) >> mip;
-	int lx =
-	    vxx - lodleft; // these mark the rect inside the current rest that
-	                   // we want to render using a lower mip level
+	// these mark the rect inside the current rest that we want to render
+	// using a lower mip level
+	int lx = vxx - lodleft;
 	int ly = vyy - lodtop;
 	int rx = vxx + lodright;
 	int ry = vyy + lodbot;
@@ -139,7 +139,7 @@ render_seg_new(
 		for (int oy = y; oy < ys; oy++) {
 			SWS(w, ox, oy, sz)->occluded =
 			    isoccluded(player1.origin.x, player1.origin.y,
-			        (float)(ox << mip), (float)(oy << mip), fsize);
+			    (float)(ox << mip), (float)(oy << mip), fsize);
 		}
 	}
 
@@ -161,19 +161,19 @@ render_seg_new(
 	// and are also deferred, and render them recursively. Anything left
 	// (perfect mips and higher lods) we render here.
 
-#define LOOPH                                                          \
-	{                                                              \
-		for (int xx = x; xx < xs; xx++)                        \
-			for (int yy = y; yy < ys; yy++) {              \
-				struct sqr *s = SWS(w, xx, yy, sz);    \
-				if (s->occluded == 1)                  \
-					continue;                      \
-				if (s->defer && !s->occluded && mip && \
-				    xx >= lx && xx < rx && yy >= ly && \
+#define LOOPH								\
+	{								\
+		for (int xx = x; xx < xs; xx++)				\
+			for (int yy = y; yy < ys; yy++) {		\
+				struct sqr *s = SWS(w, xx, yy, sz);	\
+				if (s->occluded == 1)			\
+					continue;			\
+				if (s->defer && !s->occluded && mip &&	\
+				    xx >= lx && xx < rx && yy >= ly &&	\
 				    yy < ry)
-#define LOOPD                             \
-	struct sqr *t = SWS(s, 1, 0, sz); \
-	struct sqr *u = SWS(s, 1, 1, sz); \
+#define LOOPD					\
+	struct sqr *t = SWS(s, 1, 0, sz);	\
+	struct sqr *u = SWS(s, 1, 1, sz);	\
 	struct sqr *v = SWS(s, 0, 1, sz);
 
 	LOOPH // ceils

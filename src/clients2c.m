@@ -45,17 +45,15 @@ updatepos(DynamicEntity *d)
 	const float dz = player1.origin.z - d.origin.z;
 	const float rz = player1.aboveEye + d.eyeHeight;
 	const float fx = (float)fabs(dx), fy = (float)fabs(dy),
-	            fz = (float)fabs(dz);
+	    fz = (float)fabs(dz);
 	if (fx < r && fy < r && fz < rz && d.state != CS_DEAD) {
 		if (fx < fy)
 			// push aside
-			d.origin = OFAddVectors3D(d.origin,
-			    OFMakeVector3D(
-			        0, (dy < 0 ? r - fy : -(r - fy)), 0));
+			d.origin = OFAddVectors3D(d.origin, OFMakeVector3D(
+			    0, (dy < 0 ? r - fy : -(r - fy)), 0));
 		else
-			d.origin = OFAddVectors3D(d.origin,
-			    OFMakeVector3D(
-			        (dx < 0 ? r - fx : -(r - fx)), 0, 0));
+			d.origin = OFAddVectors3D(d.origin, OFMakeVector3D(
+			    (dx < 0 ? r - fx : -(r - fx)), 0, 0));
 	}
 	int lagtime = lastmillis - d.lastUpdate;
 	if (lagtime) {
@@ -87,7 +85,7 @@ localservertoclient(unsigned char *buf, int len)
 			int prot = getint(&p);
 			if (prot != PROTOCOL_VERSION) {
 				conoutf(@"you are using a different game "
-				        @"protocol (you: %d, server: %d)",
+				    @"protocol (you: %d, server: %d)",
 				    PROTOCOL_VERSION, prot);
 				disconnect(false, false);
 				return;
@@ -102,7 +100,7 @@ localservertoclient(unsigned char *buf, int len)
 			if (text[0] &&
 			    strcmp(text, clientpassword.UTF8String)) {
 				conoutf(@"you need to set the correct password "
-				        @"to join this server!");
+				    @"to join this server!");
 				disconnect(false, false);
 				return;
 			}
@@ -265,8 +263,8 @@ localservertoclient(unsigned char *buf, int len)
 				if (a != nil) {
 					if (isteam(a.team, d.name))
 						conoutf(@"%@ fragged his "
-						        @"teammate (%@)",
-						    a.name, d.name);
+						    @"teammate (%@)", a.name,
+						    d.name);
 					else
 						conoutf(@"%@ fragged %@",
 						    a.name, d.name);
@@ -303,8 +301,9 @@ localservertoclient(unsigned char *buf, int len)
 			realpickup(getint(&p), Player.player1);
 			break;
 
-		case SV_EDITH: // coop editing messages, should be extended to
-		               // include all possible editing ops
+		// coop editing messages, should be extended to include all
+		// possible editing ops
+		case SV_EDITH:
 		case SV_EDITT:
 		case SV_EDITS:
 		case SV_EDITD:
@@ -367,8 +366,7 @@ localservertoclient(unsigned char *buf, int len)
 		case SV_PONG:
 			addmsg(0, 2, SV_CLIENTPING,
 			    Player.player1.ping = (Player.player1.ping * 5 +
-			                              lastmillis - getint(&p)) /
-			        6);
+				lastmillis - getint(&p)) / 6);
 			break;
 
 		case SV_CLIENTPING:
@@ -401,9 +399,9 @@ localservertoclient(unsigned char *buf, int len)
 			conoutf(@"%s", text);
 			break;
 
-		case SV_EXT: // so we can messages without breaking previous
-		             // clients/servers, if necessary
-		{
+		// so we can messages without breaking previous
+		// clients/servers, if necessary
+		case SV_EXT: {
 			for (int n = getint(&p); n; n--)
 				getint(&p);
 			break;

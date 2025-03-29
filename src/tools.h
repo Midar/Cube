@@ -18,10 +18,10 @@
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define rnd(max) (rand() % (max))
 #define rndreset() (srand(1))
-#define rndtime()                                            \
-	{                                                    \
-		for (int i = 0; i < (lastmillis & 0xF); i++) \
-			rnd(i + 1);                          \
+#define rndtime()						\
+	{							\
+		for (int i = 0; i < (lastmillis & 0xF); i++)	\
+			rnd(i + 1);				\
 	}
 
 #ifndef OF_WINDOWS

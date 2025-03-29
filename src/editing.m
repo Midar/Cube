@@ -43,16 +43,16 @@ OF_CONSTRUCTOR()
 int selh = 0;
 bool selset = false;
 
-#define loopselxy(b)                                                       \
-	{                                                                  \
-		makeundo();                                                \
-		for (int x = 0; x < sel->xs; x++) {                        \
-			for (int y = 0; y < sel->ys; y++) {                \
+#define loopselxy(b)							   \
+	{								   \
+		makeundo();						   \
+		for (int x = 0; x < sel->xs; x++) {			   \
+			for (int y = 0; y < sel->ys; y++) {		   \
 				struct sqr *s = S(sel->x + x, sel->y + y); \
-				b;                                         \
-			}                                                  \
-		}                                                          \
-		remip(sel, 0);                                             \
+				b;					   \
+			}						   \
+		}							   \
+		remip(sel, 0);						   \
 	}
 
 int cx, cy, ch;
@@ -72,16 +72,19 @@ toggleedit()
 {
 	Player *player1 = Player.player1;
 	if (player1.state == CS_DEAD)
-		return; // do not allow dead players to edit to avoid state
-		        // confusion
+		// do not allow dead players to edit to avoid state
+		return;
 	if (!editmode && !allowedittoggle())
-		return; // not in most multiplayer modes
+		// not in most multiplayer modes
+		return;
 	if (!(editmode = !editmode)) {
-		settagareas();     // reset triggers to allow quick playtesting
-		entinmap(player1); // find spawn closest to current floating pos
+		// reset triggers to allow quick playtesting
+		settagareas();
+		// find spawn closest to current floating pos
+		entinmap(player1);
 	} else {
-		resettagareas(); // clear trigger areas to allow them to be
-		                 // edited
+		// clear trigger areas to allow them to be edited
+		resettagareas();
 		player1.health = 100;
 		if (m_classicsp)
 			// all monsters back at their spawns for editing
@@ -127,14 +130,14 @@ noselection()
 	return !selset;
 }
 
-#define EDITSEL                             \
-	if (noteditmode() || noselection()) \
+#define EDITSEL					\
+	if (noteditmode() || noselection())	\
 		return;
-#define EDITSELMP                                            \
-	if (noteditmode() || noselection() || multiplayer()) \
+#define EDITSELMP						\
+	if (noteditmode() || noselection() || multiplayer())	\
 		return;
-#define EDITMP                              \
-	if (noteditmode() || multiplayer()) \
+#define EDITMP					\
+	if (noteditmode() || multiplayer())	\
 		return;
 
 COMMAND(select, ARG_4INT, (^ (int x, int y, int xs, int ys) {
@@ -342,9 +345,9 @@ COMMAND(paste, ARG_NONE, ^ {
 	blockpaste(copybuf);
 })
 
+// maintain most recently used of the texture lists when applying texture
 void
-tofronttex() // maintain most recently used of the texture lists when applying
-             // texture
+tofronttex()
 {
 	for (int i = 0; i < 3; i++) {
 		int c = curedittex[i];
@@ -408,20 +411,22 @@ COMMAND(editheight, ARG_2INT, ^ (int flr, int amount) {
 void
 edittexxy(int type, int t, const struct block *sel)
 {
-	loopselxy(switch (type) {
-	        case 0:
-		        s->ftex = t;
-		        break;
-	        case 1:
-		        s->wtex = t;
-		        break;
-	        case 2:
-		        s->ctex = t;
-		        break;
-	        case 3:
-		        s->utex = t;
-		        break;
-	});
+	loopselxy(
+		switch (type) {
+		case 0:
+			s->ftex = t;
+			break;
+		case 1:
+			s->wtex = t;
+			break;
+		case 2:
+			s->ctex = t;
+			break;
+		case 3:
+			s->utex = t;
+			break;
+		}
+	);
 }
 
 COMMAND(edittex, ARG_2INT, ^ (int type, int dir) {
@@ -486,9 +491,8 @@ edittype(int type)
 {
 	EDITSEL;
 
-	if (type == CORNER &&
-	    (sel.xs != sel.ys || sel.xs == 3 || (sel.xs > 4 && sel.xs != 8) ||
-	        sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
+	if (type == CORNER && (sel.xs != sel.ys || sel.xs == 3 || (sel.xs > 4 &&
+	    sel.xs != 8) || sel.x & ~-sel.xs || sel.y & ~-sel.ys)) {
 		conoutf(@"corner selection must be power of 2 aligned");
 		return;
 	}
@@ -582,11 +586,10 @@ COMMAND(arch, ARG_2INT, ^ (int sidedelta, int _a) {
 	struct block *sel_ = &sel;
 	// Ugly hack to make the macro work.
 	struct block *sel = sel_;
-	loopselxy(s->vdelta = sel->xs > sel->ys
-	        ? (archverts[sel->xs - 1][x] +
-	              (y == 0 || y == sel->ys - 1 ? sidedelta : 0))
-	        : (archverts[sel->ys - 1][y] +
-	              (x == 0 || x == sel->xs - 1 ? sidedelta : 0)));
+	loopselxy(s->vdelta = sel->xs > sel->ys ? (archverts[sel->xs - 1][x] +
+	    (y == 0 || y == sel->ys - 1 ? sidedelta : 0)) :
+	    (archverts[sel->ys - 1][y] + (x == 0 || x == sel->xs - 1 ?
+	    sidedelta : 0)));
 	remipmore(sel, 0);
 })
 

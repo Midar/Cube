@@ -31,28 +31,28 @@ reallocv()
 // the leaves of all these functions, and are part of the cpu bottleneck on
 // really slow machines, hence the macros.
 
-#define vertcheck()                         \
-	{                                   \
-		if (curvert >= curmaxverts) \
-			reallocv();         \
+#define vertcheck()				\
+	{					\
+		if (curvert >= curmaxverts)	\
+			reallocv();		\
 	}
 
-#define vertf(v1, v2, v3, ls, t1, t2)                 \
-	{                                             \
-		struct vertex *v = &verts[curvert++]; \
-		v->u = t1;                            \
-		v->v = t2;                            \
-		v->x = v1;                            \
-		v->y = v2;                            \
-		v->z = v3;                            \
-		v->r = ls->r;                         \
-		v->g = ls->g;                         \
-		v->b = ls->b;                         \
-		v->a = 255;                           \
+#define vertf(v1, v2, v3, ls, t1, t2)			\
+	{						\
+		struct vertex *v = &verts[curvert++];	\
+		v->u = t1;				\
+		v->v = t2;				\
+		v->x = v1;				\
+		v->y = v2;				\
+		v->z = v3;				\
+		v->r = ls->r;				\
+		v->g = ls->g;				\
+		v->b = ls->b;				\
+		v->a = 255;				\
 	}
 
-#define vert(v1, v2, v3, ls, t1, t2)                                      \
-	{                                                                 \
+#define vert(v1, v2, v3, ls, t1, t2)					  \
+	{								  \
 		vertf((float)(v1), (float)(v2), (float)(v3), ls, t1, t2); \
 	}
 
@@ -75,12 +75,12 @@ mipstats(int a, int b, int c)
 		conoutf(@"1x1/2x2/4x4: %d / %d / %d", a, b, c);
 }
 
-#define stripend()                                                          \
-	{                                                                   \
-		if (floorstrip || deltastrip) {                             \
+#define stripend()							    \
+	{								    \
+		if (floorstrip || deltastrip) {				    \
 			addstrip(ogltex, firstindex, curvert - firstindex); \
-			floorstrip = deltastrip = false;                    \
-		}                                                           \
+			floorstrip = deltastrip = false;		    \
+		}							    \
 	}
 void
 finishstrips()
@@ -138,14 +138,13 @@ render_flat(int wtex, int x, int y, int size, int h, struct sqr *l1,
 	} else // continue strip
 	{
 		int lighterr = lighterror * 2;
+		// skip vertices if light values are close enough
 		if ((abs(ol3r - l3->r) < lighterr &&
-		        abs(ol4r - l4->r) < lighterr // skip vertices if light
-		                                     // values are close enough
-		        && abs(ol3g - l3->g) < lighterr &&
-		        abs(ol4g - l4->g) < lighterr &&
-		        abs(ol3b - l3->b) < lighterr &&
-		        abs(ol4b - l4->b) < lighterr) ||
-		    !wtex) {
+		    abs(ol4r - l4->r) < lighterr &&
+		    abs(ol3g - l3->g) < lighterr &&
+		    abs(ol4g - l4->g) < lighterr &&
+		    abs(ol3b - l3->b) < lighterr &&
+		    abs(ol4b - l4->b) < lighterr) || !wtex) {
 			curvert -= 2;
 			nquads--;
 		} else {

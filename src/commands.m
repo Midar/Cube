@@ -22,8 +22,8 @@ alias(OFString *name, OFString *action)
 
 	if (alias == nil)
 		Identifier.identifiers[name] = [Alias aliasWithName: name
-		                                             action: action
-		                                          persisted: true];
+							     action: action
+							  persisted: true];
 	else {
 		if ([alias isKindOfClass: Alias.class])
 			alias.action = action;

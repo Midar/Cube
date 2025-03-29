@@ -16,13 +16,10 @@ noise(int x, int y, int seed)
 float
 smoothednoise(int x, int y, int seed)
 {
-	float corners =
-	    (noise(x - 1, y - 1, seed) + noise(x + 1, y - 1, seed) +
-	        noise(x - 1, y + 1, seed) + noise(x + 1, y + 1, seed)) /
-	    16;
+	float corners = (noise(x - 1, y - 1, seed) + noise(x + 1, y - 1, seed) +
+	    noise(x - 1, y + 1, seed) + noise(x + 1, y + 1, seed)) / 16;
 	float sides = (noise(x - 1, y, seed) + noise(x + 1, y, seed) +
-	                  noise(x, y - 1, seed) + noise(x, y + 1, seed)) /
-	    8;
+	    noise(x, y - 1, seed) + noise(x, y + 1, seed)) / 8;
 	float center = noise(x, y, seed) / 4;
 	return corners + sides + center;
 }
@@ -78,11 +75,9 @@ perlinarea(const struct block *b, int scale, int seed, int psize)
 			struct sqr *s = S(x, y);
 			if (!SOLID(s) && x != b->x + b->xs && y != b->y + b->ys)
 				s->type = FHF;
-			s->vdelta =
-			    (int)(perlinnoise_2D(x / ((float)scale) + seed,
-			              y / ((float)scale) + seed, 1000, 0.01f) *
-			            50 +
-			        25);
+			s->vdelta = (int)(perlinnoise_2D(
+			    x / ((float)scale) + seed,
+			    y / ((float)scale) + seed, 1000, 0.01f) * 50 + 25);
 			if (s->vdelta > 128)
 				s->vdelta = 0;
 		}

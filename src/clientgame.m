@@ -313,13 +313,9 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 	player1.armour -= ad;
 	damage -= ad;
 	float droll = damage / 0.5f;
-	player1.roll += player1.roll > 0
-	    ? droll
-	    : (player1.roll < 0
-	              ? -droll
-	              : (rnd(2) ? droll
-	                        : -droll)); // give player a kick depending
-	                                    // on amount of damage
+	// give player a kick depending on amount of damage
+	player1.roll += player1.roll > 0 ? droll : (player1.roll < 0 ? -droll :
+	    (rnd(2) ? droll : -droll));
 	if ((player1.health -= damage) <= 0) {
 		if (actor == -2) {
 			conoutf(@"you got killed by %@!", act.name);
@@ -332,8 +328,7 @@ selfdamage(int damage, int actor, DynamicEntity *act)
 			if (a != nil) {
 				if (isteam(a.team, player1.team))
 					conoutf(@"you got fragged by a "
-					        @"teammate (%@)",
-					    a.name);
+					    @"teammate (%@)", a.name);
 				else
 					conoutf(
 					    @"you got fragged by %@", a.name);

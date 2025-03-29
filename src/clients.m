@@ -43,8 +43,8 @@ allowedittoggle()
 }
 
 VARF(rate, 0, 0, 25000,
-    if (clienthost && (!rate || rate > 1000))
-        enet_host_bandwidth_limit(clienthost, rate, rate));
+	if (clienthost && (!rate || rate > 1000))
+		enet_host_bandwidth_limit(clienthost, rate, rate));
 
 void throttle();
 
@@ -216,7 +216,7 @@ addmsg(int rel, int num, int type, ...)
 	}
 
 	OFMutableData *msg = [OFMutableData dataWithItemSize: sizeof(int)
-	                                            capacity: num + 2];
+						    capacity: num + 2];
 	[msg addItem: &num];
 	[msg addItem: &rel];
 	[msg addItem: &type];

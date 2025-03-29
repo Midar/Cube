@@ -42,11 +42,8 @@ lightray(float bx, float by, Entity *light)
 		// coloured light version, special case because most lights are
 		// white
 		if (light.attr3 || light.attr4) {
-			int dimness = rnd(
-			    (255 -
-			        (light.attr2 + light.attr3 + light.attr4) / 3) /
-			        16 +
-			    1);
+			int dimness = rnd((255 - (light.attr2 + light.attr3 +
+			    light.attr4) / 3) / 16 + 1);
 			x += stepx * dimness;
 			y += stepy * dimness;
 
@@ -148,19 +145,20 @@ void
 postlightarea(const struct block *a)
 {
 	// assumes area not on edge of world
-	for (int x = 0; x < a->xs; x++)
+	for (int x = 0; x < a->xs; x++) {
 		for (int y = 0; y < a->ys; y++) {
 			struct sqr *s = S(x + a->x, y + a->y);
-#define median(m)                                                            \
-	s->m =                                                               \
-	    (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +            \
-	        SW(s, -1, 0)->m * 2 + SW(s, 0, -1)->m * 2 + SW(s, 1, 1)->m + \
-	        SW(s, 1, -1)->m + SW(s, -1, 1)->m + SW(s, -1, -1)->m) /      \
-	    14; // median is 4/2/1 instead
+
+			// median is 4/2/1 instead
+#define median(m)							 \
+	s->m = (s->m * 2 + SW(s, 1, 0)->m * 2 + SW(s, 0, 1)->m * 2 +	 \
+	    SW(s, -1, 0)->m * 2 + SW(s, 0, -1)->m * 2 + SW(s, 1, 1)->m + \
+	    SW(s, 1, -1)->m + SW(s, -1, 1)->m + SW(s, -1, -1)->m) / 14;
 			median(r);
 			median(g);
 			median(b);
 		}
+	}
 
 	remip(a, 0);
 }

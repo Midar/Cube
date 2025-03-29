@@ -38,11 +38,12 @@ computeraytable(float vx, float vy)
 		// try to avoid tracing ray if outside of frustrum
 		// apitch must be bigger if fov > 120
 		if ((apitch > 45 || (angle < byaw && angle > syaw) ||
-		        (angle < byaw - PI2 && angle > syaw - PI2) ||
-		        (angle < byaw + PI2 && angle > syaw + PI2)) &&
+		    (angle < byaw - PI2 && angle > syaw - PI2) ||
+		    (angle < byaw + PI2 && angle > syaw + PI2)) &&
 		    !OUTBORD(vx, vy) && !SOLID(S((int)vx, (int)vy))) {
 			float ray = i * 8 / (float)NUMRAYS;
 			float dx, dy;
+
 			if (ray > 1 && ray < 3) {
 				dx = -(ray - 2);
 				dy = 1;
@@ -56,6 +57,7 @@ computeraytable(float vx, float vy)
 				dx = 1;
 				dy = ray > 4 ? ray - 8 : ray;
 			}
+
 			float sx = vx;
 			float sy = vy;
 			for (;;) {
@@ -125,60 +127,64 @@ isoccluded(float vx, float vy, float cx, float cy,
 	// below
 
 	float h, l;
-	if (cx <= vx) // ABDFG
-	{
-		if (cx + csize < vx) // ADF
-		{
-			if (cy <= vy) // AD
-			{
+	if (cx <= vx) {
+		// ABDFG
+		if (cx + csize < vx) {
+			// ADF
+			if (cy <= vy) {
+				// AD
 				if (cy + csize < vy) {
+					// A
 					h = ca(-(cx - vx), -(cy + csize - vy)) +
 					    4;
 					l = ca(-(cx + csize - vx), -(cy - vy)) +
 					    4;
-				} // A
-				else {
+				} else {
+					// D
 					h = ma(-(cx + csize - vx),
-					        -(cy + csize - vy)) +
-					    4;
-					l = ma(-(cx + csize - vx), -(cy - vy)) +
-					    4;
-				} // D
+					    -(cy + csize - vy)) + 4;
+					l = ma(-(cx + csize - vx),
+					    -(cy - vy)) + 4;
+				}
 			} else {
+				// F
 				h = ca(cy + csize - vy, -(cx + csize - vx)) + 2;
 				l = ca(cy - vy, -(cx - vx)) + 2;
-			} // F
-		} else { // BG
+			}
+		} else {
+			// BG
 			if (cy <= vy) {
 				if (cy + csize < vy) {
+					// B
 					h = ma(-(cy + csize - vy), cx - vx) + 6;
 					l = ma(-(cy + csize - vy),
-					        cx + csize - vx) +
-					    6;
-				} // B
-				else
+					    cx + csize - vx) + 6;
+				} else
 					return 0;
 			} else {
+				// G
 				h = ma(cy - vy, -(cx + csize - vx)) + 2;
 				l = ma(cy - vy, -(cx - vx)) + 2;
-			} // G
+			}
 		}
-	} else // CEH
-	{
-		if (cy <= vy) // CE
-		{
+	} else {
+		// CEH
+		if (cy <= vy) {
+			// CE
 			if (cy + csize < vy) {
+				// C
 				h = ca(-(cy - vy), cx - vx) + 6;
 				l = ca(-(cy + csize - vy), cx + csize - vx) + 6;
-			} // C
-			else {
+			} else {
+				// E
 				h = ma(cx - vx, cy - vy);
 				l = ma(cx - vx, cy + csize - vy);
-			} // E
+			}
 		} else {
+			// H
 			h = ca(cx + csize - vx, cy - vy);
 			l = ca(cx - vx, cy + csize - vy);
-		} // H
+		}
 	}
 	// get indexes into occlusion map from angles
 	int si = h * (NUMRAYS / 8) + NUMRAYS;
@@ -186,12 +192,11 @@ isoccluded(float vx, float vy, float cx, float cy,
 	if (ei <= si)
 		ei += NUMRAYS;
 
-	for (int i = si; i <= ei; i++) {
+	for (int i = si; i <= ei; i++)
 		if (dist < rdist[i & (NUMRAYS - 1)])
 			// if any value in this segment of the occlusion map is
 			// further away then cube is not occluded
 			return 0;
-	}
 
 	return 1; // cube is entirely occluded
 }

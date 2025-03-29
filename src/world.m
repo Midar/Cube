@@ -161,8 +161,7 @@ remip(const struct block *b, int level)
 								// next to hfs
 								fh -=
 								    o[i]->vdelta /
-								        4 +
-								    2;
+								    4 + 2;
 							if (o[i]->type == CHF)
 								// FIXME: needs
 								// to somehow
@@ -173,8 +172,7 @@ remip(const struct block *b, int level)
 								// higher mips
 								ch +=
 								    o[i]->vdelta /
-								        4 +
-								    2;
+								    4 + 2;
 						}
 						if (fh < floor)
 							// take lowest floor and
@@ -214,11 +212,11 @@ remip(const struct block *b, int level)
 					    o[i]->ftex != o[3]->ftex ||
 					    o[i]->ctex != o[3]->ctex ||
 					    abs(o[i + 1]->r - o[0]->r) >
-					        lighterr ||
+					    lighterr ||
 					    abs(o[i + 1]->g - o[0]->g) >
-					        lighterr ||
+					    lighterr ||
 					    abs(o[i + 1]->b - o[0]->b) >
-					        lighterr ||
+					    lighterr ||
 					    o[i]->utex != o[3]->utex ||
 					    o[i]->wtex != o[3]->wtex)
 						goto c;
@@ -228,25 +226,20 @@ remip(const struct block *b, int level)
 				// lie on one line
 				if (r->type == CHF || r->type == FHF) {
 					if (o[0]->vdelta - o[1]->vdelta !=
-					        o[1]->vdelta -
-					            SWS(w, x + 2, y, ws)
-					                ->vdelta ||
+					    o[1]->vdelta -
+					    SWS(w, x + 2, y, ws)->vdelta ||
 					    o[0]->vdelta - o[2]->vdelta !=
-					        o[2]->vdelta -
-					            SWS(w, x + 2, y + 2, ws)
-					                ->vdelta ||
+					    o[2]->vdelta -
+					    SWS(w, x + 2, y + 2, ws)->vdelta ||
 					    o[0]->vdelta - o[3]->vdelta !=
-					        o[3]->vdelta -
-					            SWS(w, x, y + 2, ws)
-					                ->vdelta ||
+					    o[3]->vdelta -
+					    SWS(w, x, y + 2, ws)->vdelta ||
 					    o[3]->vdelta - o[2]->vdelta !=
-					        o[2]->vdelta -
-					            SWS(w, x + 2, y + 1, ws)
-					                ->vdelta ||
+					    o[2]->vdelta -
+					    SWS(w, x + 2, y + 1, ws)->vdelta ||
 					    o[1]->vdelta - o[2]->vdelta !=
-					        o[2]->vdelta -
-					            SWS(w, x + 1, y + 2, ws)
-					                ->vdelta)
+					    o[2]->vdelta -
+					    SWS(w, x + 1, y + 2, ws)->vdelta)
 						goto c;
 				}
 			}

@@ -127,11 +127,9 @@ VARP(minmillis, 0, 5, 1000);
 		log(@"video: mode");
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		if ((_window = SDL_CreateWindow("cube engine",
-		         SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		         _width, _height,
-		         SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
-		             (!windowed ? SDL_WINDOW_FULLSCREEN : 0))) ==
-		        NULL ||
+		    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+		    _width, _height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
+		    (!windowed ? SDL_WINDOW_FULLSCREEN : 0))) == NULL ||
 		    SDL_GL_CreateContext(_window) == NULL)
 			fatal(@"Unable to create OpenGL screen");
 
@@ -244,8 +242,8 @@ VARP(minmillis, 0, 5, 1000);
 					if (_repeatsKeys ||
 					    event.key.repeat == 0)
 						keypress(event.key.keysym.sym,
-						    event.key.state ==
-						        SDL_PRESSED);
+						    (event.key.state ==
+						    SDL_PRESSED));
 					break;
 				case SDL_TEXTINPUT:
 					input(@(event.text.text));
@@ -305,19 +303,17 @@ VARP(minmillis, 0, 5, 1000);
 	SDL_Surface *temp;
 
 	if ((image = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height, 24,
-	         0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
+	    0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
 		if ((temp = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height,
-		         24, 0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
+		    24, 0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
 			glReadPixels(0, 0, _width, _height, GL_RGB,
 			    GL_UNSIGNED_BYTE, image->pixels);
 
 			for (int idx = 0; idx < _height; idx++) {
 				char *dest =
 				    (char *)temp->pixels + 3 * _width * idx;
-				memcpy(dest,
-				    (char *)image->pixels +
-				        3 * _width * (_height - 1 - idx),
-				    3 * _width);
+				memcpy(dest, (char *)image->pixels + 3 *
+				    _width * (_height - 1 - idx), 3 * _width);
 				endianswap(dest, 3, _width);
 			}
 
@@ -347,7 +343,7 @@ fatal(OFConstantString *s, ...)
 	va_list args;
 	va_start(args, s);
 	OFMutableString *msg = [[OFMutableString alloc] initWithFormat: s
-	                                                     arguments: args];
+							     arguments: args];
 	va_end(args);
 
 	[msg appendFormat: @" (%s)\n", SDL_GetError()];

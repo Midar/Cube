@@ -25,17 +25,17 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 }
 
 + (instancetype)commandWithName: (OFString *)name
-                 argumentsTypes: (int)argumentsTypes
-                          block: (id)block
+		 argumentsTypes: (int)argumentsTypes
+			  block: (id)block
 {
 	return [[self alloc] initWithName: name
-	                   argumentsTypes: argumentsTypes
-	                            block: block];
+			   argumentsTypes: argumentsTypes
+				    block: block];
 }
 
 - (instancetype)initWithName: (OFString *)name
-              argumentsTypes: (int)argumentsTypes
-                       block: (id)block
+	      argumentsTypes: (int)argumentsTypes
+		       block: (id)block
 {
 	self = [super initWithName: name];
 

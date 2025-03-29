@@ -91,7 +91,7 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 	MD2 *m = loadmodel(mdl);
 
 	if (isoccluded(Player.player1.origin.x, Player.player1.origin.y,
-	        position.x - rad, position.z - rad, rad * 2))
+	    position.x - rad, position.z - rad, rad * 2))
 		return;
 
 	delayedload(m);
@@ -109,28 +109,28 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 		float ll = 256.0f; // 0.96f;
 		float of = 0.0f;   // 0.1f;
 		light = [OFColor colorWithRed: s->r / ll + of
-		                        green: s->g / ll + of
-		                         blue: s->b / ll + of
-		                        alpha: 1];
+					green: s->g / ll + of
+					 blue: s->b / ll + of
+					alpha: 1.0f];
 	}
 
 	if (teammate) {
 		float red, green, blue;
 		[light getRed: &red green: &green blue: &blue alpha: NULL];
 		light = [OFColor colorWithRed: red * 0.6f
-		                        green: green * 0.7f
-		                         blue: blue * 1.2f
-		                        alpha: 1];
+					green: green * 0.7f
+					 blue: blue * 1.2f
+					alpha: 1.0f];
 	}
 
 	[m renderWithLight: light
-	             frame: frame
-	             range: range
-	          position: position
-	               yaw: yaw
-	             pitch: pitch
-	             scale: scale
-	             speed: speed
-	              snap: snap
-	          basetime: basetime];
+		     frame: frame
+		     range: range
+		  position: position
+		       yaw: yaw
+		     pitch: pitch
+		     scale: scale
+		     speed: speed
+		      snap: snap
+		  basetime: basetime];
 }

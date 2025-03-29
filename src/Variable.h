@@ -8,13 +8,13 @@ OF_ASSUME_NONNULL_BEGIN
 	OF_CONSTRUCTOR()						\
 	{								\
 		enqueueInit(^ {						\
-			Variable *variable =				\
-			    [Variable variableWithName: @#name		\
-			                           min: min_		\
-			                           max: max_		\
-			                       storage: &name		\
-			                      function: NULL		\
-			                     persisted: true];		\
+			Variable *variable = [Variable			\
+			    variableWithName: @#name			\
+					 min: min_			\
+					 max: max_			\
+				     storage: &name			\
+				    function: NULL			\
+				   persisted: true];			\
 			Identifier.identifiers[@#name] = variable;	\
 		});							\
 	}
@@ -24,13 +24,13 @@ OF_ASSUME_NONNULL_BEGIN
 	OF_CONSTRUCTOR()						\
 	{								\
 		enqueueInit(^ {						\
-			Variable *variable =				\
-			    [Variable variableWithName: @#name		\
-			                           min: min_		\
-			                           max: max_		\
-			                       storage: &name		\
-			                      function: NULL		\
-			                     persisted: false];		\
+			Variable *variable = [Variable			\
+			    variableWithName: @#name			\
+					 min: min_			\
+					 max: max_			\
+				     storage: &name			\
+				    function: NULL			\
+				   persisted: false];			\
 			Identifier.identifiers[@#name] = variable;	\
 		});							\
 	}
@@ -41,13 +41,13 @@ OF_ASSUME_NONNULL_BEGIN
 	OF_CONSTRUCTOR()						\
 	{								\
 		enqueueInit(^ {						\
-			Variable *variable =				\
-			    [Variable variableWithName: @#name		\
-			                           min: min_		\
-			                           max: max_		\
-			                       storage: &name		\
-			                      function: var_##name	\
-			                     persisted: false];		\
+			Variable *variable = [Variable			\
+			    variableWithName: @#name			\
+					 min: min_			\
+					 max: max_			\
+				     storage: &name			\
+				    function: var_##name		\
+				   persisted: false];			\
 			Identifier.identifiers[@#name] = variable;	\
 		});							\
 	}								\
@@ -64,13 +64,13 @@ OF_ASSUME_NONNULL_BEGIN
 	OF_CONSTRUCTOR()						\
 	{								\
 		enqueueInit(^ {						\
-			Variable *variable =				\
-			    [Variable variableWithName: @#name		\
-			                           min: min_		\
-			                           max: max_		\
-			                       storage: &name		\
-			                      function: var_##name	\
-			                     persisted: true];		\
+			Variable *variable = [Variable			\
+			variableWithName: @#name			\
+				     min: min_				\
+				     max: max_				\
+				 storage: &name				\
+				function: var_##name			\
+			       persisted: true];			\
 			Identifier.identifiers[@#name] = variable;	\
 		});							\
 	}								\
@@ -88,18 +88,18 @@ OF_ASSUME_NONNULL_BEGIN
 @property (readonly, nonatomic) bool persisted;
 
 + (instancetype)variableWithName: (OFString *)name
-                             min: (int)min
-                             max: (int)max
-                         storage: (int *)storage
-                        function: (void (*_Nullable)())function
-                       persisted: (bool)persisted OF_DIRECT;
+			     min: (int)min
+			     max: (int)max
+			 storage: (int *)storage
+			function: (void (*_Nullable)())function
+		       persisted: (bool)persisted OF_DIRECT;
 - (instancetype)initWithName: (OFString *)name OF_UNAVAILABLE;
 - (instancetype)initWithName: (OFString *)name
-                         min: (int)min
-                         max: (int)max
-                     storage: (int *)storage
-                    function: (void (*_Nullable)())function
-                   persisted: (bool)persisted OF_DESIGNATED_INITIALIZER
+			 min: (int)min
+			 max: (int)max
+		     storage: (int *)storage
+		    function: (void (*_Nullable)())function
+		   persisted: (bool)persisted OF_DESIGNATED_INITIALIZER
     OF_DIRECT;
 - (void)printValue OF_DIRECT;
 - (void)setValue: (int)value OF_DIRECT;

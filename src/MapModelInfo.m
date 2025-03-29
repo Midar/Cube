@@ -2,10 +2,10 @@
 
 @implementation MapModelInfo
 + (instancetype)infoWithRad: (int)rad
-                          h: (int)h
-                       zoff: (int)zoff
-                       snap: (int)snap
-                       name: (OFString *)name
+			  h: (int)h
+		       zoff: (int)zoff
+		       snap: (int)snap
+		       name: (OFString *)name
 {
 	return [[self alloc] initWithRad: rad
 				       h: h
@@ -15,10 +15,10 @@
 }
 
 - (instancetype)initWithRad: (int)rad
-                          h: (int)h
-                       zoff: (int)zoff
-                       snap: (int)snap
-                       name: (OFString *)name
+			  h: (int)h
+		       zoff: (int)zoff
+		       snap: (int)snap
+		       name: (OFString *)name
 {
 	self = [super init];
 

@@ -51,11 +51,10 @@ renderentities()
 			if (mmi == nil)
 				continue;
 			rendermodel(mmi.name, 0, 1, e.attr4, (float)mmi.rad,
-			    OFMakeVector3D(e.x,
-			        (float)S(e.x, e.y)->floor + mmi.zoff + e.attr3,
-			        e.y),
-			    (float)((e.attr1 + 7) - (e.attr1 + 7) % 15), 0,
-			    false, 1.0f, 10.0f, mmi.snap, 0);
+			    OFMakeVector3D(e.x, (float)S(e.x, e.y)->floor +
+			    mmi.zoff + e.attr3, e.y), (float)((e.attr1 + 7) -
+			    (e.attr1 + 7) % 15), 0, false, 1.0f, 10.0f,
+			    mmi.snap, 0);
 		} else {
 			if (OUTBORD(e.x, e.y))
 				continue;
@@ -65,10 +64,9 @@ renderentities()
 				if (e.type < I_SHELLS || e.type > TELEPORT)
 					continue;
 				renderent(e, entmdlnames[e.type - I_SHELLS],
-				    (float)(1 +
-				        sin(lastmillis / 100.0 + e.x + e.y) /
-				            20),
-				    lastmillis / 10.0f, 0, 1, 0, 10.0f);
+				    (float)(1 + sin(lastmillis / 100.0 + e.x +
+				    e.y) / 20), lastmillis / 10.0f, 0, 1, 0,
+				    10.0f);
 			} else {
 				switch (e.attr2) {
 				case 1:
@@ -79,32 +77,26 @@ renderentities()
 				case 0:
 					if (!e.spawned)
 						continue;
-					renderent(e, @"carrot",
-					    (float)(1 +
-					        sin(lastmillis / 100.0 + e.x +
-					            e.y) /
-					            20),
-					    lastmillis /
-					        (e.attr2 ? 1.0f : 10.0f),
-					    0, 1, 0, 10.0f);
+					renderent(e, @"carrot", (float)(1 +
+					    sin(lastmillis / 100.0 + e.x +
+					    e.y) / 20), lastmillis / (e.attr2 ?
+					    1.0f : 10.0f), 0, 1, 0, 10.0f);
 					break;
 
 				case 4:
 					renderent(e, @"switch2", 3,
 					    (float)e.attr3 * 90,
-					    (!e.spawned && !triggertime) ? 1
-					                                 : 0,
-					    (e.spawned || !triggertime) ? 1 : 2,
-					    triggertime, 1050.0f);
+					    (!e.spawned && !triggertime) ?
+					    1 : 0, (e.spawned || !triggertime) ?
+					    1 : 2, triggertime, 1050.0f);
 					break;
 				case 5:
 					renderent(e, @"switch1", -0.15f,
 					    (float)e.attr3 * 90,
-					    (!e.spawned && !triggertime) ? 30
-					                                 : 0,
-					    (e.spawned || !triggertime) ? 1
-					                                : 30,
-					    triggertime, 35.0f);
+					    (!e.spawned && !triggertime) ?
+					    30 : 0, (e.spawned ||
+					    !triggertime) ? 1 : 30, triggertime,
+					    35.0f);
 					break;
 				}
 			}

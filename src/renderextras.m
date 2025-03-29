@@ -206,12 +206,11 @@ renderents()
 	int e = closestent();
 	if (e >= 0) {
 		Entity *c = ents[e];
-		closeent =
-		    [OFString stringWithFormat:
-			@"closest entity = %@ (%d, %d, %d, %d), "
-			@"selection = (%d, %d)",
-		        entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
-		        getvar(@"selxs"), getvar(@"selys")];
+		closeent = [OFString stringWithFormat:
+		    @"closest entity = %@ (%d, %d, %d, %d), "
+		    @"selection = (%d, %d)",
+		    entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
+		    getvar(@"selxs"), getvar(@"selys")];
 	}
 }
 
@@ -219,7 +218,7 @@ COMMAND(loadsky, ARG_1STR, (^ (OFString *basename) {
 	static OFString *lastsky = @"";
 
 	basename = [basename stringByReplacingOccurrencesOfString: @"\\"
-	                                               withString: @"/"];
+						       withString: @"/"];
 
 	if ([lastsky isEqual: basename])
 		return;

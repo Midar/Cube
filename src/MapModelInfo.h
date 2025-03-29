@@ -8,16 +8,16 @@ OF_DIRECT_MEMBERS
 @property (copy, nonatomic) OFString *name;
 
 + (instancetype)infoWithRad: (int)rad
-                          h: (int)h
-                       zoff: (int)zoff
-                       snap: (int)snap
-                       name: (OFString *)name;
+			  h: (int)h
+		       zoff: (int)zoff
+		       snap: (int)snap
+		       name: (OFString *)name;
 - (instancetype)init OF_UNAVAILABLE;
 - (instancetype)initWithRad: (int)rad
-                          h: (int)h
-                       zoff: (int)zoff
-                       snap: (int)snap
-                       name: (OFString *)name;
+			  h: (int)h
+		       zoff: (int)zoff
+		       snap: (int)snap
+		       name: (OFString *)name;
 @end
 
 OF_ASSUME_NONNULL_END

@@ -2,17 +2,17 @@
 
 @implementation Alias
 + (instancetype)aliasWithName: (OFString *)name
-                       action: (OFString *)action
-                    persisted: (bool)persisted;
+		       action: (OFString *)action
+		    persisted: (bool)persisted;
 {
 	return [[self alloc] initWithName: name
-	                           action: action
-	                        persisted: persisted];
+				   action: action
+				persisted: persisted];
 }
 
 - (instancetype)initWithName: (OFString *)name
-                      action: (OFString *)action
-                   persisted: (bool)persisted
+		      action: (OFString *)action
+		   persisted: (bool)persisted
 {
 	self = [super initWithName: name];
 

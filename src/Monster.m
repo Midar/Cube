@@ -23,16 +23,16 @@ static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
 }
 
 + (instancetype)monsterWithType: (int)type
-                            yaw: (int)yaw
-                          state: (int)state
-                        trigger: (int)trigger
-                           move: (int)move
+			    yaw: (int)yaw
+			  state: (int)state
+			trigger: (int)trigger
+			   move: (int)move
 {
 	return [[self alloc] initWithType: type
-	                              yaw: yaw
-	                            state: state
-	                          trigger: trigger
-	                             move: move];
+				      yaw: yaw
+				    state: state
+				  trigger: trigger
+				     move: move];
 }
 
 VARF(skill, 1, 3, 10, conoutf(@"skill is now %d", skill));
@@ -76,10 +76,10 @@ monstertypes[NUMMONSTERTYPES] = {
 };
 
 - (instancetype)initWithType: (int)type
-                         yaw: (int)yaw
-                       state: (int)state
-                     trigger: (int)trigger
-                        move: (int)move
+			 yaw: (int)yaw
+		       state: (int)state
+		     trigger: (int)trigger
+			move: (int)move
 {
 	self = [super init];
 
@@ -172,10 +172,10 @@ spawnmonster() // spawn a random monster according to freq distribution in DMSP
 				continue;
 
 			Monster *m = [Monster monsterWithType: e.attr2
-			                                  yaw: e.attr1
-			                                state: M_SLEEP
-			                              trigger: 100
-			                                 move: 0];
+							  yaw: e.attr1
+							state: M_SLEEP
+						      trigger: 100
+							 move: 0];
 			m.origin = OFMakeVector3D(e.x, e.y, e.z);
 			[monsters addObject: m];
 			entinmap(m);
@@ -289,16 +289,14 @@ enemylos(Monster *m, OFVector3D *v)
 			// patented "random walk" AI pathfinding (tm) ;)
 			self.targetYaw += 180 + rnd(180);
 			[self transitionWithState: M_SEARCH
-			                   moving: 1
-			                        n: 400
-			                        r: 1000];
+					   moving: 1
+						n: 400
+						r: 1000];
 		}
 	}
 
 	float enemyYaw = -(float)atan2(self.enemy.origin.x - self.origin.x,
-	                     self.enemy.origin.y - self.origin.y) /
-	        PI * 180 +
-	    180;
+	    self.enemy.origin.y - self.origin.y) / PI * 180 + 180;
 
 	switch (self.monsterState) {
 	case M_PAIN:
@@ -311,17 +309,16 @@ enemylos(Monster *m, OFVector3D *v)
 						r: 200];
 		break;
 
-	case M_SLEEP: // state classic sp monster start in, wait for visual
-	              // contact
-	{
+		// state classic sp monster start in, wait for visual contact
+	case M_SLEEP: {
 		OFVector3D target;
 		if (editmode || !enemylos(self, &target))
 			return; // skip running physics
 		[self normalizeWithAngle: enemyYaw];
 		float angle = (float)fabs(enemyYaw - self.yaw);
-		if (disttoenemy < 8 // the better the angle to the player, the
-		                    // further the monster can see/hear
-		    || (disttoenemy < 16 && angle < 135) ||
+		// the better the angle to the player, the further the monster
+		// can see/hear
+		if (disttoenemy < 8 || (disttoenemy < 16 && angle < 135) ||
 		    (disttoenemy < 32 && angle < 90) ||
 		    (disttoenemy < 64 && angle < 45) || angle < 10) {
 			[self transitionWithState: M_HOME
@@ -342,9 +339,9 @@ enemylos(Monster *m, OFVector3D *v)
 			self.attacking = true;
 			shoot(self, self.attackTarget);
 			[self transitionWithState: M_ATTACKING
-			                   moving: 0
-			                        n: 600
-			                        r: 0];
+					   moving: 0
+						n: 600
+						r: 0];
 		}
 		break;
 
@@ -358,9 +355,9 @@ enemylos(Monster *m, OFVector3D *v)
 				// no visual contact anymore, let monster get
 				// as close as possible then search for player
 				[self transitionWithState: M_HOME
-				                   moving: 1
-				                        n: 800
-				                        r: 500];
+						   moving: 1
+							n: 800
+							r: 500];
 			} else {
 				// the closer the monster is the more likely he
 				// wants to shoot
@@ -371,17 +368,17 @@ enemylos(Monster *m, OFVector3D *v)
 					int n =
 					    monstertypes[self.monsterType].lag;
 					[self transitionWithState: M_AIMING
-					                   moving: 0
-					                        n: n
-					                        r: 10];
+							   moving: 0
+								n: n
+								r: 10];
 				} else {
 					// track player some more
 					int n =
 					    monstertypes[self.monsterType].rate;
 					[self transitionWithState: M_HOME
-					                   moving: 1
-					                        n: n
-					                        r: 0];
+							   moving: 1
+								n: n
+								r: 0];
 				}
 			}
 		}
@@ -401,9 +398,8 @@ enemylos(Monster *m, OFVector3D *v)
 		if (self != m) {
 			// don't attack straight away, first get angry
 			self.anger++;
-			int anger =
-			    (self.monsterType == m.monsterType ? self.anger / 2
-			                                       : self.anger);
+			int anger = (self.monsterType == m.monsterType
+			    ? self.anger / 2 : self.anger);
 			if (anger >= monstertypes[self.monsterType].loyalty)
 				// monster infight if very angry
 				self.enemy = m;
@@ -416,9 +412,9 @@ enemylos(Monster *m, OFVector3D *v)
 
 	// in this state monster won't attack
 	[self transitionWithState: M_PAIN
-	                   moving: 0
-	                        n: monstertypes[self.monsterType].pain
-	                        r: 200];
+			   moving: 0
+				n: monstertypes[self.monsterType].pain
+				r: 200];
 
 	if ((self.health -= damage) <= 0) {
 		self.state = CS_DEAD;
@@ -438,8 +434,8 @@ enemylos(Monster *m, OFVector3D *v)
 
 + (void)endSinglePlayerWithAllKilled: (bool)allKilled
 {
-	conoutf(allKilled ? @"you have cleared the map!"
-	                  : @"you reached the exit!");
+	conoutf(allKilled
+	    ? @"you have cleared the map!" : @"you reached the exit!");
 	conoutf(@"score: %d kills in %d seconds", numkilled,
 	    (lastmillis - mtimestart) / 1000);
 	monstertotal = 0;

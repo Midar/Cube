@@ -140,7 +140,7 @@ draw_textf(OFConstantString *format, int left, int top, int gl_num, ...)
 	va_list arguments;
 	va_start(arguments, gl_num);
 	OFString *str = [[OFString alloc] initWithFormat: format
-	                                       arguments: arguments];
+					       arguments: arguments];
 	va_end(arguments);
 	draw_text(str, left, top, gl_num);
 }

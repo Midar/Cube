@@ -164,9 +164,9 @@ loadstate(OFIRI *IRI)
 	if (strncmp(buf, "CUBESAVE", 8))
 		goto out;
 	if (gzgetc(f) != islittleendian)
-		goto out; // not supporting save->load accross
-		          // incompatible architectures simpifies things
-		          // a LOT
+		// not supporting save->load accross incompatible architectures
+		// simpifies things a LOT
+		goto out;
 	if (gzgeti() != SAVEGAMEVERSION ||
 	    gzgeti() != DynamicEntity.serializedSize)
 		goto out;
@@ -178,7 +178,7 @@ loadstate(OFIRI *IRI)
 	return;
 out:
 	conoutf(@"aborting: savegame/demo from a different version of "
-	        @"cube or cpu architecture");
+	    @"cube or cpu architecture");
 	stop();
 }
 
@@ -195,7 +195,7 @@ loadgameout()
 {
 	stop();
 	conoutf(@"loadgame incomplete: savegame from a different version of "
-	        @"this map");
+	    @"this map");
 }
 
 void
@@ -381,24 +381,24 @@ startdemo()
 VAR(demodelaymsec, 0, 120, 500);
 
 // spline interpolation
-#define catmulrom(z, a, b, c, s, dest)                                  \
-	{                                                               \
-		OFVector3D t1 = OFSubtractVectors3D(b, z);              \
-		t1 = OFMultiplyVector3D(t1, 0.5f);                      \
-                                                                        \
-		OFVector3D t2 = OFSubtractVectors3D(c, a);              \
-		t2 = OFMultiplyVector3D(t2, 0.5f);                      \
-                                                                        \
-		float s2 = s * s;                                       \
-		float s3 = s * s2;                                      \
-                                                                        \
+#define catmulrom(z, a, b, c, s, dest)					\
+	{								\
+		OFVector3D t1 = OFSubtractVectors3D(b, z);		\
+		t1 = OFMultiplyVector3D(t1, 0.5f);			\
+									\
+		OFVector3D t2 = OFSubtractVectors3D(c, a);		\
+		t2 = OFMultiplyVector3D(t2, 0.5f);			\
+									\
+		float s2 = s * s;					\
+		float s3 = s * s2;					\
+									\
 		dest = OFMultiplyVector3D(a, 2 * s3 - 3 * s2 + 1);      \
 		OFVector3D t = OFMultiplyVector3D(b, -2 * s3 + 3 * s2); \
-		dest = OFAddVectors3D(dest, t);                         \
-		t1 = OFMultiplyVector3D(t1, s3 - 2 * s2 + s);           \
-		dest = OFAddVectors3D(dest, t1);                        \
-		t2 = OFMultiplyVector3D(t2, s3 - s2);                   \
-		dest = OFAddVectors3D(dest, t2);                        \
+		dest = OFAddVectors3D(dest, t);				\
+		t1 = OFMultiplyVector3D(t1, s3 - 2 * s2 + s);		\
+		dest = OFAddVectors3D(dest, t1);			\
+		t2 = OFMultiplyVector3D(t2, s3 - s2);			\
+		dest = OFAddVectors3D(dest, t2);			\
 	}
 
 void
@@ -453,9 +453,8 @@ demoplaybackstep()
 		}
 
 		// insert latest copy of player into history
-		if (extras &&
-		    (playerhistory.count == 0 ||
-		        playerhistory.lastObject.lastUpdate != playbacktime)) {
+		if (extras && (playerhistory.count == 0 ||
+		    playerhistory.lastObject.lastUpdate != playbacktime)) {
 			Player *d = [target copy];
 			d.lastUpdate = playbacktime;
 

@@ -57,14 +57,14 @@ COMMAND(music, ARG_1STR, (^ (OFString *name) {
 
 	if (soundvol && musicvol) {
 		name = [name stringByReplacingOccurrencesOfString: @"\\"
-		                                       withString: @"/"];
+						       withString: @"/"];
 		OFString *path = [OFString stringWithFormat:
 		    @"packages/%@", name];
 		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
 		    IRIByAppendingPathComponent: path];
 
 		if ((mod = Mix_LoadMUS(
-		         IRI.fileSystemRepresentation.UTF8String)) != NULL) {
+		    IRI.fileSystemRepresentation.UTF8String)) != NULL) {
 			Mix_PlayMusic(mod, -1);
 			Mix_VolumeMusic((musicvol * MAXVOL) / 255);
 		}

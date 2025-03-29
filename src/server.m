@@ -399,10 +399,10 @@ resetserverifempty()
 int nonlocalclients = 0;
 int lastconnect = 0;
 
+// main server update, called from cube main loop in sp, or dedicated server
+// loop
 void
-serverslice(int seconds,
-    unsigned int timeout) // main server update, called from cube main loop in
-                          // sp, or dedicated server loop
+serverslice(int seconds, unsigned int timeout)
 {
 	// spawn entities when timer reached
 	[sents enumerateObjectsUsingBlock:
@@ -472,9 +472,8 @@ serverslice(int seconds,
 			c.peer->data = (void *)(clients.count - 1);
 			char hn[1024];
 			c.hostname = (enet_address_get_host(
-			                  &c.peer->address, hn, sizeof(hn)) == 0
-			        ? @(hn)
-			        : @"localhost");
+			    &c.peer->address, hn, sizeof(hn)) == 0
+			    ? @(hn) : @"localhost");
 			[OFStdOut writeFormat: @"client connected (%@)\n",
 					       c.hostname];
 			send_welcome(lastconnect = clients.count - 1);

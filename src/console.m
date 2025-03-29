@@ -62,7 +62,7 @@ conoutf(OFConstantString *format, ...)
 	va_start(arguments, format);
 
 	OFString *string = [[OFString alloc] initWithFormat: format
-	                                          arguments: arguments];
+						  arguments: arguments];
 
 	va_end(arguments);
 
@@ -83,8 +83,8 @@ renderconsole()
 
 	size_t i = 0;
 	for (ConsoleLine *conline in conlines) {
-		if (conskip ? i >= conskip - 1 || i >= conlines.count - ndraw
-		            : lastmillis - conline.outtime < 20000) {
+		if (conskip ? i >= conskip - 1 || i >= conlines.count - ndraw :
+		    lastmillis - conline.outtime < 20000) {
 			refs[nd++] = conline.text;
 			if (nd == ndraw)
 				break;
@@ -107,7 +107,7 @@ COMMAND(keymap, ARG_3STR, ^ (OFString *code, OFString *key, OFString *action) {
 		keyMappings = [[OFMutableArray alloc] init];
 
 	KeyMapping *mapping = [KeyMapping mappingWithCode: code.cube_intValue
-	                                             name: key];
+						     name: key];
 	mapping.action = action;
 	[keyMappings addObject: mapping];
 })
@@ -185,8 +185,8 @@ keypress(int code, bool isDown)
 			case SDLK_LEFT:
 				if (commandbuf.length > 0)
 					[commandbuf deleteCharactersInRange:
-					        OFMakeRange(
-					            commandbuf.length - 1, 1)];
+					    OFMakeRange(
+					    commandbuf.length - 1, 1)];
 
 				resetcomplete();
 				break;
@@ -221,9 +221,8 @@ keypress(int code, bool isDown)
 			if (code == SDLK_RETURN) {
 				if (commandbuf.length > 0) {
 					if (vhistory == nil)
-						vhistory =
-						    [[OFMutableArray alloc]
-						        init];
+						vhistory = [[OFMutableArray
+						    alloc] init];
 
 					if (vhistory.count == 0 ||
 					    ![vhistory.lastObject isEqual:

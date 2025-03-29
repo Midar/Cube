@@ -15,8 +15,8 @@
 
 // collide with player or monster
 static bool
-plcollide(
-    DynamicEntity *d, DynamicEntity *o, float *headspace, float *hi, float *lo)
+plcollide(DynamicEntity *d, DynamicEntity *o, float *headspace, float *hi,
+    float *lo)
 {
 	if (o.state != CS_ALIVE)
 		return true;
@@ -125,22 +125,15 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 				return false;
 			case CORNER: {
 				int bx = x, by = y, bs = 1;
-				if ((x == x1 && y == y1 &&
-				        cornertest(
-				            0, x, y, -1, -1, &bx, &by, &bs) &&
-				        fx1 - bx + fy1 - by <= bs) ||
-				    (x == x2 && y == y1 &&
-				        cornertest(
-				            0, x, y, 1, -1, &bx, &by, &bs) &&
-				        fx2 - bx >= fy1 - by) ||
-				    (x == x1 && y == y2 &&
-				        cornertest(
-				            0, x, y, -1, 1, &bx, &by, &bs) &&
-				        fx1 - bx <= fy2 - by) ||
-				    (x == x2 && y == y2 &&
-				        cornertest(
-				            0, x, y, 1, 1, &bx, &by, &bs) &&
-				        fx2 - bx + fy2 - by >= bs))
+				if ((x == x1 && y == y1 && cornertest(0, x, y,
+				    -1, -1, &bx, &by, &bs) && fx1 - bx + fy1 -
+				    by <= bs) || (x == x2 && y == y1 &&
+				    cornertest(0, x, y, 1, -1, &bx, &by, &bs) &&
+				    fx2 - bx >= fy1 - by) || (x == x1 && y ==
+				    y2 && cornertest(0, x, y, -1, 1, &bx, &by,
+				    &bs) && fx1 - bx <= fy2 - by) || (x == x2 &&
+				    y == y2 && cornertest(0, x, y, 1, 1, &bx,
+				    &by, &bs) && fx2 - bx + fy2 - by >= bs))
 					return false;
 				break;
 			}
@@ -148,15 +141,13 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 			// it feels like tiny stairs
 			case FHF:
 				floor -= (s->vdelta + S(x + 1, y)->vdelta +
-				             S(x, y + 1)->vdelta +
-				             S(x + 1, y + 1)->vdelta) /
-				    16.0f;
+				    S(x, y + 1)->vdelta +
+				    S(x + 1, y + 1)->vdelta) / 16.0f;
 				break;
 			case CHF:
 				ceil += (s->vdelta + S(x + 1, y)->vdelta +
-				            S(x, y + 1)->vdelta +
-				            S(x + 1, y + 1)->vdelta) /
-				    16.0f;
+				    S(x, y + 1)->vdelta +
+				    S(x + 1, y + 1)->vdelta) / 16.0f;
 			}
 
 			if (ceil < hi)
@@ -214,9 +205,8 @@ collide(DynamicEntity *d, bool spawn, float drop, float rise)
 				return false;
 		} else
 			// gravity
-			d.origin = OFSubtractVectors3D(d.origin,
-			    OFMakeVector3D(
-			        0, 0, min(min(drop, space), headspace)));
+			d.origin = OFSubtractVectors3D(d.origin, OFMakeVector3D(
+			    0, 0, min(min(drop, space), headspace)));
 
 		const float space2 = hi - (d.origin.z + d.aboveEye);
 		if (space2 < 0) {
@@ -407,11 +397,10 @@ moveplayer4(DynamicEntity *pl, int moveres, bool local, int curtime)
 		pl.outsideMap = true;
 	else {
 		struct sqr *s = S((int)pl.origin.x, (int)pl.origin.y);
-		pl.outsideMap = SOLID(s) ||
-		    pl.origin.z <
-		        s->floor - (s->type == FHF ? s->vdelta / 4 : 0) ||
-		    pl.origin.z >
-		        s->ceil + (s->type == CHF ? s->vdelta / 4 : 0);
+		pl.outsideMap = (SOLID(s) || pl.origin.z < s->floor -
+		    (s->type == FHF ? s->vdelta / 4 : 0) ||
+		    pl.origin.z > s->ceil + (s->type == CHF
+		    ? s->vdelta / 4 : 0));
 	}
 
 	// automatically apply smooth roll when strafing
@@ -443,8 +432,6 @@ void
 moveplayer(DynamicEntity *pl, int moveres, bool local)
 {
 	for (int i = 0; i < physicsrepeat; i++)
-		moveplayer4(pl, moveres, local,
-		    i ? curtime / physicsrepeat
-		      : curtime -
-		            curtime / physicsrepeat * (physicsrepeat - 1));
+		moveplayer4(pl, moveres, local, i ? curtime / physicsrepeat
+		    : curtime - curtime / physicsrepeat * (physicsrepeat - 1));
 }

@@ -4,26 +4,26 @@
 
 @implementation Variable
 + (instancetype)variableWithName: (OFString *)name
-                             min: (int)min
-                             max: (int)max
-                         storage: (int *)storage
-                        function: (void (*__cdecl)())function
-                       persisted: (bool)persisted
+			     min: (int)min
+			     max: (int)max
+			 storage: (int *)storage
+			function: (void (*__cdecl)())function
+		       persisted: (bool)persisted
 {
 	return [[self alloc] initWithName: name
-	                              min: min
-	                              max: max
-	                          storage: storage
-	                         function: function
-	                        persisted: persisted];
+				      min: min
+				      max: max
+				  storage: storage
+				 function: function
+				persisted: persisted];
 }
 
 - (instancetype)initWithName: (OFString *)name
-                         min: (int)min
-                         max: (int)max
-                     storage: (int *)storage
-                    function: (void (*__cdecl)())function
-                   persisted: (bool)persisted
+			 min: (int)min
+			 max: (int)max
+		     storage: (int *)storage
+		    function: (void (*__cdecl)())function
+		   persisted: (bool)persisted
 {
 	self = [super initWithName: name];
 

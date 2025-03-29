@@ -69,7 +69,7 @@ snap(int sn, float f)
 	@try {
 		stream = (OFSeekableStream *)[[OFIRIHandler handlerForIRI: IRI]
 		    openItemAtIRI: IRI
-		             mode: @"r"];
+			     mode: @"r"];
 	} @catch (id e) {
 		return false;
 	}
@@ -92,7 +92,7 @@ snap(int sn, float f)
 
 	[stream seekToOffset: header.offsetFrames whence: OFSeekSet];
 	[stream readIntoBuffer: _frames
-	           exactLength: header.frameSize * header.numFrames];
+		   exactLength: header.frameSize * header.numFrames];
 
 	for (int i = 0; i < header.numFrames; ++i)
 		endianswap(_frames + i * header.frameSize, sizeof(float), 6);
@@ -105,7 +105,7 @@ snap(int sn, float f)
 
 	[stream seekToOffset: header.offsetGlCommands whence: OFSeekSet];
 	[stream readIntoBuffer: _glCommands
-	           exactLength: header.numGlCommands * sizeof(int)];
+		   exactLength: header.numGlCommands * sizeof(int)];
 	endianswap(_glCommands, sizeof(int), header.numGlCommands);
 
 	_numFrames = header.numFrames;
@@ -140,15 +140,15 @@ snap(int sn, float f)
 }
 
 - (void)renderWithLight: (OFColor *)light
-                  frame: (int)frame
-                  range: (int)range
-               position: (OFVector3D)position
-                    yaw: (float)yaw
-                  pitch: (float)pitch
-                  scale: (float)sc
-                  speed: (float)speed
-                   snap: (int)sn
-               basetime: (int)basetime
+		  frame: (int)frame
+		  range: (int)range
+	       position: (OFVector3D)position
+		    yaw: (float)yaw
+		  pitch: (float)pitch
+		  scale: (float)sc
+		  speed: (float)speed
+		   snap: (int)sn
+	       basetime: (int)basetime
 {
 	for (int i = 0; i < range; i++)
 		if (!_mverts[frame + i])

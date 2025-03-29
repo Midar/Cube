@@ -58,7 +58,7 @@ gl_init(int w, int h)
 		hasoverbright = true;
 	else
 		conoutf(@"WARNING: cannot use overbright lighting, using old "
-		        @"lighting model!");
+		    @"lighting model!");
 
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glmaxtexsize);
 
@@ -104,8 +104,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 			    SDL_ConvertSurface(s, format, 0);
 			if (converted == NULL) {
 				conoutf(@"texture cannot be converted "
-				        @"to 24bpp: %@",
-				    IRI.string);
+				    @"to 24bpp: %@", IRI.string);
 				return false;
 			}
 
@@ -151,7 +150,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 	}
 
 	if (gluBuild2DMipmaps(GL_TEXTURE_2D, GL_RGB, *xs, *ys, GL_RGB,
-	        GL_UNSIGNED_BYTE, scaledimg))
+	    GL_UNSIGNED_BYTE, scaledimg))
 		fatal(@"could not build mipmaps");
 
 	if (*xs != s->w)
@@ -202,7 +201,7 @@ COMMAND(texture, ARG_2STR, (^ (OFString *aframe, OFString *name) {
 
 	mapping[num][frame] = 1;
 	mapname[num][frame] = [name stringByReplacingOccurrencesOfString: @"\\"
-	                                                      withString: @"/"];
+							      withString: @"/"];
 }))
 
 int
@@ -334,8 +333,8 @@ VARFP(gamma, 30, 100, 300, {
 
 	SDL_CalculateGammaRamp(f, ramp);
 
-	if (SDL_SetWindowGammaRamp(
-	        Cube.sharedInstance.window, ramp, ramp, ramp) == -1) {
+	if (SDL_SetWindowGammaRamp(Cube.sharedInstance.window,
+	    ramp, ramp, ramp) == -1) {
 		conoutf(
 		    @"Could not set gamma (card/driver doesn't support it?)");
 		conoutf(@"sdl: %s", SDL_GetError());
@@ -355,8 +354,7 @@ transplayer()
 
 	glTranslated(-player1.origin.x,
 	    (player1.state == CS_DEAD ? player1.eyeHeight - 0.2f : 0) -
-	        player1.origin.z,
-	    -player1.origin.y);
+	    player1.origin.z, -player1.origin.y);
 }
 
 VARP(fov, 10, 105, 120);
@@ -377,9 +375,9 @@ drawhudmodel(int start, int end, float speed, int base)
 	Player *player1 = Player.player1;
 
 	rendermodel(hudgunnames[player1.gunSelect], start, end, 0, 1.0f,
-	    OFMakeVector3D(
-	        player1.origin.x, player1.origin.z, player1.origin.y),
-	    player1.yaw + 90, player1.pitch, false, 1.0f, speed, 0, base);
+	    OFMakeVector3D(player1.origin.x, player1.origin.z,
+	    player1.origin.y), player1.yaw + 90, player1.pitch, false, 1.0f,
+	    speed, 0, base);
 }
 
 void
