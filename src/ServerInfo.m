@@ -3,12 +3,12 @@
 #include "cube.h"
 
 @implementation ServerInfo
-+ (instancetype)infoWithName:(OFString *)name;
++ (instancetype)infoWithName: (OFString *)name;
 {
-	return [[self alloc] initWithName:name];
+	return [[self alloc] initWithName: name];
 }
 
-- (instancetype)initWithName:(OFString *)name
+- (instancetype)initWithName: (OFString *)name
 {
 	self = [super init];
 
@@ -27,9 +27,9 @@
 	return self;
 }
 
-- (OFComparisonResult)compare:(ServerInfo *)otherObject
+- (OFComparisonResult)compare: (ServerInfo *)otherObject
 {
-	if (![otherObject isKindOfClass:ServerInfo.class])
+	if (![otherObject isKindOfClass: ServerInfo.class])
 		@throw [OFInvalidArgumentException exception];
 
 	if (_ping > otherObject.ping)
@@ -37,6 +37,6 @@
 	if (_ping < otherObject.ping)
 		return OFOrderedAscending;
 
-	return [_name compare:otherObject.name];
+	return [_name compare: otherObject.name];
 }
 @end

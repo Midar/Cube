@@ -3,29 +3,29 @@
 #include "cube.h"
 
 @implementation Variable
-+ (instancetype)variableWithName:(OFString *)name
-                             min:(int)min
-                             max:(int)max
-                         storage:(int *)storage
-                        function:(void (*__cdecl)())function
-                       persisted:(bool)persisted
++ (instancetype)variableWithName: (OFString *)name
+                             min: (int)min
+                             max: (int)max
+                         storage: (int *)storage
+                        function: (void (*__cdecl)())function
+                       persisted: (bool)persisted
 {
-	return [[self alloc] initWithName:name
-	                              min:min
-	                              max:max
-	                          storage:storage
-	                         function:function
-	                        persisted:persisted];
+	return [[self alloc] initWithName: name
+	                              min: min
+	                              max: max
+	                          storage: storage
+	                         function: function
+	                        persisted: persisted];
 }
 
-- (instancetype)initWithName:(OFString *)name
-                         min:(int)min
-                         max:(int)max
-                     storage:(int *)storage
-                    function:(void (*__cdecl)())function
-                   persisted:(bool)persisted
+- (instancetype)initWithName: (OFString *)name
+                         min: (int)min
+                         max: (int)max
+                     storage: (int *)storage
+                    function: (void (*__cdecl)())function
+                   persisted: (bool)persisted
 {
-	self = [super initWithName:name];
+	self = [super initWithName: name];
 
 	_min = min;
 	_max = max;
@@ -41,7 +41,7 @@
 	conoutf(@"%@ = %d", self.name, *_storage);
 }
 
-- (void)setValue:(int)value
+- (void)setValue: (int)value
 {
 	bool outOfRange = false;
 

@@ -9,7 +9,7 @@ httpgetsend(ENetAddress *ad, OFString *hostname, OFString *req, OFString *ref,
     OFString *agent)
 {
 	if (ad->host == ENET_HOST_ANY) {
-		[OFStdOut writeFormat:@"looking up %@...\n", hostname];
+		[OFStdOut writeFormat: @"looking up %@...\n", hostname];
 		enet_address_set_host(ad, hostname.UTF8String);
 		if (ad->host == ENET_HOST_ANY)
 			return;
@@ -26,14 +26,15 @@ httpgetsend(ENetAddress *ad, OFString *hostname, OFString *req, OFString *ref,
 		return;
 	}
 	ENetBuffer buf;
-	OFString *httpget = [OFString stringWithFormat:@"GET %@ HTTP/1.0\n"
-	                                               @"Host: %@\n"
-	                                               @"Referer: %@\n"
-	                                               @"User-Agent: %@\n\n",
+	OFString *httpget = [OFString stringWithFormat:
+	    @"GET %@ HTTP/1.0\n"
+	    @"Host: %@\n"
+	    @"Referer: %@\n"
+	    @"User-Agent: %@\n\n",
 	    req, hostname, ref, agent];
 	buf.data = (void *)httpget.UTF8String;
 	buf.dataLength = httpget.UTF8StringLength;
-	[OFStdOut writeFormat:@"sending request to %@...\n", hostname];
+	[OFStdOut writeFormat: @"sending request to %@...\n", hostname];
 	enet_socket_send(mssock, NULL, &buf, 1);
 }
 
@@ -77,8 +78,8 @@ updatemasterserver(int seconds)
 {
 	// send alive signal to masterserver every hour of uptime
 	if (seconds > updmaster) {
-		OFString *path = [OFString
-		    stringWithFormat:@"%@register.do?action=add", masterpath];
+		OFString *path = [OFString stringWithFormat:
+		    @"%@register.do?action=add", masterpath];
 		httpgetsend(&masterserver, masterbase, path, @"cubeserver",
 		    @"Cube Server");
 		masterrep[0] = 0;
@@ -100,8 +101,8 @@ checkmasterreply()
 unsigned char *
 retrieveservers(unsigned char *buf, int buflen)
 {
-	OFString *path =
-	    [OFString stringWithFormat:@"%@retrieve.do?item=list", masterpath];
+	OFString *path = [OFString stringWithFormat:
+	    @"%@retrieve.do?item=list", masterpath];
 	httpgetsend(
 	    &masterserver, masterbase, path, @"cubeserver", @"Cube Server");
 	ENetBuffer eb;
@@ -140,8 +141,8 @@ serverms(int mode, int numplayers, int minremain, OFString *smapname,
 		putint(&p, mode);
 		putint(&p, numplayers);
 		putint(&p, minremain);
-		OFString *mname = [OFString stringWithFormat:@"%@%@",
-		    (isfull ? @"[FULL] " : @""), smapname];
+		OFString *mname = [OFString stringWithFormat:
+		    @"%@%@", (isfull ? @"[FULL] " : @""), smapname];
 		sendstring(mname, &p);
 		sendstring(serverdesc, &p);
 		buf.dataLength = p - pong;
@@ -157,7 +158,8 @@ servermsinit(OFString *master_, OFString *sdesc, bool listen)
 	if (!mid)
 		mid = master;
 	masterpath = @(mid);
-	masterbase = [OFString stringWithUTF8String:master length:mid - master];
+	masterbase = [OFString stringWithUTF8String: master
+					     length: mid - master];
 	serverdesc = sdesc;
 
 	if (listen) {

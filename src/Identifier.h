@@ -8,7 +8,7 @@ OF_ASSUME_NONNULL_BEGIN
     OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
 
 - (instancetype)init OF_UNAVAILABLE;
-- (instancetype)initWithName:(OFString *)name;
+- (instancetype)initWithName: (OFString *)name;
 @end
 
 OF_ASSUME_NONNULL_END

@@ -21,7 +21,7 @@ VARP(minmillis, 0, 5, 1000);
 	return (Cube *)OFApplication.sharedApplication.delegate;
 }
 
-- (void)applicationDidFinishLaunching:(OFNotification *)notification
+- (void)applicationDidFinishLaunching: (OFNotification *)notification
 {
 	@autoreleasepool {
 		bool dedicated, windowed;
@@ -48,7 +48,7 @@ VARP(minmillis, 0, 5, 1000);
 			{ '\0', nil, 0, NULL, NULL }
 		};
 		OFOptionsParser *optionsParser =
-		    [OFOptionsParser parserWithOptions:options];
+		    [OFOptionsParser parserWithOptions: options];
 		OFUnichar option;
 		while ((option = [optionsParser nextOption]) != '\0') {
 			switch (option) {
@@ -68,7 +68,7 @@ VARP(minmillis, 0, 5, 1000);
 			case '=':
 			case '?':
 				conoutf(@"unknown commandline option");
-				[OFApplication terminateWithStatus:1];
+				[OFApplication terminateWithStatus: 1];
 			}
 		}
 
@@ -85,11 +85,11 @@ VARP(minmillis, 0, 5, 1000);
 		    [OFFileManager.defaultManager currentDirectoryIRI];
 
 		[OFFileManager.defaultManager createDirectoryAtIRI:
-		        [_userDataIRI IRIByAppendingPathComponent:@"demos"]
-		                                     createParents:true];
+		    [_userDataIRI IRIByAppendingPathComponent: @"demos"]
+						createParents: true];
 		[OFFileManager.defaultManager createDirectoryAtIRI:
-		        [_userDataIRI IRIByAppendingPathComponent:@"savegames"]
-		                                     createParents:true];
+		    [_userDataIRI IRIByAppendingPathComponent: @"savegames"]
+						createParents: true];
 
 		if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
 			fatal(@"Unable to initialize SDL");
@@ -145,44 +145,26 @@ VARP(minmillis, 0, 5, 1000);
 
 		log(@"basetex");
 		int xs, ys;
-		if (!installtex(2,
-		        [_gameDataIRI
-		            IRIByAppendingPathComponent:@"data/newchars.png"],
-		        &xs, &ys, false) ||
-		    !installtex(3,
-		        [_gameDataIRI IRIByAppendingPathComponent:
-		                @"data/martin/base.png"],
-		        &xs, &ys, false) ||
-		    !installtex(6,
-		        [_gameDataIRI IRIByAppendingPathComponent:
-		                @"data/martin/ball1.png"],
-		        &xs, &ys, false) ||
-		    !installtex(7,
-		        [_gameDataIRI IRIByAppendingPathComponent:
-		                @"data/martin/smoke.png"],
-		        &xs, &ys, false) ||
-		    !installtex(8,
-		        [_gameDataIRI IRIByAppendingPathComponent:
-		                @"data/martin/ball2.png"],
-		        &xs, &ys, false) ||
-		    !installtex(9,
-		        [_gameDataIRI IRIByAppendingPathComponent:
-		                @"data/martin/ball3.png"],
-		        &xs, &ys, false) ||
-		    !installtex(4,
-		        [_gameDataIRI
-		            IRIByAppendingPathComponent:@"data/explosion.jpg"],
-		        &xs, &ys, false) ||
-		    !installtex(5,
-		        [_gameDataIRI
-		            IRIByAppendingPathComponent:@"data/items.png"],
-		        &xs, &ys, false) ||
-		    !installtex(1,
-		        [_gameDataIRI
-		            IRIByAppendingPathComponent:@"data/crosshair.png"],
-		        &xs, &ys, false))
+		if (!installtex(2, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/newchars.png"], &xs, &ys, false) ||
+		    !installtex(3, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/martin/base.png"], &xs, &ys, false) ||
+		    !installtex(6, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/martin/ball1.png"], &xs, &ys, false) ||
+		    !installtex(7, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/martin/smoke.png"], &xs, &ys, false) ||
+		    !installtex(8, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/martin/ball2.png"], &xs, &ys, false) ||
+		    !installtex(9, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/martin/ball3.png"], &xs, &ys, false) ||
+		    !installtex(4, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/explosion.jpg"], &xs, &ys, false) ||
+		    !installtex(5, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/items.png"], &xs, &ys, false) ||
+		    !installtex(1, [_gameDataIRI IRIByAppendingPathComponent:
+		    @"data/crosshair.png"], &xs, &ys, false))
 			fatal(@"could not find core textures (hint: run cube "
-			      @"from the parent of the bin directory)");
+			    @"from the parent of the bin directory)");
 
 		log(@"sound");
 		initsound();
@@ -196,9 +178,9 @@ VARP(minmillis, 0, 5, 1000);
 		exec(@"data/sounds.cfg");
 		exec(@"servers.cfg");
 		if (!execfile([_userDataIRI
-		        IRIByAppendingPathComponent:@"config.cfg"]))
+		    IRIByAppendingPathComponent: @"config.cfg"]))
 			execfile([_gameDataIRI
-			    IRIByAppendingPathComponent:@"data/defaults.cfg"]);
+			    IRIByAppendingPathComponent: @"data/defaults.cfg"]);
 		exec(@"autoexec.cfg");
 
 		log(@"localconnect");
@@ -213,7 +195,7 @@ VARP(minmillis, 0, 5, 1000);
 	int ignore = 5;
 	for (;;) {
 		@autoreleasepool {
-			[OFRunLoop.mainRunLoop runUntilDate:past];
+			[OFRunLoop.mainRunLoop runUntilDate: past];
 
 			Player *player1 = Player.player1;
 
@@ -295,7 +277,7 @@ VARP(minmillis, 0, 5, 1000);
 	}
 }
 
-- (void)applicationWillTerminate:(OFNotification *)notification
+- (void)applicationWillTerminate: (OFNotification *)notification
 {
 	stop();
 	disconnect(true, false);
@@ -307,13 +289,13 @@ VARP(minmillis, 0, 5, 1000);
 	SDL_Quit();
 }
 
-- (void)showMessage:(OFString *)msg
+- (void)showMessage: (OFString *)msg
 {
 #ifdef _WIN32
 	MessageBoxW(
 	    NULL, msg.UTF16String, L"cube fatal error", MB_OK | MB_SYSTEMMODAL);
 #else
-	[OFStdOut writeString:msg];
+	[OFStdOut writeString: msg];
 #endif
 }
 
@@ -339,12 +321,11 @@ VARP(minmillis, 0, 5, 1000);
 				endianswap(dest, 3, _width);
 			}
 
-			OFString *path = [OFString
-			    stringWithFormat:@"screenshots/screenshot_%d.bmp",
-			    lastmillis];
+			OFString *path = [OFString stringWithFormat:
+			    @"screenshots/screenshot_%d.bmp", lastmillis];
 			SDL_SaveBMP(temp,
-			    [_userDataIRI IRIByAppendingPathComponent:path]
-			        .fileSystemRepresentation.UTF8String);
+			    [_userDataIRI IRIByAppendingPathComponent: path]
+			    .fileSystemRepresentation.UTF8String);
 			SDL_FreeSurface(temp);
 		}
 
@@ -355,7 +336,7 @@ VARP(minmillis, 0, 5, 1000);
 - (void)quit
 {
 	writeservercfg();
-	[OFApplication terminateWithStatus:0];
+	[OFApplication terminateWithStatus: 0];
 }
 @end
 
@@ -365,21 +346,21 @@ fatal(OFConstantString *s, ...)
 {
 	va_list args;
 	va_start(args, s);
-	OFMutableString *msg = [[OFMutableString alloc] initWithFormat:s
-	                                                     arguments:args];
+	OFMutableString *msg = [[OFMutableString alloc] initWithFormat: s
+	                                                     arguments: args];
 	va_end(args);
 
-	[msg appendFormat:@" (%s)\n", SDL_GetError()];
+	[msg appendFormat: @" (%s)\n", SDL_GetError()];
 
-	[Cube.sharedInstance showMessage:msg];
-	[OFApplication terminateWithStatus:1];
+	[Cube.sharedInstance showMessage: msg];
+	[OFApplication terminateWithStatus: 1];
 }
 
 // normal exit
-COMMAND(quit, ARG_NONE, ^{
+COMMAND(quit, ARG_NONE, ^ {
 	[Cube.sharedInstance quit];
 })
 
-COMMAND(screenshot, ARG_NONE, ^{
+COMMAND(screenshot, ARG_NONE, ^ {
 	[Cube.sharedInstance screenshot];
 })

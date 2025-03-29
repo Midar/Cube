@@ -13,7 +13,7 @@
 int nextmode = 0; // nextmode becomes gamemode after next map load
 VAR(gamemode, 1, 0, 0);
 
-COMMAND(mode, ARG_1INT, ^(int n) {
+COMMAND(mode, ARG_1INT, ^ (int n) {
 	addmsg(1, 2, SV_GAMEMODE, nextmode = n);
 })
 
@@ -53,7 +53,7 @@ arenacount(Player *d, int *alive, int *dead, OFString **lastteam, bool *oneteam)
 {
 	if (d.state != CS_DEAD) {
 		(*alive)++;
-		if (![*lastteam isEqual:d.team])
+		if (![*lastteam isEqual: d.team])
 			*oneteam = false;
 		*lastteam = d.team;
 	} else
@@ -102,22 +102,22 @@ extern int democlientnum;
 void
 otherplayers()
 {
-	[players
-	    enumerateObjectsUsingBlock:^(Player *player, size_t i, bool *stop) {
-		    if ([player isKindOfClass:Player.class])
-			    return;
+	[players enumerateObjectsUsingBlock: ^ (Player *player, size_t i,
+	    bool *stop) {
+		if ([player isKindOfClass: Player.class])
+			return;
 
-		    const int lagtime = lastmillis - player.lastUpdate;
-		    if (lagtime > 1000 && player.state == CS_ALIVE) {
-			    player.state = CS_LAGGED;
-			    return;
-		    }
+		const int lagtime = lastmillis - player.lastUpdate;
+		if (lagtime > 1000 && player.state == CS_ALIVE) {
+			player.state = CS_LAGGED;
+			return;
+		}
 
-		    if (lagtime && player.state != CS_DEAD &&
-		        (!demoplayback || i != democlientnum))
-			    // use physics to extrapolate player position
-			    moveplayer(player, 2, false);
-	    }];
+		if (lagtime && player.state != CS_DEAD &&
+		    (!demoplayback || i != democlientnum))
+			// use physics to extrapolate player position
+			moveplayer(player, 2, false);
+	}];
 }
 
 void
@@ -140,7 +140,7 @@ respawn()
 
 int sleepwait = 0;
 static OFString *sleepcmd = nil;
-COMMAND(sleep, ARG_2STR, ^(OFString *msec, OFString *cmd) {
+COMMAND(sleep, ARG_2STR, ^ (OFString *msec, OFString *cmd) {
 	sleepwait = msec.cube_intValue + lastmillis;
 	sleepcmd = cmd;
 })
@@ -237,12 +237,12 @@ spawnplayer(Player *d)
 
 // movement input code
 
-#define dir(name, v, d, s, os)                                    \
-	COMMAND(name, ARG_DOWN, ^(bool isDown) {                  \
-		Player *player1 = Player.player1;                 \
-		player1.s = isDown;                               \
-		player1.v = isDown ? d : (player1.os ? -(d) : 0); \
-		player1.lastMove = lastmillis;                    \
+#define dir(name, v, d, s, os)						\
+	COMMAND(name, ARG_DOWN, ^ (bool isDown) {			\
+		Player *player1 = Player.player1;			\
+		player1.s = isDown;					\
+		player1.v = isDown ? d : (player1.os ? -(d) : 0);	\
+		player1.lastMove = lastmillis;				\
 	})
 
 dir(backward, move, -1, k_down, k_up);
@@ -250,7 +250,7 @@ dir(forward, move, 1, k_up, k_down);
 dir(left, strafe, 1, k_left, k_right);
 dir(right, strafe, -1, k_right, k_left);
 
-COMMAND(attack, ARG_DOWN, ^(bool on) {
+COMMAND(attack, ARG_DOWN, ^ (bool on) {
 	if (intermission)
 		return;
 	if (editmode)
@@ -259,12 +259,12 @@ COMMAND(attack, ARG_DOWN, ^(bool on) {
 		respawn();
 })
 
-COMMAND(jump, ARG_DOWN, ^(bool on) {
+COMMAND(jump, ARG_DOWN, ^ (bool on) {
 	if (!intermission && (Player.player1.jumpNext = on))
 		respawn();
 })
 
-COMMAND(showscores, ARG_DOWN, ^(bool isDown) {
+COMMAND(showscores, ARG_DOWN, ^ (bool isDown) {
 	showscores(isDown);
 })
 
@@ -376,7 +376,7 @@ getclient(int cn) // ensure valid entity
 	}
 
 	while (cn >= players.count)
-		[players addObject:[OFNull null]];
+		[players addObject: [OFNull null]];
 
 	id player = players[cn];
 	if (player == [OFNull null]) {
@@ -393,7 +393,7 @@ setclient(int cn, id client)
 	if (cn < 0 || cn >= MAXCLIENTS)
 		neterr(@"clientnum");
 	while (cn >= players.count)
-		[players addObject:[OFNull null]];
+		[players addObject: [OFNull null]];
 	players[cn] = client;
 }
 
@@ -418,7 +418,7 @@ startmap(OFString *name) // called just after a map load
 	spawnplayer(Player.player1);
 	Player.player1.frags = 0;
 	for (Player *player in players)
-		if ([player isKindOfClass:Player.class])
+		if ([player isKindOfClass: Player.class])
 			player.frags = 0;
 	resetspawns();
 	clientmap = name;
@@ -433,6 +433,6 @@ startmap(OFString *name) // called just after a map load
 	conoutf(@"game mode is %@", modestr(gamemode));
 }
 
-COMMAND(map, ARG_1STR, ^(OFString *name) {
+COMMAND(map, ARG_1STR, ^ (OFString *name) {
 	changemap(name);
 })

@@ -11,7 +11,7 @@ float rdist[NUMRAYS];
 bool ocull = true;
 float odist = 256;
 
-COMMAND(toggleocull, ARG_NONE, ^{
+COMMAND(toggleocull, ARG_NONE, ^ {
 	ocull = !ocull;
 })
 

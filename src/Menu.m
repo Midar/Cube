@@ -1,12 +1,12 @@
 #import "Menu.h"
 
 @implementation Menu
-+ (instancetype)menuWithName:(OFString *)name
++ (instancetype)menuWithName: (OFString *)name
 {
-	return [[self alloc] initWithName:name];
+	return [[self alloc] initWithName: name];
 }
 
-- (instancetype)initWithName:(OFString *)name
+- (instancetype)initWithName: (OFString *)name
 {
 	self = [super init];
 

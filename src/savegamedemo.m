@@ -97,8 +97,7 @@ savestate(OFIRI *IRI)
 {
 	stop();
 	f = gzopen([IRI.fileSystemRepresentation
-	               cStringWithEncoding:OFLocale.encoding],
-	    "wb9");
+	    cStringWithEncoding: OFLocale.encoding], "wb9");
 	if (!f) {
 		conoutf(@"could not write %@", IRI.string);
 		return;
@@ -131,15 +130,16 @@ savestate(OFIRI *IRI)
 	}
 }
 
-COMMAND(savegame, ARG_1STR, (^(OFString *name) {
+COMMAND(savegame, ARG_1STR, (^ (OFString *name) {
 	if (!m_classicsp) {
 		conoutf(@"can only save classic sp games");
 		return;
 	}
 
-	OFString *path = [OFString stringWithFormat:@"savegames/%@.csgz", name];
-	OFIRI *IRI =
-	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	OFString *path = [OFString stringWithFormat:
+	    @"savegames/%@.csgz", name];
+	OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+	    IRIByAppendingPathComponent: path];
 	savestate(IRI);
 	stop();
 	conoutf(@"wrote %@", IRI.string);
@@ -152,8 +152,7 @@ loadstate(OFIRI *IRI)
 	if (multiplayer())
 		return;
 	f = gzopen([IRI.fileSystemRepresentation
-	               cStringWithEncoding:OFLocale.encoding],
-	    "rb9");
+	    cStringWithEncoding: OFLocale.encoding], "rb9");
 	if (!f) {
 		conoutf(@"could not open %@", IRI.string);
 		return;
@@ -183,10 +182,11 @@ out:
 	stop();
 }
 
-COMMAND(loadgame, ARG_1STR, (^(OFString *name) {
-	OFString *path = [OFString stringWithFormat:@"savegames/%@.csgz", name];
-	OFIRI *IRI =
-	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+COMMAND(loadgame, ARG_1STR, (^ (OFString *name) {
+	OFString *path = [OFString stringWithFormat:
+	    @"savegames/%@.csgz", name];
+	OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+	    IRIByAppendingPathComponent: path];
 	loadstate(IRI);
 }))
 
@@ -217,10 +217,10 @@ loadgamerest()
 	restoreserverstate(ents);
 
 	OFMutableData *data =
-	    [OFMutableData dataWithCapacity:DynamicEntity.serializedSize];
-	[data increaseCountBy:DynamicEntity.serializedSize];
+	    [OFMutableData dataWithCapacity: DynamicEntity.serializedSize];
+	[data increaseCountBy: DynamicEntity.serializedSize];
 	gzread(f, data.mutableItems, data.count);
-	[Player.player1 setFromSerializedData:data];
+	[Player.player1 setFromSerializedData: data];
 	Player.player1.lastAction = lastmillis;
 
 	int nmonsters = gzgeti();
@@ -230,7 +230,7 @@ loadgamerest()
 
 	for (Monster *monster in monsters) {
 		gzread(f, data.mutableItems, data.count);
-		[monster setFromSerializedData:data];
+		[monster setFromSerializedData: data];
 		// lazy, could save id of enemy instead
 		monster.enemy = Player.player1;
 		// also lazy, but no real noticable effect on game
@@ -246,7 +246,7 @@ loadgamerest()
 			Player *d = getclient(i);
 			assert(d);
 			gzread(f, data.mutableItems, data.count);
-			[d setFromSerializedData:data];
+			[d setFromSerializedData: data];
 		}
 	}
 
@@ -264,7 +264,7 @@ int playbacktime = 0;
 int ddamage, bdamage;
 OFVector3D dorig;
 
-COMMAND(record, ARG_1STR, (^(OFString *name) {
+COMMAND(record, ARG_1STR, (^ (OFString *name) {
 	if (m_sp) {
 		conoutf(@"cannot record singleplayer games");
 		return;
@@ -274,9 +274,9 @@ COMMAND(record, ARG_1STR, (^(OFString *name) {
 	if (cn < 0)
 		return;
 
-	OFString *path = [OFString stringWithFormat:@"demos/%@.cdgz", name];
-	OFIRI *IRI =
-	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+	OFString *path = [OFString stringWithFormat: @"demos/%@.cdgz", name];
+	OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+	    IRIByAppendingPathComponent: path];
 	savestate(IRI);
 	gzputi(cn);
 	conoutf(@"started recording demo to %@", IRI.string);
@@ -333,10 +333,10 @@ incomingdemodata(unsigned char *buf, int len, bool extras)
 	}
 }
 
-COMMAND(demo, ARG_1STR, (^(OFString *name) {
-	OFString *path = [OFString stringWithFormat:@"demos/%@.cdgz", name];
-	OFIRI *IRI =
-	    [Cube.sharedInstance.userDataIRI IRIByAppendingPathComponent:path];
+COMMAND(demo, ARG_1STR, (^ (OFString *name) {
+	OFString *path = [OFString stringWithFormat: @"demos/%@.cdgz", name];
+	OFIRI *IRI = [Cube.sharedInstance.userDataIRI
+	    IRIByAppendingPathComponent: path];
 	loadstate(IRI);
 	demoloading = true;
 }))
@@ -462,10 +462,10 @@ demoplaybackstep()
 			if (playerhistory == nil)
 				playerhistory = [[OFMutableArray alloc] init];
 
-			[playerhistory addObject:d];
+			[playerhistory addObject: d];
 
 			if (playerhistory.count > 20)
-				[playerhistory removeObjectAtIndex:0];
+				[playerhistory removeObjectAtIndex: 0];
 		}
 
 		readdemotime();
@@ -542,7 +542,7 @@ demoplaybackstep()
 	// if(player1->state!=CS_DEAD) showscores(false);
 }
 
-COMMAND(stop, ARG_NONE, ^{
+COMMAND(stop, ARG_NONE, ^ {
 	if (demoplayback)
 		stopreset();
 	else

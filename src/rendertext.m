@@ -139,8 +139,8 @@ draw_textf(OFConstantString *format, int left, int top, int gl_num, ...)
 {
 	va_list arguments;
 	va_start(arguments, gl_num);
-	OFString *str = [[OFString alloc] initWithFormat:format
-	                                       arguments:arguments];
+	OFString *str = [[OFString alloc] initWithFormat: format
+	                                       arguments: arguments];
 	va_end(arguments);
 	draw_text(str, left, top, gl_num);
 }
@@ -170,10 +170,10 @@ draw_text(OFString *string, int left, int top, int gl_num)
 		}
 
 		if (c == '\f') {
-			[[OFColor colorWithRed:0.25f
-					 green:1.0f
-					  blue:0.5f
-					 alpha:1.0f] cube_setAsGLColor];
+			[[OFColor colorWithRed: 0.25f
+					 green: 1.0f
+					  blue: 0.5f
+					 alpha: 1.0f] cube_setAsGLColor];
 			continue;
 		}
 

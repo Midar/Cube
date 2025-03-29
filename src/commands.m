@@ -21,11 +21,11 @@ alias(OFString *name, OFString *action)
 	Alias *alias = Identifier.identifiers[name];
 
 	if (alias == nil)
-		Identifier.identifiers[name] = [Alias aliasWithName:name
-		                                             action:action
-		                                          persisted:true];
+		Identifier.identifiers[name] = [Alias aliasWithName: name
+		                                             action: action
+		                                          persisted: true];
 	else {
-		if ([alias isKindOfClass:Alias.class])
+		if ([alias isKindOfClass: Alias.class])
 			alias.action = action;
 		else
 			conoutf(
@@ -33,7 +33,7 @@ alias(OFString *name, OFString *action)
 	}
 }
 
-COMMAND(alias, ARG_2STR, ^(OFString *name, OFString *action) {
+COMMAND(alias, ARG_2STR, ^ (OFString *name, OFString *action) {
 	alias(name, action);
 })
 
@@ -42,7 +42,7 @@ setvar(OFString *name, int i)
 {
 	Variable *variable = Identifier.identifiers[name];
 
-	if ([variable isKindOfClass:Variable.class])
+	if ([variable isKindOfClass: Variable.class])
 		*variable.storage = i;
 }
 
@@ -51,7 +51,7 @@ getvar(OFString *name)
 {
 	Variable *variable = Identifier.identifiers[name];
 
-	if ([variable isKindOfClass:Variable.class])
+	if ([variable isKindOfClass: Variable.class])
 		return *variable.storage;
 
 	return 0;
@@ -68,7 +68,7 @@ getalias(OFString *name)
 {
 	Alias *alias = Identifier.identifiers[name];
 
-	if ([alias isKindOfClass:Alias.class])
+	if ([alias isKindOfClass: Alias.class])
 		return alias.action;
 
 	return nil;
@@ -98,8 +98,8 @@ parseexp(char **p, int right)
 	if (left == '(') {
 		OFString *t;
 		@try {
-			t = [OFString
-			    stringWithFormat:@"%d", execute(@(s), true)];
+			t = [OFString stringWithFormat:
+			    @"%d", execute(@(s), true)];
 		} @finally {
 			free(s);
 		}
@@ -140,14 +140,15 @@ OFString *
 lookup(OFString *n)
 {
 	__kindof Identifier *identifier =
-	    Identifier.identifiers[[n substringFromIndex:1]];
+	    Identifier.identifiers[[n substringFromIndex: 1]];
 
-	if ([identifier isKindOfClass:Variable.class]) {
-		return [OFString stringWithFormat:@"%d", *[identifier storage]];
-	} else if ([identifier isKindOfClass:Alias.class])
+	if ([identifier isKindOfClass: Variable.class]) {
+		return [OFString stringWithFormat:
+		    @"%d", *[identifier storage]];
+	} else if ([identifier isKindOfClass: Alias.class])
 		return [identifier action];
 
-	conoutf(@"unknown alias lookup: %@", [n substringFromIndex:1]);
+	conoutf(@"unknown alias lookup: %@", [n substringFromIndex: 1]);
 	return n;
 }
 
@@ -157,7 +158,7 @@ executeIdentifier(__kindof Identifier *identifier,
 {
 	if (identifier == nil) {
 		@try {
-			return [arguments[0] intValueWithBase:0];
+			return [arguments[0] intValueWithBase: 0];
 		} @catch (OFInvalidFormatException *e) {
 			conoutf(@"unknown command: %@", arguments[0]);
 			return 0;
@@ -167,12 +168,12 @@ executeIdentifier(__kindof Identifier *identifier,
 		}
 	}
 
-	if ([identifier isKindOfClass:Command.class])
+	if ([identifier isKindOfClass: Command.class])
 		// game defined commands use very ad-hoc function signature,
 		// and just call it
-		return [identifier callWithArguments:arguments isDown:isDown];
+		return [identifier callWithArguments: arguments isDown: isDown];
 
-	if ([identifier isKindOfClass:Variable.class]) {
+	if ([identifier isKindOfClass: Variable.class]) {
 		if (!isDown)
 			return 0;
 
@@ -180,16 +181,16 @@ executeIdentifier(__kindof Identifier *identifier,
 		if (arguments.count < 2 || arguments[1].length == 0)
 			[identifier printValue];
 		else
-			[identifier
-			    setValue:[arguments[1] cube_intValueWithBase:0]];
+			[identifier setValue:
+			    [arguments[1] cube_intValueWithBase: 0]];
 	}
 
-	if ([identifier isKindOfClass:Alias.class]) {
+	if ([identifier isKindOfClass: Alias.class]) {
 		// alias, also used as functions and (global) variables
 		for (int i = 1; i < arguments.count; i++) {
 			// set any arguments as (global) arg values so
 			// functions can access them
-			OFString *t = [OFString stringWithFormat:@"arg%d", i];
+			OFString *t = [OFString stringWithFormat: @"arg%d", i];
 			alias(t, arguments[i]);
 		}
 
@@ -239,8 +240,8 @@ execute(OFString *string, bool isDown)
 		cont = *p++ != 0;
 		OFString *c = w[0];
 		// strip irc-style command prefix
-		if ([c hasPrefix:@"/"]) {
-			c = [c substringFromIndex:1];
+		if ([c hasPrefix: @"/"]) {
+			c = [c substringFromIndex: 1];
 			w[0] = c;
 		}
 		// empty statement
@@ -248,7 +249,7 @@ execute(OFString *string, bool isDown)
 			continue;
 
 		val = executeIdentifier(Identifier.identifiers[c],
-		    [OFArray arrayWithObjects:w count:numargs], isDown);
+		    [OFArray arrayWithObjects: w count: numargs], isDown);
 	}
 
 	return val;
@@ -267,8 +268,8 @@ resetcomplete()
 void
 complete(OFMutableString *s)
 {
-	if (![s hasPrefix:@"/"])
-		[s insertString:@"/" atIndex:0];
+	if (![s hasPrefix: @"/"])
+		[s insertString: @"/" atIndex: 0];
 
 	if (s.length == 1)
 		return;
@@ -279,13 +280,13 @@ complete(OFMutableString *s)
 	}
 
 	__block int idx = 0;
-	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:
+	    ^ (OFString *name, __kindof Identifier *identifier, bool *stop) {
 		if (strncmp(identifier.name.UTF8String, s.UTF8String + 1,
-		        completesize) == 0 &&
-		    idx++ == completeidx)
-			[s replaceCharactersInRange:OFMakeRange(1, s.length - 1)
-			                 withString:identifier.name];
+		    completesize) == 0 && idx++ == completeidx)
+			[s replaceCharactersInRange: OFMakeRange(
+							 1, s.length - 1)
+					 withString: identifier.name];
 	}];
 
 	completeidx++;
@@ -299,7 +300,7 @@ execfile(OFIRI *cfgfile)
 {
 	OFString *command;
 	@try {
-		command = [OFString stringWithContentsOfIRI:cfgfile];
+		command = [OFString stringWithContentsOfIRI: cfgfile];
 	} @catch (OFOpenItemFailedException *e) {
 		return false;
 	} @catch (OFReadFailedException *e) {
@@ -314,13 +315,13 @@ void
 exec(OFString *cfgfile)
 {
 	if (!execfile([Cube.sharedInstance.userDataIRI
-	        IRIByAppendingPathComponent:cfgfile]) &&
+	    IRIByAppendingPathComponent: cfgfile]) &&
 	    !execfile([Cube.sharedInstance.gameDataIRI
-	        IRIByAppendingPathComponent:cfgfile]))
+	    IRIByAppendingPathComponent: cfgfile]))
 		conoutf(@"could not read \"%@\"", cfgfile);
 }
 
-COMMAND(exec, ARG_1STR, ^(OFString *cfgfile) {
+COMMAND(exec, ARG_1STR, ^ (OFString *cfgfile) {
 	exec(cfgfile);
 })
 
@@ -330,50 +331,52 @@ writecfg()
 	OFStream *stream;
 	@try {
 		OFIRI *IRI = [Cube.sharedInstance.userDataIRI
-		    IRIByAppendingPathComponent:@"config.cfg"];
-		stream = [[OFIRIHandler handlerForIRI:IRI] openItemAtIRI:IRI
-		                                                    mode:@"w"];
+		    IRIByAppendingPathComponent: @"config.cfg"];
+		stream = [[OFIRIHandler handlerForIRI: IRI]
+		    openItemAtIRI: IRI
+			     mode: @"w"];
 	} @catch (id e) {
 		return;
 	}
 
-	[stream writeString:@"// automatically written on exit, do not modify\n"
-	                    @"// delete this file to have defaults.cfg "
-	                    @"overwrite these settings\n"
-	                    @"// modify settings in game, or put settings in "
-	                    @"autoexec.cfg to override anything\n"
-	                    @"\n"];
+	[stream writeString:
+	    @"// automatically written on exit, do not modify\n"
+	    @"// delete this file to have defaults.cfg overwrite these "
+	    @"settings\n"
+	    @"// modify settings in game, or put settings in autoexec.cfg to "
+	    @"override anything\n"
+	    @"\n"];
 	writeclientinfo(stream);
-	[stream writeString:@"\n"];
+	[stream writeString: @"\n"];
 
-	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:Variable.class] ||
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:
+	    ^ (OFString *name, __kindof Identifier *identifier, bool *stop) {
+		if (![identifier isKindOfClass: Variable.class] ||
 		    ![identifier persisted])
 			return;
 
-		[stream writeFormat:@"%@ %d\n", identifier.name,
-		    *[identifier storage]];
+		[stream writeFormat:
+		    @"%@ %d\n", identifier.name, *[identifier storage]];
 	}];
-	[stream writeString:@"\n"];
+	[stream writeString: @"\n"];
 
 	writebinds(stream);
-	[stream writeString:@"\n"];
+	[stream writeString: @"\n"];
 
-	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:^(
-	    OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass:Alias.class] ||
-		    [identifier.name hasPrefix:@"nextmap_"])
+	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:
+	    ^ (OFString *name, Alias *alias, bool *stop) {
+		if (![alias isKindOfClass: Alias.class] ||
+		    [alias.name hasPrefix: @"nextmap_"])
 			return;
 
-		[stream writeFormat:@"alias \"%@\" [%@]\n", identifier.name,
-		    [identifier action]];
+		[stream writeFormat: @"alias \"%@\" [%@]\n",
+				     alias.name, alias.action];
 	}];
 
 	[stream close];
 }
 
-COMMAND(writecfg, ARG_NONE, ^{
+COMMAND(writecfg, ARG_NONE, ^ {
 	writecfg();
 })
 
@@ -384,14 +387,14 @@ COMMAND(writecfg, ARG_NONE, ^{
 void
 intset(OFString *name, int v)
 {
-	alias(name, [OFString stringWithFormat:@"%d", v]);
+	alias(name, [OFString stringWithFormat: @"%d", v]);
 }
 
-COMMAND(if, ARG_3STR, ^(OFString *cond, OFString *thenp, OFString *elsep) {
-	execute((![cond hasPrefix:@"0"] ? thenp : elsep), true);
+COMMAND(if, ARG_3STR, ^ (OFString *cond, OFString *thenp, OFString *elsep) {
+	execute((![cond hasPrefix: @"0"] ? thenp : elsep), true);
 })
 
-COMMAND(loop, ARG_2STR, ^(OFString *times, OFString *body) {
+COMMAND(loop, ARG_2STR, ^ (OFString *times, OFString *body) {
 	int t = times.cube_intValue;
 
 	for (int i = 0; i < t; i++) {
@@ -400,12 +403,12 @@ COMMAND(loop, ARG_2STR, ^(OFString *times, OFString *body) {
 	}
 })
 
-COMMAND(while, ARG_2STR, ^(OFString *cond, OFString *body) {
+COMMAND(while, ARG_2STR, ^ (OFString *cond, OFString *body) {
 	while (execute(cond, true))
 		execute(body, true);
 })
 
-COMMAND(onrelease, ARG_DWN1, ^(bool on, OFString *body) {
+COMMAND(onrelease, ARG_DWN1, ^ (bool on, OFString *body) {
 	if (!on)
 		execute(body, true);
 })
@@ -416,15 +419,15 @@ concat(OFString *s)
 	alias(@"s", s);
 }
 
-COMMAND(concat, ARG_VARI, ^(OFString *s) {
+COMMAND(concat, ARG_VARI, ^ (OFString *s) {
 	concat(s);
 })
 
-COMMAND(concatword, ARG_VARI, ^(OFString *s) {
-	concat([s stringByReplacingOccurrencesOfString:@" " withString:@""]);
+COMMAND(concatword, ARG_VARI, ^ (OFString *s) {
+	concat([s stringByReplacingOccurrencesOfString: @" " withString: @""]);
 })
 
-COMMAND(listlen, ARG_1EST, ^(OFString *a_) {
+COMMAND(listlen, ARG_1EST, ^ (OFString *a_) {
 	const char *a = a_.UTF8String;
 
 	if (!*a)
@@ -438,7 +441,7 @@ COMMAND(listlen, ARG_1EST, ^(OFString *a_) {
 	return n + 1;
 })
 
-COMMAND(at, ARG_2STR, ^(OFString *s_, OFString *pos) {
+COMMAND(at, ARG_2STR, ^ (OFString *s_, OFString *pos) {
 	int n = pos.cube_intValue;
 	char *copy __attribute__((__cleanup__(cleanup))) =
 	    strdup(s_.UTF8String);
@@ -451,46 +454,46 @@ COMMAND(at, ARG_2STR, ^(OFString *s_, OFString *pos) {
 	concat(@(s));
 })
 
-COMMAND(+, ARG_2EXP, ^(int a, int b) {
+COMMAND(+, ARG_2EXP, ^ (int a, int b) {
 	return a + b;
 })
 
-COMMAND(*, ARG_2EXP, ^(int a, int b) {
+COMMAND(*, ARG_2EXP, ^ (int a, int b) {
 	return a * b;
 })
 
-COMMAND(-, ARG_2EXP, ^(int a, int b) {
+COMMAND(-, ARG_2EXP, ^ (int a, int b) {
 	return a - b;
 })
 
-COMMAND(div, ARG_2EXP, ^(int a, int b) {
+COMMAND(div, ARG_2EXP, ^ (int a, int b) {
 	return b ? a / b : 0;
 })
 
-COMMAND(mod, ARG_2EXP, ^(int a, int b) {
+COMMAND(mod, ARG_2EXP, ^ (int a, int b) {
 	return b ? a % b : 0;
 })
 
-COMMAND(=, ARG_2EXP, ^(int a, int b) {
+COMMAND(=, ARG_2EXP, ^ (int a, int b) {
 	return (int)(a == b);
 })
 
-COMMAND(<, ARG_2EXP, ^(int a, int b) {
+COMMAND(<, ARG_2EXP, ^ (int a, int b) {
 	return (int)(a < b);
 })
 
-COMMAND(>, ARG_2EXP, ^(int a, int b) {
+COMMAND(>, ARG_2EXP, ^ (int a, int b) {
 	return (int)(a > b);
 })
 
-COMMAND(strcmp, ARG_2EST, ^(OFString *a, OFString *b) {
-	return [a isEqual:b];
+COMMAND(strcmp, ARG_2EST, ^ (OFString *a, OFString *b) {
+	return [a isEqual: b];
 })
 
-COMMAND(rnd, ARG_1EXP, ^(int a) {
+COMMAND(rnd, ARG_1EXP, ^ (int a) {
 	return (a > 0 ? rnd(a) : 0);
 })
 
-COMMAND(millis, ARG_1EXP, ^(int unused) {
+COMMAND(millis, ARG_1EXP, ^ (int unused) {
 	return lastmillis;
 })

@@ -14,7 +14,7 @@ static Player *player1;
 	return [[self alloc] init];
 }
 
-+ (void)setPlayer1:(Player *)player1_
++ (void)setPlayer1: (Player *)player1_
 {
 	player1 = player1_;
 }

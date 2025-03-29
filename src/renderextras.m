@@ -60,10 +60,10 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 	glBegin(GL_QUADS);
 	if (border)
-		[[OFColor colorWithRed:0.5f
-				 green:0.3f
-				  blue:0.4f
-				 alpha:1.0f] cube_setAsGLColor];
+		[[OFColor colorWithRed: 0.5f
+				 green: 0.3f
+				  blue: 0.4f
+				 alpha: 1.0f] cube_setAsGLColor];
 	else
 		[OFColor.white cube_setAsGLColor];
 	glVertex2i(x1, y1);
@@ -74,10 +74,10 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBegin(GL_POLYGON);
-	[[OFColor colorWithRed:0.2f
-			 green:0.7f
-			  blue:0.4f
-			 alpha:1.0f] cube_setAsGLColor];
+	[[OFColor colorWithRed: 0.2f
+			 green: 0.7f
+			  blue: 0.4f
+			 alpha: 1.0f] cube_setAsGLColor];
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y1);
 	glVertex2i(x2, y2);
@@ -133,10 +133,10 @@ renderspheres(int time)
 	for (struct sphere *p, **pp = &slist; (p = *pp) != NULL;) {
 		glPushMatrix();
 		float size = p->size / p->max;
-		[[OFColor colorWithRed:1.0f
-				 green:1.0f
-				  blue:1.0f
-				 alpha:1.0f - size] cube_setAsGLColor];
+		[[OFColor colorWithRed: 1.0f
+				 green: 1.0f
+				  blue: 1.0f
+				 alpha: 1.0f - size] cube_setAsGLColor];
 		glTranslatef(p->o.x, p->o.z, p->o.y);
 		glRotatef(lastmillis / 5.0f, 1, 1, 1);
 		glScalef(p->size, p->size, p->size);
@@ -207,34 +207,33 @@ renderents()
 	if (e >= 0) {
 		Entity *c = ents[e];
 		closeent =
-		    [OFString stringWithFormat:@"closest entity = %@ (%d, %d, "
-		                               @"%d, %d), selection = (%d, %d)",
+		    [OFString stringWithFormat:
+			@"closest entity = %@ (%d, %d, %d, %d), "
+			@"selection = (%d, %d)",
 		        entnames[c.type], c.attr1, c.attr2, c.attr3, c.attr4,
 		        getvar(@"selxs"), getvar(@"selys")];
 	}
 }
 
-COMMAND(loadsky, ARG_1STR, (^(OFString *basename) {
+COMMAND(loadsky, ARG_1STR, (^ (OFString *basename) {
 	static OFString *lastsky = @"";
 
-	basename = [basename stringByReplacingOccurrencesOfString:@"\\"
-	                                               withString:@"/"];
+	basename = [basename stringByReplacingOccurrencesOfString: @"\\"
+	                                               withString: @"/"];
 
-	if ([lastsky isEqual:basename])
+	if ([lastsky isEqual: basename])
 		return;
 
 	static const OFString *side[] = { @"ft", @"bk", @"lf", @"rt", @"dn",
 		@"up" };
 	int texnum = 14;
 	for (int i = 0; i < 6; i++) {
-		OFString *path = [OFString
-		    stringWithFormat:@"packages/%@_%@.jpg", basename, side[i]];
+		OFString *path = [OFString stringWithFormat:
+		    @"packages/%@_%@.jpg", basename, side[i]];
 
 		int xs, ys;
-		if (!installtex(texnum + i,
-		        [Cube.sharedInstance.gameDataIRI
-		            IRIByAppendingPathComponent:path],
-		        &xs, &ys, true))
+		if (!installtex(texnum + i, [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent: path], &xs, &ys, true))
 			conoutf(@"could not load sky textures");
 	}
 
@@ -361,15 +360,15 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		glBegin(GL_QUADS);
 		if (dblend)
-			[[OFColor colorWithRed:0.0f
-					 green:0.9f
-					  blue:0.9f
-					 alpha:1.0f] cube_setAsGLColor];
+			[[OFColor colorWithRed: 0.0f
+					 green: 0.9f
+					  blue: 0.9f
+					 alpha: 1.0f] cube_setAsGLColor];
 		else
-			[[OFColor colorWithRed:0.9f
-					 green:0.5f
-					  blue:0.0f
-					 alpha:1.0f] cube_setAsGLColor];
+			[[OFColor colorWithRed: 0.9f
+					 green: 0.5f
+					  blue: 0.0f
+					 alpha: 1.0f] cube_setAsGLColor];
 		glVertex2i(0, 0);
 		glVertex2i(VIRTW, 0);
 		glVertex2i(VIRTW, VIRTH);
@@ -404,10 +403,11 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 			else if (player1.health <= 25)
 				[OFColor.red cube_setAsGLColor];
 			else if (player1.health <= 50)
-				[[OFColor colorWithRed:1.0f
-						 green:0.5f
-						  blue:0.0f
-						 alpha:1.0f] cube_setAsGLColor];
+				[[OFColor colorWithRed: 1.0f
+						 green: 0.5f
+						  blue: 0.0f
+						 alpha: 1.0f]
+				    cube_setAsGLColor];
 		}
 		float chsize = (float)crosshairsize;
 		glTexCoord2d(0.0, 0.0);

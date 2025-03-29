@@ -146,10 +146,10 @@ fatal(OFConstantString *s, ...)
 
 	va_list args;
 	va_start(args, s);
-	OFString *msg = [[OFString alloc] initWithFormat:s arguments:args];
+	OFString *msg = [[OFString alloc] initWithFormat: s arguments: args];
 	va_end(args);
 
-	[OFStdOut writeFormat:@"servererror: %@\n", msg];
+	[OFStdOut writeFormat: @"servererror: %@\n", msg];
 
 	exit(1);
 }

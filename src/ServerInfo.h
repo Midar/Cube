@@ -11,7 +11,7 @@ OF_DIRECT_MEMBERS
 @property (nonatomic) int mode, numplayers, ping, protocol, minremain;
 @property (nonatomic) ENetAddress address;
 
-+ (instancetype)infoWithName:(OFString *)name;
++ (instancetype)infoWithName: (OFString *)name;
 - (instancetype)init OF_UNAVAILABLE;
-- (instancetype)initWithName:(OFString *)name;
+- (instancetype)initWithName: (OFString *)name;
 @end

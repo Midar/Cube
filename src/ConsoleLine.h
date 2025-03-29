@@ -5,6 +5,6 @@ OF_DIRECT_MEMBERS
 @property (readonly, copy) OFString *text;
 @property (readonly) int outtime;
 
-+ (instancetype)lineWithText:(OFString *)text outtime:(int)outtime;
-- (instancetype)initWithText:(OFString *)text outtime:(int)outtime;
++ (instancetype)lineWithText: (OFString *)text outtime: (int)outtime;
+- (instancetype)initWithText: (OFString *)text outtime: (int)outtime;
 @end

@@ -16,10 +16,10 @@
 	}
 }
 
-- (int)cube_intValueWithBase:(unsigned char)base
+- (int)cube_intValueWithBase: (unsigned char)base
 {
 	@try {
-		return [self intValueWithBase:base];
+		return [self intValueWithBase: base];
 	} @catch (OFInvalidFormatException *e) {
 		conoutf(@"invalid value: %@", self);
 		return 0;

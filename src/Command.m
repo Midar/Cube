@@ -13,7 +13,7 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 
 	copy = [arguments mutableCopy];
 	while (copy.count < count)
-		[copy addObject:@""];
+		[copy addObject: @""];
 
 	[copy makeImmutable];
 	return copy;
@@ -24,20 +24,20 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	id _block;
 }
 
-+ (instancetype)commandWithName:(OFString *)name
-                 argumentsTypes:(int)argumentsTypes
-                          block:(id)block
++ (instancetype)commandWithName: (OFString *)name
+                 argumentsTypes: (int)argumentsTypes
+                          block: (id)block
 {
-	return [[self alloc] initWithName:name
-	                   argumentsTypes:argumentsTypes
-	                            block:block];
+	return [[self alloc] initWithName: name
+	                   argumentsTypes: argumentsTypes
+	                            block: block];
 }
 
-- (instancetype)initWithName:(OFString *)name
-              argumentsTypes:(int)argumentsTypes
-                       block:(id)block
+- (instancetype)initWithName: (OFString *)name
+              argumentsTypes: (int)argumentsTypes
+                       block: (id)block
 {
-	self = [super initWithName:name];
+	self = [super initWithName: name];
 
 	_argumentsTypes = argumentsTypes;
 	_block = block;
@@ -45,41 +45,41 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 	return self;
 }
 
-- (int)callWithArguments:(OFArray<OFString *> *)arguments isDown:(bool)isDown
+- (int)callWithArguments: (OFArray<OFString *> *)arguments isDown: (bool)isDown
 {
 	switch (_argumentsTypes) {
 	case ARG_1INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
 			((void (^)(int))_block)(
-			    [arguments[1] cube_intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase: 0]);
 		}
 		break;
 	case ARG_2INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
 			((void (^)(int, int))_block)(
-			    [arguments[1] cube_intValueWithBase:0],
-			    [arguments[2] cube_intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase: 0],
+			    [arguments[2] cube_intValueWithBase: 0]);
 		}
 		break;
 	case ARG_3INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 4);
 			((void (^)(int, int, int))_block)(
-			    [arguments[1] cube_intValueWithBase:0],
-			    [arguments[2] cube_intValueWithBase:0],
-			    [arguments[3] cube_intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase: 0],
+			    [arguments[2] cube_intValueWithBase: 0],
+			    [arguments[3] cube_intValueWithBase: 0]);
 		}
 		break;
 	case ARG_4INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 5);
 			((void (^)(int, int, int, int))_block)(
-			    [arguments[1] cube_intValueWithBase:0],
-			    [arguments[2] cube_intValueWithBase:0],
-			    [arguments[3] cube_intValueWithBase:0],
-			    [arguments[4] cube_intValueWithBase:0]);
+			    [arguments[1] cube_intValueWithBase: 0],
+			    [arguments[2] cube_intValueWithBase: 0],
+			    [arguments[3] cube_intValueWithBase: 0],
+			    [arguments[4] cube_intValueWithBase: 0]);
 		}
 		break;
 	case ARG_NONE:
@@ -154,8 +154,8 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 		if (isDown)
 			// limit, remove
 			((void (^)(OFString *))_block)([[arguments
-			    objectsInRange:OFMakeRange(1, arguments.count - 1)]
-			    componentsJoinedByString:@" "]);
+			    objectsInRange: OFMakeRange(1, arguments.count - 1)]
+			    componentsJoinedByString: @" "]);
 		break;
 	}
 

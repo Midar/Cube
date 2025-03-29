@@ -24,8 +24,8 @@ int mode = 0;
 void
 restoreserverstate(OFArray<Entity *> *ents)
 {
-	[sents enumerateObjectsUsingBlock:^(
-	    ServerEntity *e, size_t i, bool *stop) {
+	[sents enumerateObjectsUsingBlock:
+	    ^ (ServerEntity *e, size_t i, bool *stop) {
 		e.spawned = ents[i].spawned;
 		e.spawnsecs = 0;
 	}];
@@ -101,8 +101,8 @@ sendservmsg(OFString *msg)
 void
 disconnect_client(int n, OFString *reason)
 {
-	[OFStdOut writeFormat:@"disconnecting client (%@) [%@]\n",
-	    clients[n].hostname, reason];
+	[OFStdOut writeFormat: @"disconnecting client (%@) [%@]\n",
+			       clients[n].hostname, reason];
 	enet_peer_disconnect(clients[n].peer);
 	clients[n].type = ST_EMPTY;
 	send2(true, -1, SV_CDIS, n);
@@ -146,7 +146,7 @@ vote(OFString *map, int reqmode, int sender)
 	for (Client *client in clients) {
 		if (client.type != ST_EMPTY) {
 			if (client.mapvote.length > 0) {
-				if ([client.mapvote isEqual:map] &&
+				if ([client.mapvote isEqual: map] &&
 				    client.modevote == reqmode)
 					yes++;
 				else
@@ -159,8 +159,8 @@ vote(OFString *map, int reqmode, int sender)
 	if (yes == 1 && no == 0)
 		return true; // single player
 
-	OFString *msg = [OFString
-	    stringWithFormat:@"%@ suggests %@ on map %@ (set map to vote)",
+	OFString *msg = [OFString stringWithFormat:
+	    @"%@ suggests %@ on map %@ (set map to vote)",
 	    clients[sender].name, modestr(reqmode), map];
 	sendservmsg(msg);
 
@@ -227,8 +227,8 @@ process(ENetPacket *packet, int sender) // sender may be -1
 			while ((n = getint(&p)) != -1)
 				if (notgotitems) {
 					while (sents.count <= n)
-						[sents addObject:[ServerEntity
-						                     entity]];
+						[sents addObject:
+						    [ServerEntity entity]];
 					sents[n].spawned = true;
 				}
 			notgotitems = false;
@@ -314,8 +314,8 @@ send_welcome(int n)
 		sendstring(smapname, &p);
 		putint(&p, mode);
 		putint(&p, SV_ITEMLIST);
-		[sents enumerateObjectsUsingBlock:^(
-		    ServerEntity *e, size_t i, bool *stop) {
+		[sents enumerateObjectsUsingBlock:
+		    ^ (ServerEntity *e, size_t i, bool *stop) {
 			if (e.spawned)
 				putint(&p, i);
 		}];
@@ -356,7 +356,7 @@ addclient()
 	if (clients == nil)
 		clients = [[OFMutableArray alloc] init];
 
-	[clients addObject:client];
+	[clients addObject: client];
 
 	return client;
 }
@@ -405,8 +405,8 @@ serverslice(int seconds,
                           // sp, or dedicated server loop
 {
 	// spawn entities when timer reached
-	[sents enumerateObjectsUsingBlock:^(
-	    ServerEntity *e, size_t i, bool *stop) {
+	[sents enumerateObjectsUsingBlock:
+	    ^ (ServerEntity *e, size_t i, bool *stop) {
 		if (e.spawnsecs && (e.spawnsecs -= seconds - lastsec) <= 0) {
 			e.spawnsecs = 0;
 			e.spawned = true;
@@ -421,8 +421,8 @@ serverslice(int seconds,
 		checkintermission();
 	if (interm && seconds > interm) {
 		interm = 0;
-		[clients enumerateObjectsUsingBlock:^(
-		    Client *client, size_t i, bool *stop) {
+		[clients enumerateObjectsUsingBlock:
+		    ^ (Client *client, size_t i, bool *stop) {
 			if (client.type != ST_EMPTY) {
 				// ask a client to trigger map reload
 				send2(true, i, SV_MAPRELOAD, 0);
@@ -475,8 +475,8 @@ serverslice(int seconds,
 			                  &c.peer->address, hn, sizeof(hn)) == 0
 			        ? @(hn)
 			        : @"localhost");
-			[OFStdOut
-			    writeFormat:@"client connected (%@)\n", c.hostname];
+			[OFStdOut writeFormat: @"client connected (%@)\n",
+					       c.hostname];
 			send_welcome(lastconnect = clients.count - 1);
 			break;
 		}
@@ -489,7 +489,8 @@ serverslice(int seconds,
 		case ENET_EVENT_TYPE_DISCONNECT:
 			if ((intptr_t)event.peer->data < 0)
 				break;
-			[OFStdOut writeFormat:@"disconnected client (%@)\n",
+			[OFStdOut writeFormat:
+			    @"disconnected client (%@)\n",
 			    clients[(size_t)event.peer->data].hostname];
 			clients[(size_t)event.peer->data].type = ST_EMPTY;
 			send2(true, -1, SV_CDIS, (intptr_t)event.peer->data);

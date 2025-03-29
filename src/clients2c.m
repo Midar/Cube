@@ -174,10 +174,10 @@ localservertoclient(unsigned char *buf, int len)
 		// server requests next map
 		case SV_MAPRELOAD: {
 			getint(&p);
-			OFString *nextmapalias = [OFString
-			    stringWithFormat:@"nextmap_%@", getclientmap()];
-			OFString *map =
-			    getalias(nextmapalias); // look up map in the cycle
+			OFString *nextmapalias = [OFString stringWithFormat:
+			    @"nextmap_%@", getclientmap()];
+			// look up map in the cycle
+			OFString *map = getalias(nextmapalias);
 			changemap(map != nil ? map : getclientmap());
 			break;
 		}
@@ -188,7 +188,7 @@ localservertoclient(unsigned char *buf, int len)
 			sgetstr();
 			if (d_.name.length > 0) {
 				// already connected
-				if (![d_.name isEqual:@(text)])
+				if (![d_.name isEqual: @(text)])
 					conoutf(@"%@ is now known as %s",
 					    d_.name, text);
 			} else {
@@ -279,7 +279,7 @@ localservertoclient(unsigned char *buf, int len)
 		}
 
 		case SV_FRAGS:
-			OFAssert([players[cn] isKindOfClass:Player.class]);
+			OFAssert([players[cn] isKindOfClass: Player.class]);
 			((Player *)players[cn]).frags = getint(&p);
 			break;
 
@@ -342,7 +342,7 @@ localservertoclient(unsigned char *buf, int len)
 			while (ents.count <= i) {
 				Entity *e = [Entity entity];
 				e.type = NOTUSED;
-				[ents addObject:e];
+				[ents addObject: e];
 			}
 
 			int to = ents[i].type;
@@ -372,7 +372,7 @@ localservertoclient(unsigned char *buf, int len)
 			break;
 
 		case SV_CLIENTPING:
-			OFAssert([players[cn] isKindOfClass:Player.class]);
+			OFAssert([players[cn] isKindOfClass: Player.class]);
 			((Player *)players[cn]).ping = getint(&p);
 			break;
 

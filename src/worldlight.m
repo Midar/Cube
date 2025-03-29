@@ -205,7 +205,7 @@ dodynlight(OFVector3D vold, OFVector3D v, int reach, int strength,
 {
 	if (!reach)
 		reach = dynlight;
-	if ([owner isKindOfClass:Monster.class])
+	if ([owner isKindOfClass: Monster.class])
 		reach = reach / 2;
 	if (!reach)
 		return;
@@ -227,11 +227,11 @@ dodynlight(OFVector3D vold, OFVector3D v, int reach, int strength,
 
 	if (dlights == nil)
 		dlights = [[OFMutableData alloc]
-		    initWithItemSize:sizeof(struct block *)];
+		    initWithItemSize: sizeof(struct block *)];
 
 	// backup area before rendering in dynlight
 	struct block *copy = blockcopy(&b);
-	[dlights addItem:&copy];
+	[dlights addItem: &copy];
 
 	Entity *l = [Entity entity];
 	l.x = v.x;

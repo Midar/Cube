@@ -49,19 +49,19 @@ initsound()
 	Mix_AllocateChannels(MAXCHAN);
 }
 
-COMMAND(music, ARG_1STR, (^(OFString *name) {
+COMMAND(music, ARG_1STR, (^ (OFString *name) {
 	if (nosound)
 		return;
 
 	stopsound();
 
 	if (soundvol && musicvol) {
-		name = [name stringByReplacingOccurrencesOfString:@"\\"
-		                                       withString:@"/"];
-		OFString *path =
-		    [OFString stringWithFormat:@"packages/%@", name];
+		name = [name stringByReplacingOccurrencesOfString: @"\\"
+		                                       withString: @"/"];
+		OFString *path = [OFString stringWithFormat:
+		    @"packages/%@", name];
 		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
-		    IRIByAppendingPathComponent:path];
+		    IRIByAppendingPathComponent: path];
 
 		if ((mod = Mix_LoadMUS(
 		         IRI.fileSystemRepresentation.UTF8String)) != NULL) {
@@ -77,7 +77,7 @@ static OFMutableArray<OFString *> *snames;
 COMMAND(registersound, ARG_1EST, ^int(OFString *name) {
 	int i = 0;
 	for (OFString *iter in snames) {
-		if ([iter isEqual:name])
+		if ([iter isEqual: name])
 			return i;
 
 		i++;
@@ -87,12 +87,12 @@ COMMAND(registersound, ARG_1EST, ^int(OFString *name) {
 		snames = [[OFMutableArray alloc] init];
 	if (samples == nil)
 		samples = [[OFMutableData alloc]
-		    initWithItemSize:sizeof(Mix_Chunk *)];
+		    initWithItemSize: sizeof(Mix_Chunk *)];
 
-	[snames addObject:[name stringByReplacingOccurrencesOfString:@"\\"
-	                                                  withString:@"/"]];
+	[snames addObject: [name stringByReplacingOccurrencesOfString: @"\\"
+							   withString: @"/"]];
 	Mix_Chunk *sample = NULL;
-	[samples addItem:&sample];
+	[samples addItem: &sample];
 
 	return samples.count - 1;
 })
@@ -193,12 +193,12 @@ playsound(int n, const OFVector3D *loc)
 		return;
 	}
 
-	Mix_Chunk **sample = (Mix_Chunk **)[samples mutableItemAtIndex:n];
+	Mix_Chunk **sample = (Mix_Chunk **)[samples mutableItemAtIndex: n];
 	if (*sample == NULL) {
-		OFString *path = [OFString
-		    stringWithFormat:@"packages/sounds/%@.wav", snames[n]];
+		OFString *path = [OFString stringWithFormat:
+		    @"packages/sounds/%@.wav", snames[n]];
 		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
-		    IRIByAppendingPathComponent:path];
+		    IRIByAppendingPathComponent: path];
 
 		*sample = Mix_LoadWAV(IRI.fileSystemRepresentation.UTF8String);
 
@@ -218,6 +218,6 @@ playsound(int n, const OFVector3D *loc)
 	updatechanvol(chan, loc);
 }
 
-COMMAND(sound, ARG_1INT, ^(int n) {
+COMMAND(sound, ARG_1INT, ^ (int n) {
 	playsound(n, NULL);
 })

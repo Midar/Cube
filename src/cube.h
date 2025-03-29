@@ -310,7 +310,7 @@ extern bool demoplayback;
 #define m_sp (gamemode < 0)
 #define m_dmsp (gamemode == -1)
 #define m_classicsp (gamemode == -2)
-#define isteam(a, b) (m_teammode && [a isEqual:b])
+#define isteam(a, b) (m_teammode && [a isEqual: b])
 
 // function signatures for script functions, see command.mm
 enum {

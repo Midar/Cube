@@ -190,19 +190,19 @@ purgetextures()
 
 int curtexnum = 0;
 
-COMMAND(texturereset, ARG_NONE, ^{
+COMMAND(texturereset, ARG_NONE, ^ {
 	curtexnum = 0;
 })
 
-COMMAND(texture, ARG_2STR, (^(OFString *aframe, OFString *name) {
+COMMAND(texture, ARG_2STR, (^ (OFString *aframe, OFString *name) {
 	int num = curtexnum++, frame = aframe.cube_intValue;
 
 	if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
 		return;
 
 	mapping[num][frame] = 1;
-	mapname[num][frame] = [name stringByReplacingOccurrencesOfString:@"\\"
-	                                                      withString:@"/"];
+	mapname[num][frame] = [name stringByReplacingOccurrencesOfString: @"\\"
+	                                                      withString: @"/"];
 }))
 
 int
@@ -223,7 +223,7 @@ lookuptexture(int tex, int *xs, int *ys)
 
 	// lazily happens once per "texture" command, basically
 	for (int i = 0; i < curtex; i++) {
-		if ([mapname[tex][frame] isEqual:texname[i]]) {
+		if ([mapname[tex][frame] isEqual: texname[i]]) {
 			mapping[tex][frame] = tid = i + FIRSTTEX;
 			*xs = texx[i];
 			*ys = texy[i];
@@ -237,13 +237,11 @@ lookuptexture(int tex, int *xs, int *ys)
 	int tnum = curtex + FIRSTTEX;
 	texname[curtex] = mapname[tex][frame];
 
-	OFString *path =
-	    [OFString stringWithFormat:@"packages/%@", texname[curtex]];
+	OFString *path = [OFString stringWithFormat: @"packages/%@",
+						     texname[curtex]];
 
-	if (installtex(tnum,
-	        [Cube.sharedInstance.gameDataIRI
-	            IRIByAppendingPathComponent:path],
-	        xs, ys, false)) {
+	if (installtex(tnum, [Cube.sharedInstance.gameDataIRI
+	    IRIByAppendingPathComponent: path], xs, ys, false)) {
 		mapping[tex][frame] = tnum;
 		texx[curtex] = *xs;
 		texy[curtex] = *ys;
@@ -322,10 +320,10 @@ addstrip(int tex, int start, int n)
 {
 	if (strips == nil)
 		strips = [[OFMutableData alloc]
-		    initWithItemSize:sizeof(struct strip)];
+		    initWithItemSize: sizeof(struct strip)];
 
 	struct strip s = { .tex = tex, .start = start, .num = n };
-	[strips addItem:&s];
+	[strips addItem: &s];
 }
 
 #undef gamma

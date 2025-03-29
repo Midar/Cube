@@ -167,7 +167,7 @@ struct dynent {
 
 	memcpy(data.name, _name.UTF8String, min(_name.UTF8StringLength, 259));
 
-	if ([self isKindOfClass:Player.class]) {
+	if ([self isKindOfClass: Player.class]) {
 		Player *player = (Player *)self;
 		data.lifeSequence = player.lifeSequence,
 		data.frags = player.frags;
@@ -175,7 +175,7 @@ struct dynent {
 		    min(player.team.UTF8StringLength, 259));
 	}
 
-	if ([self isKindOfClass:Monster.class]) {
+	if ([self isKindOfClass: Monster.class]) {
 		Monster *monster = (Monster *)self;
 		data.monsterState = monster.monsterState;
 		data.monsterType = monster.monsterType;
@@ -185,10 +185,10 @@ struct dynent {
 		data.anger = monster.anger;
 	}
 
-	return [OFData dataWithItems:&data count:sizeof(data)];
+	return [OFData dataWithItems: &data count: sizeof(data)];
 }
 
-- (void)setFromSerializedData:(OFData *)data
+- (void)setFromSerializedData: (OFData *)data
 {
 	struct dynent d;
 
@@ -239,16 +239,16 @@ struct dynent {
 	_blocked = d.blocked;
 	_moving = d.moving;
 
-	_name = [[OFString alloc] initWithUTF8String:d.name];
+	_name = [[OFString alloc] initWithUTF8String: d.name];
 
-	if ([self isKindOfClass:Player.class]) {
+	if ([self isKindOfClass: Player.class]) {
 		Player *player = (Player *)self;
 		player.lifeSequence = d.lifeSequence;
 		player.frags = d.frags;
 		player.team = @(d.team);
 	}
 
-	if ([self isKindOfClass:Monster.class]) {
+	if ([self isKindOfClass: Monster.class]) {
 		Monster *monster = (Monster *)self;
 		monster.monsterState = d.monsterState;
 		monster.monsterType = d.monsterType;

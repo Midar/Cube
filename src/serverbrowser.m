@@ -27,7 +27,7 @@ resolverinit(int threads, int limit)
 	while (threads > 0) {
 		ResolverThread *rt = [ResolverThread thread];
 		rt.name = @"resolverthread";
-		[resolverthreads addObject:rt];
+		[resolverthreads addObject: rt];
 		[rt start];
 		--threads;
 	}
@@ -48,7 +48,7 @@ resolverstop(size_t i, bool restart)
 
 			[rt start];
 		} else
-			[resolverthreads removeObjectAtIndex:i];
+			[resolverthreads removeObjectAtIndex: i];
 	}
 }
 
@@ -71,7 +71,7 @@ void
 resolverquery(OFString *name)
 {
 	@synchronized(ResolverThread.class) {
-		[resolverqueries addObject:name];
+		[resolverqueries addObject: name];
 		SDL_SemPost(resolversem);
 	}
 }
@@ -118,16 +118,16 @@ void
 addserver(OFString *servername)
 {
 	for (ServerInfo *si in servers)
-		if ([si.name isEqual:servername])
+		if ([si.name isEqual: servername])
 			return;
 
 	if (servers == nil)
 		servers = [[OFMutableArray alloc] init];
 
-	[servers addObject:[ServerInfo infoWithName:servername]];
+	[servers addObject: [ServerInfo infoWithName: servername]];
 }
 
-COMMAND(addserver, ARG_1STR, ^(OFString *servername) {
+COMMAND(addserver, ARG_1STR, ^ (OFString *servername) {
 	addserver(servername);
 })
 
@@ -163,7 +163,7 @@ checkresolver()
 			continue;
 
 		for (ServerInfo *si in servers) {
-			if ([name isEqual:si.name]) {
+			if ([name isEqual: si.name]) {
 				si.address = addr;
 				addr.host = ENET_HOST_ANY;
 				break;
@@ -217,29 +217,28 @@ refreshservers()
 	[servers sort];
 
 	__block int maxmenu = 16;
-	[servers enumerateObjectsUsingBlock:^(
-	    ServerInfo *si, size_t i, bool *stop) {
+	[servers enumerateObjectsUsingBlock:
+	    ^ (ServerInfo *si, size_t i, bool *stop) {
 		if (si.address.host != ENET_HOST_ANY && si.ping != 9999) {
 			if (si.protocol != PROTOCOL_VERSION)
 				si.full = [OFString stringWithFormat:
-				        @"%@ [different cube protocol]",
-				    si.name];
+				    @"%@ [different cube protocol]", si.name];
 			else
-				si.full = [OFString
-				    stringWithFormat:@"%d\t%d\t%@, %@: %@ %@",
+				si.full = [OFString stringWithFormat:
+				    @"%d\t%d\t%@, %@: %@ %@",
 				    si.ping, si.numplayers,
 				    si.map.length > 0 ? si.map : @"[unknown]",
 				    modestr(si.mode), si.name, si.sdesc];
 		} else
 			si.full = [OFString stringWithFormat:
-			        (si.address.host != ENET_HOST_ANY
-			                ? @"%@ [waiting for server response]"
-			                : @"%@ [unknown host]\t"),
+			    (si.address.host != ENET_HOST_ANY
+			    ? @"%@ [waiting for server response]"
+			    : @"%@ [unknown host]\t"),
 			    si.name];
 
 		// cut off too long server descriptions
 		if (si.full.length > 50)
-			si.full = [si.full substringToIndex:50];
+			si.full = [si.full substringToIndex: 50];
 
 		menumanual(1, i, si.full);
 
@@ -265,11 +264,11 @@ servermenu()
 	menuset(1);
 }
 
-COMMAND(servermenu, ARG_NONE, ^{
+COMMAND(servermenu, ARG_NONE, ^ {
 	servermenu();
 })
 
-COMMAND(updatefrommaster, ARG_NONE, ^{
+COMMAND(updatefrommaster, ARG_NONE, ^ {
 	const int MAXUPD = 32000;
 	unsigned char buf[MAXUPD];
 	unsigned char *reply = retrieveservers(buf, MAXUPD);

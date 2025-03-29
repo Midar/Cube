@@ -17,16 +17,18 @@ void
 delayedload(MD2 *m)
 {
 	if (!m.loaded) {
-		OFString *path = [OFString
-		    stringWithFormat:@"packages/models/%@", m.loadname];
+		OFString *path = [OFString stringWithFormat:
+		    @"packages/models/%@", m.loadname];
 		OFIRI *baseIRI = [Cube.sharedInstance.gameDataIRI
-		    IRIByAppendingPathComponent:path];
+		    IRIByAppendingPathComponent: path];
 
-		OFIRI *IRI1 = [baseIRI IRIByAppendingPathComponent:@"tris.md2"];
-		if (![m loadWithIRI:IRI1])
+		OFIRI *IRI1 = [baseIRI
+		    IRIByAppendingPathComponent: @"tris.md2"];
+		if (![m loadWithIRI: IRI1])
 			fatal(@"loadmodel: %@", IRI1.string);
 
-		OFIRI *IRI2 = [baseIRI IRIByAppendingPathComponent:@"skin.jpg"];
+		OFIRI *IRI2 = [baseIRI
+		    IRIByAppendingPathComponent: @"skin.jpg"];
 		int xs, ys;
 		installtex(FIRSTMDL + m.mdlnum, IRI2, &xs, &ys, false);
 		m.loaded = true;
@@ -44,7 +46,7 @@ loadmodel(OFString *name)
 
 	m = [MD2 md2];
 	m.mdlnum = modelnum++;
-	m.mmi = [MapModelInfo infoWithRad:2 h:2 zoff:0 snap:0 name:@""];
+	m.mmi = [MapModelInfo infoWithRad: 2 h: 2 zoff: 0 snap: 0 name: @""];
 	m.loadname = name;
 
 	if (mdllookup == nil)
@@ -55,25 +57,23 @@ loadmodel(OFString *name)
 	return m;
 }
 
-COMMAND(mapmodel, ARG_5STR,
-    ^(OFString *rad, OFString *h, OFString *zoff, OFString *snap,
-        OFString *name) {
-	    MD2 *m =
-	        loadmodel([name stringByReplacingOccurrencesOfString:@"\\"
-	                                                  withString:@"/"]);
-	    m.mmi = [MapModelInfo infoWithRad:rad.cube_intValue
-	                                    h:h.cube_intValue
-	                                 zoff:zoff.cube_intValue
-	                                 snap:snap.cube_intValue
-	                                 name:m.loadname];
+COMMAND(mapmodel, ARG_5STR, ^ (OFString *rad, OFString *h, OFString *zoff,
+    OFString *snap, OFString *name) {
+	MD2 *m = loadmodel([name stringByReplacingOccurrencesOfString: @"\\"
+							   withString: @"/"]);
+	m.mmi = [MapModelInfo infoWithRad: rad.cube_intValue
+					h: h.cube_intValue
+				     zoff: zoff.cube_intValue
+				     snap: snap.cube_intValue
+				     name: m.loadname];
 
-	    if (mapmodels == nil)
-		    mapmodels = [[OFMutableArray alloc] init];
+	if (mapmodels == nil)
+		mapmodels = [[OFMutableArray alloc] init];
 
-	    [mapmodels addObject:m];
-    })
+	[mapmodels addObject: m];
+})
 
-COMMAND(mapmodelreset, ARG_NONE, ^{
+COMMAND(mapmodelreset, ARG_NONE, ^ {
 	[mapmodels removeAllObjects];
 })
 
@@ -102,35 +102,35 @@ rendermodel(OFString *mdl, int frame, int range, int tex, float rad,
 
 	int ix = (int)position.x;
 	int iy = (int)position.z;
-	OFColor *light = [OFColor colorWithRed:1 green:1 blue:1 alpha:1];
+	OFColor *light = OFColor.white;
 
 	if (!OUTBORD(ix, iy)) {
 		struct sqr *s = S(ix, iy);
 		float ll = 256.0f; // 0.96f;
 		float of = 0.0f;   // 0.1f;
-		light = [OFColor colorWithRed:s->r / ll + of
-		                        green:s->g / ll + of
-		                         blue:s->b / ll + of
-		                        alpha:1];
+		light = [OFColor colorWithRed: s->r / ll + of
+		                        green: s->g / ll + of
+		                         blue: s->b / ll + of
+		                        alpha: 1];
 	}
 
 	if (teammate) {
 		float red, green, blue;
-		[light getRed:&red green:&green blue:&blue alpha:NULL];
-		light = [OFColor colorWithRed:red * 0.6f
-		                        green:green * 0.7f
-		                         blue:blue * 1.2f
-		                        alpha:1];
+		[light getRed: &red green: &green blue: &blue alpha: NULL];
+		light = [OFColor colorWithRed: red * 0.6f
+		                        green: green * 0.7f
+		                         blue: blue * 1.2f
+		                        alpha: 1];
 	}
 
-	[m renderWithLight:light
-	             frame:frame
-	             range:range
-	          position:position
-	               yaw:yaw
-	             pitch:pitch
-	             scale:scale
-	             speed:speed
-	              snap:snap
-	          basetime:basetime];
+	[m renderWithLight: light
+	             frame: frame
+	             range: range
+	          position: position
+	               yaw: yaw
+	             pitch: pitch
+	             scale: scale
+	             speed: speed
+	              snap: snap
+	          basetime: basetime];
 }

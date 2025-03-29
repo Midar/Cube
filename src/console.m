@@ -18,7 +18,7 @@ int conskip = 0;
 bool saycommandon = false;
 static OFMutableString *commandbuf;
 
-COMMAND(conskip, ARG_1INT, ^(int n) {
+COMMAND(conskip, ARG_1INT, ^ (int n) {
 	conskip += n;
 	if (conskip < 0)
 		conskip = 0;
@@ -38,16 +38,16 @@ conline(OFString *sf, bool highlight) // add a line to the console buffer
 
 	if (highlight)
 		// show line in a different colour, for chat etc.
-		[text appendString:@"\f"];
+		[text appendString: @"\f"];
 
-	[text appendString:sf];
+	[text appendString: sf];
 
 	if (conlines == nil)
 		conlines = [[OFMutableArray alloc] init];
 
-	[conlines insertObject:[ConsoleLine lineWithText:text
-	                                         outtime:lastmillis]
-	               atIndex:0];
+	[conlines insertObject: [ConsoleLine lineWithText: text
+						  outtime: lastmillis]
+		       atIndex: 0];
 
 	puts(text.UTF8String);
 #ifndef OF_WINDOWS
@@ -61,15 +61,15 @@ conoutf(OFConstantString *format, ...)
 	va_list arguments;
 	va_start(arguments, format);
 
-	OFString *string = [[OFString alloc] initWithFormat:format
-	                                          arguments:arguments];
+	OFString *string = [[OFString alloc] initWithFormat: format
+	                                          arguments: arguments];
 
 	va_end(arguments);
 
 	int n = 0;
 	while (string.length > WORDWRAP) {
-		conline([string substringToIndex:WORDWRAP], n++ != 0);
-		string = [string substringFromIndex:WORDWRAP];
+		conline([string substringToIndex: WORDWRAP], n++ != 0);
+		string = [string substringFromIndex: WORDWRAP];
 	}
 	conline(string, n != 0);
 }
@@ -102,19 +102,19 @@ renderconsole()
 
 static OFMutableArray<KeyMapping *> *keyMappings = nil;
 
-COMMAND(keymap, ARG_3STR, ^(OFString *code, OFString *key, OFString *action) {
+COMMAND(keymap, ARG_3STR, ^ (OFString *code, OFString *key, OFString *action) {
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
-	KeyMapping *mapping = [KeyMapping mappingWithCode:code.cube_intValue
-	                                             name:key];
+	KeyMapping *mapping = [KeyMapping mappingWithCode: code.cube_intValue
+	                                             name: key];
 	mapping.action = action;
-	[keyMappings addObject:mapping];
+	[keyMappings addObject: mapping];
 })
 
-COMMAND(bind, ARG_2STR, ^(OFString *key, OFString *action) {
+COMMAND(bind, ARG_2STR, ^ (OFString *key, OFString *action) {
 	for (KeyMapping *mapping in keyMappings) {
-		if ([mapping.name caseInsensitiveCompare:key] ==
+		if ([mapping.name caseInsensitiveCompare: key] ==
 		    OFOrderedSame) {
 			mapping.action = action;
 			return;
@@ -143,11 +143,11 @@ saycommand(OFString *init)
 	commandbuf = [init mutableCopy];
 }
 
-COMMAND(saycommand, ARG_VARI, ^(OFString *init) {
+COMMAND(saycommand, ARG_VARI, ^ (OFString *init) {
 	saycommand(init);
 })
 
-COMMAND(mapmsg, ARG_1STR, ^(OFString *s) {
+COMMAND(mapmsg, ARG_1STR, ^ (OFString *s) {
 	memset(hdr.maptitle, '\0', sizeof(hdr.maptitle));
 	strncpy(hdr.maptitle, s.UTF8String, 127);
 })
@@ -155,13 +155,13 @@ COMMAND(mapmsg, ARG_1STR, ^(OFString *s) {
 void
 pasteconsole()
 {
-	[commandbuf appendString:@(SDL_GetClipboardText())];
+	[commandbuf appendString: @(SDL_GetClipboardText())];
 }
 
 static OFMutableArray<OFString *> *vhistory;
 static int histpos = 0;
 
-COMMAND(history, ARG_1INT, ^(int n) {
+COMMAND(history, ARG_1INT, ^ (int n) {
 	static bool rec = false;
 
 	if (!rec && n >= 0 && n < vhistory.count) {
@@ -226,14 +226,14 @@ keypress(int code, bool isDown)
 						        init];
 
 					if (vhistory.count == 0 ||
-					    ![vhistory.lastObject
-					        isEqual:commandbuf]) {
+					    ![vhistory.lastObject isEqual:
+					    commandbuf]) {
 						// cap this?
-						[vhistory addObject:[commandbuf
-						                        copy]];
+						[vhistory addObject:
+						    [commandbuf copy]];
 					}
 					histpos = vhistory.count;
-					if ([commandbuf hasPrefix:@"/"])
+					if ([commandbuf hasPrefix: @"/"])
 						execute(commandbuf, true);
 					else
 						toserver(commandbuf);
@@ -261,7 +261,7 @@ void
 input(OFString *text)
 {
 	if (saycommandon)
-		[commandbuf appendString:text];
+		[commandbuf appendString: text];
 }
 
 OFString *
@@ -275,6 +275,6 @@ writebinds(OFStream *stream)
 {
 	for (KeyMapping *mapping in keyMappings)
 		if (mapping.action.length > 0)
-			[stream writeFormat:@"bind \"%@\" [%@]\n", mapping.name,
-			    mapping.action];
+			[stream writeFormat: @"bind \"%@\" [%@]\n",
+					     mapping.name, mapping.action];
 }

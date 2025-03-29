@@ -20,7 +20,7 @@ struct block sel = { 0, 0, 0, 0 };
 
 OF_CONSTRUCTOR()
 {
-	enqueueInit(^{
+	enqueueInit(^ {
 		static const struct {
 			OFString *name;
 			int *storage;
@@ -28,13 +28,13 @@ OF_CONSTRUCTOR()
 			{ @"selxs", &sel.xs }, { @"selys", &sel.ys } };
 
 		for (size_t i = 0; i < 4; i++) {
-			Variable *variable =
-			    [Variable variableWithName:vars[i].name
-			                           min:0
-			                           max:4096
-			                       storage:vars[i].storage
-			                      function:NULL
-			                     persisted:false];
+			Variable *variable = [Variable
+			    variableWithName: vars[i].name
+					 min: 0
+					 max: 4096
+				     storage: vars[i].storage
+				    function: NULL
+				   persisted: false];
 			Identifier.identifiers[vars[i].name] = variable;
 		}
 	});
@@ -93,7 +93,7 @@ toggleedit()
 	editing = editmode;
 }
 
-COMMAND(edittoggle, ARG_NONE, ^{
+COMMAND(edittoggle, ARG_NONE, ^ {
 	toggleedit();
 })
 
@@ -137,7 +137,7 @@ noselection()
 	if (noteditmode() || multiplayer()) \
 		return;
 
-COMMAND(select, ARG_4INT, (^(int x, int y, int xs, int ys) {
+COMMAND(select, ARG_4INT, (^ (int x, int y, int xs, int ys) {
 	struct block s = { x, y, xs, ys };
 	sel = s;
 	selh = 0;
@@ -221,23 +221,23 @@ cursorupdate() // called every frame from hud
 			float h3 = sheight(s, SWS(s, 1, 1, ssize), z);
 			float h4 = sheight(s, SWS(s, 0, 1, ssize), z);
 			if (s->tag)
-				linestyle(GRIDW, [OFColor colorWithRed:1.0f
-								 green:0.25f
-								  blue:0.25f
-								 alpha:1.0f]);
+				linestyle(GRIDW, [OFColor colorWithRed: 1.0f
+								 green: 0.25f
+								  blue: 0.25f
+								 alpha: 1.0f]);
 			else if (s->type == FHF || s->type == CHF)
-				linestyle(GRIDW, [OFColor colorWithRed:0.5f
-								 green:1.0f
-								  blue:0.5f
-								 alpha:1.0f]);
+				linestyle(GRIDW, [OFColor colorWithRed: 0.5f
+								 green: 1.0f
+								  blue: 0.5f
+								 alpha: 1.0f]);
 			else
 				linestyle(GRIDW, OFColor.gray);
 			struct block b = { ix, iy, 1, 1 };
 			box(&b, h1, h2, h3, h4);
-			linestyle(GRID8, [OFColor colorWithRed:0.25f
-							 green:0.25f
-							  blue:1.0f
-							 alpha:1.0f]);
+			linestyle(GRID8, [OFColor colorWithRed: 0.25f
+							 green: 0.25f
+							  blue: 1.0f
+							 alpha: 1.0f]);
 			if (!(ix & GRIDM))
 				line(ix, iy, h1, ix, iy + 1, h4);
 			if (!(ix + 1 & GRIDM))
@@ -262,10 +262,10 @@ cursorupdate() // called every frame from hud
 	}
 
 	if (selset) {
-		linestyle(GRIDS, [OFColor colorWithRed:1.0f
-						 green:0.25f
-						  blue:0.25f
-						 alpha:1.0f]);
+		linestyle(GRIDS, [OFColor colorWithRed: 1.0f
+						 green: 0.25f
+						  blue: 0.25f
+						 alpha: 1.0f]);
 		box(&sel, (float)selh, (float)selh, (float)selh, (float)selh);
 	}
 }
@@ -278,12 +278,12 @@ pruneundos(int maxremain) // bound memory
 {
 	int t = 0;
 	for (ssize_t i = (ssize_t)undos.count - 1; i >= 0; i--) {
-		struct block *undo = [undos mutableItemAtIndex:i];
+		struct block *undo = [undos mutableItemAtIndex: i];
 
 		t += undo->xs * undo->ys * sizeof(struct sqr);
 		if (t > maxremain) {
 			OFFreeMemory(undo);
-			[undos removeItemAtIndex:i];
+			[undos removeItemAtIndex: i];
 		}
 	}
 }
@@ -293,14 +293,14 @@ makeundo()
 {
 	if (undos == nil)
 		undos = [[OFMutableData alloc]
-		    initWithItemSize:sizeof(struct block *)];
+		    initWithItemSize: sizeof(struct block *)];
 
 	struct block *copy = blockcopy(&sel);
-	[undos addItem:&copy];
+	[undos addItem: &copy];
 	pruneundos(undomegs << 20);
 }
 
-COMMAND(undo, ARG_NONE, ^{
+COMMAND(undo, ARG_NONE, ^ {
 	EDITMP;
 	if (undos.count == 0) {
 		conoutf(@"nothing more to undo");
@@ -314,7 +314,7 @@ COMMAND(undo, ARG_NONE, ^{
 
 static struct block *copybuf = NULL;
 
-COMMAND(copy, ARG_NONE, ^{
+COMMAND(copy, ARG_NONE, ^ {
 	EDITSELMP;
 
 	if (copybuf)
@@ -323,7 +323,7 @@ COMMAND(copy, ARG_NONE, ^{
 	copybuf = blockcopy(&sel);
 })
 
-COMMAND(paste, ARG_NONE, ^{
+COMMAND(paste, ARG_NONE, ^ {
 	EDITMP;
 	if (!copybuf) {
 		conoutf(@"nothing to paste");
@@ -401,7 +401,7 @@ editheight(int flr, int amount)
 	addmsg(1, 7, SV_EDITH, sel.x, sel.y, sel.xs, sel.ys, isfloor, amount);
 }
 
-COMMAND(editheight, ARG_2INT, ^(int flr, int amount) {
+COMMAND(editheight, ARG_2INT, ^ (int flr, int amount) {
 	editheight(flr, amount);
 })
 
@@ -424,7 +424,7 @@ edittexxy(int type, int t, const struct block *sel)
 	});
 }
 
-COMMAND(edittex, ARG_2INT, ^(int type, int dir) {
+COMMAND(edittex, ARG_2INT, ^ (int type, int dir) {
 	EDITSEL;
 
 	if (type < 0 || type > 3)
@@ -444,7 +444,7 @@ COMMAND(edittex, ARG_2INT, ^(int type, int dir) {
 	addmsg(1, 7, SV_EDITT, sel.x, sel.y, sel.xs, sel.ys, type, t);
 })
 
-COMMAND(replace, ARG_NONE, (^{
+COMMAND(replace, ARG_NONE, (^ {
 	EDITSELMP;
 
 	for (int x = 0; x < ssize; x++) {
@@ -497,15 +497,15 @@ edittype(int type)
 	addmsg(1, 6, SV_EDITS, sel.x, sel.y, sel.xs, sel.ys, type);
 }
 
-COMMAND(heightfield, ARG_1INT, ^(int t) {
+COMMAND(heightfield, ARG_1INT, ^ (int t) {
 	edittype(t == 0 ? FHF : CHF);
 })
 
-COMMAND(solid, ARG_1INT, ^(int t) {
+COMMAND(solid, ARG_1INT, ^ (int t) {
 	edittype(t == 0 ? SPACE : SOLID);
 })
 
-COMMAND(corner, ARG_NONE, ^{
+COMMAND(corner, ARG_NONE, ^ {
 	edittype(CORNER);
 })
 
@@ -529,7 +529,7 @@ editequalisexy(bool isfloor, const struct block *sel)
 	});
 }
 
-COMMAND(equalize, ARG_1INT, ^(int flr) {
+COMMAND(equalize, ARG_1INT, ^ (int flr) {
 	bool isfloor = (flr == 0);
 
 	EDITSEL;
@@ -545,7 +545,7 @@ setvdeltaxy(int delta, const struct block *sel)
 	remipmore(sel, 0);
 }
 
-COMMAND(vdelta, ARG_1INT, ^(int delta) {
+COMMAND(vdelta, ARG_1INT, ^ (int delta) {
 	EDITSEL;
 
 	setvdeltaxy(delta, &sel);
@@ -556,7 +556,7 @@ COMMAND(vdelta, ARG_1INT, ^(int delta) {
 int archverts[MAXARCHVERT][MAXARCHVERT];
 bool archvinit = false;
 
-COMMAND(archvertex, ARG_3INT, ^(int span, int vert, int delta) {
+COMMAND(archvertex, ARG_3INT, ^ (int span, int vert, int delta) {
 	if (!archvinit) {
 		archvinit = true;
 		for (int s = 0; s < MAXARCHVERT; s++)
@@ -568,7 +568,7 @@ COMMAND(archvertex, ARG_3INT, ^(int span, int vert, int delta) {
 	archverts[span][vert] = delta;
 })
 
-COMMAND(arch, ARG_2INT, ^(int sidedelta, int _a) {
+COMMAND(arch, ARG_2INT, ^ (int sidedelta, int _a) {
 	EDITSELMP;
 
 	sel.xs++;
@@ -590,7 +590,7 @@ COMMAND(arch, ARG_2INT, ^(int sidedelta, int _a) {
 	remipmore(sel, 0);
 })
 
-COMMAND(slope, ARG_2INT, ^(int xd, int yd) {
+COMMAND(slope, ARG_2INT, ^ (int xd, int yd) {
 	EDITSELMP;
 
 	int off = 0;
@@ -609,7 +609,7 @@ COMMAND(slope, ARG_2INT, ^(int xd, int yd) {
 	remipmore(sel, 0);
 })
 
-COMMAND(perlin, ARG_3INT, ^(int scale, int seed, int psize) {
+COMMAND(perlin, ARG_3INT, ^ (int scale, int seed, int psize) {
 	EDITSELMP;
 
 	sel.xs++;
@@ -639,7 +639,7 @@ VARF(
 		    world[i].r = world[i].g = world[i].b = 176;
     });
 
-COMMAND(edittag, ARG_1INT, ^(int tag) {
+COMMAND(edittag, ARG_1INT, ^ (int tag) {
 	EDITSELMP;
 
 	struct block *sel_ = &sel;
@@ -649,10 +649,10 @@ COMMAND(edittag, ARG_1INT, ^(int tag) {
 })
 
 COMMAND(newent, ARG_5STR,
-    ^(OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4) {
-	    EDITSEL;
+    ^ (OFString *what, OFString *a1, OFString *a2, OFString *a3, OFString *a4) {
+	EDITSEL;
 
-	    newentity(sel.x, sel.y, (int)Player.player1.origin.z, what,
-	        [a1 cube_intValueWithBase:0], [a2 cube_intValueWithBase:0],
-	        [a3 cube_intValueWithBase:0], [a4 cube_intValueWithBase:0]);
-    })
+	newentity(sel.x, sel.y, (int)Player.player1.origin.z, what,
+	    [a1 cube_intValueWithBase: 0], [a2 cube_intValueWithBase: 0],
+	    [a3 cube_intValueWithBase: 0], [a4 cube_intValueWithBase: 0]);
+})

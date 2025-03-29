@@ -15,7 +15,7 @@ static OFMutableDictionary<OFString *, __kindof Identifier *> *identifiers;
 	return identifiers;
 }
 
-- (instancetype)initWithName:(OFString *)name
+- (instancetype)initWithName: (OFString *)name
 {
 	self = [super init];
 

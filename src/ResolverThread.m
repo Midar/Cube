@@ -25,9 +25,9 @@ extern OFMutableArray<ResolverResult *> *resolverresults;
 		enet_address_set_host(&address, _query.UTF8String);
 
 		@synchronized(ResolverThread.class) {
-			[resolverresults
-			    addObject:[ResolverResult resultWithQuery:_query
-			                                      address:address]];
+			[resolverresults addObject:
+			    [ResolverResult resultWithQuery: _query
+						    address: address]];
 
 			_query = NULL;
 			_starttime = 0;

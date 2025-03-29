@@ -21,10 +21,10 @@ menuset(int menu)
 		menus[1].menusel = 0;
 }
 
-COMMAND(showmenu, ARG_1STR, ^(OFString *name) {
+COMMAND(showmenu, ARG_1STR, ^ (OFString *name) {
 	int i = 0;
 	for (Menu *menu in menus) {
-		if (i > 1 && [menu.name isEqual:name]) {
+		if (i > 1 && [menu.name isEqual: name]) {
 			menuset(i);
 			return;
 		}
@@ -54,7 +54,7 @@ rendermenu()
 	Menu *m = menus[vmenu];
 	OFString *title;
 	if (vmenu > 1)
-		title = [OFString stringWithFormat:@"[ %@ menu ]", m.name];
+		title = [OFString stringWithFormat: @"[ %@ menu ]", m.name];
 	else
 		title = m.name;
 	int mdisp = m.items.count;
@@ -93,10 +93,10 @@ newmenu(OFString *name)
 	if (menus == nil)
 		menus = [[OFMutableArray alloc] init];
 
-	[menus addObject:[Menu menuWithName:name]];
+	[menus addObject: [Menu menuWithName: name]];
 }
 
-COMMAND(newmenu, ARG_1STR, ^(OFString *name) {
+COMMAND(newmenu, ARG_1STR, ^ (OFString *name) {
 	newmenu(name);
 })
 
@@ -106,17 +106,17 @@ menumanual(int m, int n, OFString *text)
 	if (n == 0)
 		[menus[m].items removeAllObjects];
 
-	MenuItem *item = [MenuItem itemWithText:text action:@""];
-	[menus[m].items addObject:item];
+	MenuItem *item = [MenuItem itemWithText: text action: @""];
+	[menus[m].items addObject: item];
 }
 
-COMMAND(menuitem, ARG_2STR, ^(OFString *text, OFString *action) {
+COMMAND(menuitem, ARG_2STR, ^ (OFString *text, OFString *action) {
 	Menu *menu = menus.lastObject;
 
-	MenuItem *item =
-	    [MenuItem itemWithText:text
-	                    action:(action.length > 0 ? action : text)];
-	[menu.items addObject:item];
+	MenuItem *item = [MenuItem
+	    itemWithText: text
+		  action: (action.length > 0 ? action : text)];
+	[menu.items addObject: item];
 })
 
 bool
@@ -155,7 +155,7 @@ menukey(int code, bool isdown)
 			if (menuStack == nil)
 				menuStack = [[OFMutableArray alloc] init];
 
-			[menuStack addObject:@(vmenu)];
+			[menuStack addObject: @(vmenu)];
 			menuset(-1);
 
 			execute(action, true);

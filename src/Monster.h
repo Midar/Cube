@@ -25,16 +25,16 @@ OF_DIRECT_MEMBERS
 + (void)thinkAll;
 + (void)renderAll;
 // TODO: Move this somewhere else
-+ (void)endSinglePlayerWithAllKilled:(bool)allKilled;
-+ (instancetype)monsterWithType:(int)type
-                            yaw:(int)yaw
-                          state:(int)state
-                        trigger:(int)trigger
-                           move:(int)move;
-- (instancetype)initWithType:(int)type
-                         yaw:(int)yaw
-                       state:(int)state
-                     trigger:(int)trigger
-                        move:(int)move;
-- (void)incurDamage:(int)damage fromEntity:(__kindof DynamicEntity *)d;
++ (void)endSinglePlayerWithAllKilled: (bool)allKilled;
++ (instancetype)monsterWithType: (int)type
+                            yaw: (int)yaw
+                          state: (int)state
+                        trigger: (int)trigger
+                           move: (int)move;
+- (instancetype)initWithType: (int)type
+                         yaw: (int)yaw
+                       state: (int)state
+                     trigger: (int)trigger
+                        move: (int)move;
+- (void)incurDamage: (int)damage fromEntity: (__kindof DynamicEntity *)d;
 @end

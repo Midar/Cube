@@ -66,7 +66,7 @@ settagareas()
 {
 	settag(0, 1);
 
-	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+	[ents enumerateObjectsUsingBlock: ^ (Entity *e, size_t i, bool *stop) {
 		if (ents[i].type == CARROT)
 			setspawn(i, true);
 	}];
@@ -83,17 +83,17 @@ trigger(int tag, int type, bool savegame)
 	if (!savegame && type != 3)
 		playsound(S_RUMBLE, NULL);
 
-	OFString *aliasname =
-	    [OFString stringWithFormat:@"level_trigger_%d", tag];
+	OFString *aliasname = [OFString stringWithFormat:
+	    @"level_trigger_%d", tag];
 
 	if (identexists(aliasname))
 		execute(aliasname, true);
 
 	if (type == 2)
-		[Monster endSinglePlayerWithAllKilled:false];
+		[Monster endSinglePlayerWithAllKilled: false];
 }
 
-COMMAND(trigger, ARG_2INT, ^(int tag, int type, bool savegame) {
+COMMAND(trigger, ARG_2INT, ^ (int tag, int type, bool savegame) {
 	trigger(tag, type, savegame);
 })
 
@@ -293,7 +293,7 @@ closestent() // used for delent and edit mode ent display
 
 	__block int best;
 	__block float bdist = 99999;
-	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+	[ents enumerateObjectsUsingBlock: ^ (Entity *e, size_t i, bool *stop) {
 		if (e.type == NOTUSED)
 			return;
 
@@ -308,7 +308,7 @@ closestent() // used for delent and edit mode ent display
 	return (bdist == 99999 ? -1 : best);
 }
 
-COMMAND(entproperty, ARG_2INT, ^(int prop, int amount) {
+COMMAND(entproperty, ARG_2INT, ^ (int prop, int amount) {
 	int e = closestent();
 	if (e < 0)
 		return;
@@ -328,7 +328,7 @@ COMMAND(entproperty, ARG_2INT, ^(int prop, int amount) {
 	}
 })
 
-COMMAND(delent, ARG_NONE, ^{
+COMMAND(delent, ARG_NONE, ^ {
 	int e = closestent();
 	if (e < 0) {
 		conoutf(@"no more entities");
@@ -346,7 +346,7 @@ int
 findtype(OFString *what)
 {
 	for (int i = 0; i < MAXENTTYPES; i++)
-		if ([what isEqual:entnames[i]])
+		if ([what isEqual: entnames[i]])
 			return i;
 	conoutf(@"unknown entity type \"%@\"", what);
 	return NOTUSED;
@@ -389,7 +389,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	addmsg(1, 10, SV_EDITENT, ents.count, type, e.x, e.y, e.z, e.attr1,
 	    e.attr2, e.attr3, e.attr4);
 
-	[ents addObject:e];
+	[ents addObject: e];
 
 	if (type == LIGHT)
 		calclight();
@@ -397,7 +397,7 @@ newentity(int x, int y, int z, OFString *what, int v1, int v2, int v3, int v4)
 	return e;
 }
 
-COMMAND(clearents, ARG_1STR, ^(OFString *name) {
+COMMAND(clearents, ARG_1STR, ^ (OFString *name) {
 	int type = findtype(name);
 
 	if (noteditmode() || multiplayer())
@@ -420,7 +420,7 @@ scalecomp(unsigned char c, int intens)
 	return n;
 }
 
-COMMAND(scalelights, ARG_2INT, ^(int f, int intens) {
+COMMAND(scalelights, ARG_2INT, ^ (int f, int intens) {
 	for (Entity *e in ents) {
 		if (e.type != LIGHT)
 			continue;
@@ -545,14 +545,14 @@ empty_world(int factor, bool force)
 	}
 }
 
-COMMAND(mapenlarge, ARG_NONE, ^{
+COMMAND(mapenlarge, ARG_NONE, ^ {
 	empty_world(-1, false);
 })
 
-COMMAND(newmap, ARG_1INT, ^(int i) {
+COMMAND(newmap, ARG_1INT, ^ (int i) {
 	empty_world(i, false);
 })
 
-COMMAND(recalc, ARG_NONE, ^{
+COMMAND(recalc, ARG_NONE, ^ {
 	calclight();
 })

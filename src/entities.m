@@ -313,7 +313,7 @@ checkitems()
 	if (editmode)
 		return;
 
-	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+	[ents enumerateObjectsUsingBlock: ^ (Entity *e, size_t i, bool *stop) {
 		if (e.type == NOTUSED)
 			return;
 
@@ -348,7 +348,7 @@ checkquad(int time)
 void
 putitems(unsigned char **p)
 {
-	[ents enumerateObjectsUsingBlock:^(Entity *e, size_t i, bool *stop) {
+	[ents enumerateObjectsUsingBlock: ^ (Entity *e, size_t i, bool *stop) {
 		if ((e.type >= I_SHELLS && e.type <= I_QUAD) ||
 		    e.type == CARROT) {
 			putint(p, i);

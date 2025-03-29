@@ -63,22 +63,22 @@ snap(int sn, float f)
 	OFFreeMemory(_mverts);
 }
 
-- (bool)loadWithIRI:(OFIRI *)IRI
+- (bool)loadWithIRI: (OFIRI *)IRI
 {
 	OFSeekableStream *stream;
 	@try {
-		stream = (OFSeekableStream *)[[OFIRIHandler handlerForIRI:IRI]
-		    openItemAtIRI:IRI
-		             mode:@"r"];
+		stream = (OFSeekableStream *)[[OFIRIHandler handlerForIRI: IRI]
+		    openItemAtIRI: IRI
+		             mode: @"r"];
 	} @catch (id e) {
 		return false;
 	}
 
-	if (![stream isKindOfClass:OFSeekableStream.class])
+	if (![stream isKindOfClass: OFSeekableStream.class])
 		return false;
 
 	struct md2_header header;
-	[stream readIntoBuffer:&header exactLength:sizeof(header)];
+	[stream readIntoBuffer: &header exactLength: sizeof(header)];
 	endianswap(&header, sizeof(int), sizeof(header) / sizeof(int));
 
 	if (header.magic != 844121161 || header.version != 8)
@@ -90,9 +90,9 @@ snap(int sn, float f)
 		return false;
 	}
 
-	[stream seekToOffset:header.offsetFrames whence:OFSeekSet];
-	[stream readIntoBuffer:_frames
-	           exactLength:header.frameSize * header.numFrames];
+	[stream seekToOffset: header.offsetFrames whence: OFSeekSet];
+	[stream readIntoBuffer: _frames
+	           exactLength: header.frameSize * header.numFrames];
 
 	for (int i = 0; i < header.numFrames; ++i)
 		endianswap(_frames + i * header.frameSize, sizeof(float), 6);
@@ -103,9 +103,9 @@ snap(int sn, float f)
 		return false;
 	}
 
-	[stream seekToOffset:header.offsetGlCommands whence:OFSeekSet];
-	[stream readIntoBuffer:_glCommands
-	           exactLength:header.numGlCommands * sizeof(int)];
+	[stream seekToOffset: header.offsetGlCommands whence: OFSeekSet];
+	[stream readIntoBuffer: _glCommands
+	           exactLength: header.numGlCommands * sizeof(int)];
 	endianswap(_glCommands, sizeof(int), header.numGlCommands);
 
 	_numFrames = header.numFrames;
@@ -121,7 +121,7 @@ snap(int sn, float f)
 	return true;
 }
 
-- (void)scaleWithFrame:(int)frame scale:(float)scale snap:(int)sn
+- (void)scaleWithFrame: (int)frame scale: (float)scale snap: (int)sn
 {
 	OFAssert(_mverts[frame] == NULL);
 
@@ -139,20 +139,20 @@ snap(int sn, float f)
 	}
 }
 
-- (void)renderWithLight:(OFColor *)light
-                  frame:(int)frame
-                  range:(int)range
-               position:(OFVector3D)position
-                    yaw:(float)yaw
-                  pitch:(float)pitch
-                  scale:(float)sc
-                  speed:(float)speed
-                   snap:(int)sn
-               basetime:(int)basetime
+- (void)renderWithLight: (OFColor *)light
+                  frame: (int)frame
+                  range: (int)range
+               position: (OFVector3D)position
+                    yaw: (float)yaw
+                  pitch: (float)pitch
+                  scale: (float)sc
+                  speed: (float)speed
+                   snap: (int)sn
+               basetime: (int)basetime
 {
 	for (int i = 0; i < range; i++)
 		if (!_mverts[frame + i])
-			[self scaleWithFrame:frame + i scale:sc snap:sn];
+			[self scaleWithFrame: frame + i scale: sc snap: sn];
 
 	glPushMatrix();
 	glTranslatef(position.x, position.y, position.z);

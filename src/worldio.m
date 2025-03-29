@@ -15,8 +15,8 @@ struct persistent_entity {
 void
 backup(OFString *name, OFString *backupname)
 {
-	[OFFileManager.defaultManager removeItemAtPath:backupname];
-	[OFFileManager.defaultManager moveItemAtPath:name toPath:backupname];
+	[OFFileManager.defaultManager removeItemAtPath: backupname];
+	[OFFileManager.defaultManager moveItemAtPath: name toPath: backupname];
 }
 
 static OFString *cgzname, *bakname, *pcfname, *mcfname;
@@ -25,26 +25,26 @@ static void
 setnames(OFString *name)
 {
 	OFCharacterSet *cs =
-	    [OFCharacterSet characterSetWithCharactersInString:@"/\\"];
-	OFRange range = [name rangeOfCharacterFromSet:cs];
+	    [OFCharacterSet characterSetWithCharactersInString: @"/\\"];
+	OFRange range = [name rangeOfCharacterFromSet: cs];
 	OFString *pakname, *mapname;
 
 	if (range.location != OFNotFound) {
-		pakname = [name substringToIndex:range.location];
-		mapname = [name substringFromIndex:range.location + 1];
+		pakname = [name substringToIndex: range.location];
+		mapname = [name substringFromIndex: range.location + 1];
 	} else {
 		pakname = @"base";
 		mapname = name;
 	}
 
-	cgzname = [[OFString alloc]
-	    initWithFormat:@"packages/%@/%@.cgz", pakname, mapname];
-	bakname = [[OFString alloc] initWithFormat:@"packages/%@/%@_%d.BAK",
-	    pakname, mapname, lastmillis];
-	pcfname = [[OFString alloc]
-	    initWithFormat:@"packages/%@/package.cfg", pakname];
-	mcfname = [[OFString alloc]
-	    initWithFormat:@"packages/%@/%@.cfg", pakname, mapname];
+	cgzname = [[OFString alloc] initWithFormat:
+	    @"packages/%@/%@.cgz", pakname, mapname];
+	bakname = [[OFString alloc] initWithFormat:
+	    @"packages/%@/%@_%d.BAK", pakname, mapname, lastmillis];
+	pcfname = [[OFString alloc] initWithFormat:
+	    @"packages/%@/package.cfg", pakname];
+	mcfname = [[OFString alloc] initWithFormat:
+	    @"packages/%@/%@.cfg", pakname, mapname];
 }
 
 // the optimize routines below are here to reduce the detrimental effects of
@@ -145,7 +145,7 @@ writemap(OFString *mname, int msize, unsigned char *mdata)
 	setnames(mname);
 	backup(cgzname, bakname);
 
-	FILE *f = fopen([cgzname cStringWithEncoding:OFLocale.encoding], "wb");
+	FILE *f = fopen([cgzname cStringWithEncoding: OFLocale.encoding], "wb");
 	if (!f) {
 		conoutf(@"could not write map to %@", cgzname);
 		return;
@@ -159,7 +159,7 @@ OFData *
 readmap(OFString *mname)
 {
 	setnames(mname);
-	return [OFData dataWithContentsOfFile:mname];
+	return [OFData dataWithContentsOfFile: mname];
 }
 
 // save map as .cgz file. uses 2 layers of compression: first does simple
@@ -178,8 +178,8 @@ save_world(OFString *mname)
 		mname = getclientmap();
 	setnames(mname);
 	backup(cgzname, bakname);
-	gzFile f =
-	    gzopen([cgzname cStringWithEncoding:OFLocale.encoding], "wb9");
+	gzFile f = gzopen([cgzname cStringWithEncoding: OFLocale.encoding],
+	    "wb9");
 	if (!f) {
 		conoutf(@"could not write map to %@", cgzname);
 		return;
@@ -258,7 +258,7 @@ save_world(OFString *mname)
 	settagareas();
 }
 
-COMMAND(savemap, ARG_1STR, ^(OFString *mname) {
+COMMAND(savemap, ARG_1STR, ^ (OFString *mname) {
 	save_world(mname);
 })
 
@@ -270,8 +270,8 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	cleardlights();
 	pruneundos(0);
 	setnames(mname);
-	gzFile f =
-	    gzopen([cgzname cStringWithEncoding:OFLocale.encoding], "rb9");
+	gzFile f = gzopen([cgzname cStringWithEncoding: OFLocale.encoding],
+	    "rb9");
 	if (!f) {
 		conoutf(@"could not read map %@", cgzname);
 		return;
@@ -305,7 +305,7 @@ load_world(OFString *mname) // still supports all map formats that have existed
 		e.attr2 = tmp.attr2;
 		e.attr3 = tmp.attr3;
 		e.attr4 = tmp.attr4;
-		[ents addObject:e];
+		[ents addObject: e];
 
 		if (e.type == LIGHT) {
 			if (!e.attr2)
@@ -396,14 +396,14 @@ load_world(OFString *mname) // still supports all map formats that have existed
 	startmap(mname);
 	for (int l = 0; l < 256; l++) {
 		// can this be done smarter?
-		OFString *aliasname =
-		    [OFString stringWithFormat:@"level_trigger_%d", l];
+		OFString *aliasname = [OFString stringWithFormat:
+		    @"level_trigger_%d", l];
 		if (identexists(aliasname))
 			alias(aliasname, @"");
 	}
 	OFIRI *gameDataIRI = Cube.sharedInstance.gameDataIRI;
 	execfile([gameDataIRI
-	    IRIByAppendingPathComponent:@"data/default_map_settings.cfg"]);
-	execfile([gameDataIRI IRIByAppendingPathComponent:pcfname]);
-	execfile([gameDataIRI IRIByAppendingPathComponent:mcfname]);
+	    IRIByAppendingPathComponent: @"data/default_map_settings.cfg"]);
+	execfile([gameDataIRI IRIByAppendingPathComponent: pcfname]);
+	execfile([gameDataIRI IRIByAppendingPathComponent: mcfname]);
 }

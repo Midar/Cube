@@ -7,7 +7,9 @@ OF_DIRECT_MEMBERS
 @property (readonly, nonatomic) OFString *query;
 @property (readonly, nonatomic) ENetAddress address;
 
-+ (instancetype)resultWithQuery:(OFString *)query address:(ENetAddress)address;
++ (instancetype)resultWithQuery: (OFString *)query
+			address: (ENetAddress)address;
 - (instancetype)init OF_UNAVAILABLE;
-- (instancetype)initWithQuery:(OFString *)query address:(ENetAddress)address;
+- (instancetype)initWithQuery: (OFString *)query
+		      address: (ENetAddress)address OF_DESIGNATED_INITIALIZER;
 @end

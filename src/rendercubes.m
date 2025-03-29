@@ -64,7 +64,7 @@ int ol3r, ol3g, ol3b, ol4r, ol4g, ol4b;
 int firstindex;
 bool showm = false;
 
-COMMAND(showmip, ARG_NONE, ^{
+COMMAND(showmip, ARG_NONE, ^ {
 	showm = !showm;
 })
 

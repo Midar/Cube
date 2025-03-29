@@ -8,9 +8,9 @@ OF_DIRECT_MEMBERS
 @property (readonly, nonatomic) OFString *name;
 @property (copy, nonatomic) OFString *action;
 
-+ (instancetype)mappingWithCode:(int)code name:(OFString *)name;
++ (instancetype)mappingWithCode: (int)code name: (OFString *)name;
 - (instancetype)init OF_UNAVAILABLE;
-- (instancetype)initWithCode:(int)code name:(OFString *)name;
+- (instancetype)initWithCode: (int)code name: (OFString *)name;
 @end
 
 OF_ASSUME_NONNULL_END

@@ -1,12 +1,12 @@
 #import "MenuItem.h"
 
 @implementation MenuItem
-+ (instancetype)itemWithText:(OFString *)text action:(OFString *)action
++ (instancetype)itemWithText: (OFString *)text action: (OFString *)action
 {
-	return [[self alloc] initWithText:text action:action];
+	return [[self alloc] initWithText: text action: action];
 }
 
-- (instancetype)initWithText:(OFString *)text action:(OFString *)action
+- (instancetype)initWithText: (OFString *)text action: (OFString *)action
 {
 	self = [super init];
 
@@ -16,11 +16,11 @@
 	return self;
 }
 
-- (OFComparisonResult)compare:(id)otherObject
+- (OFComparisonResult)compare: (id)otherObject
 {
 	MenuItem *otherItem;
 
-	if (![otherObject isKindOfClass:MenuItem.class])
+	if (![otherObject isKindOfClass: MenuItem.class])
 		@throw [OFInvalidArgumentException exception];
 
 	int x, y;

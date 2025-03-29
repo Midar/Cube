@@ -51,21 +51,21 @@ renderclient(
 		// mdl = (((int)d>>6)&1)+1;
 		// mz = d.o.z-d.eyeHeight+0.2f;
 		// scale = 1.2f;
-	} else if (d.state == CS_EDITING) {
+	} else if (d.state == CS_EDITING)
 		n = 16;
-	} else if (d.state == CS_LAGGED) {
+	else if (d.state == CS_LAGGED)
 		n = 17;
-	} else if ([d isKindOfClass:Monster.class] &&
-	    ((Monster *)d).monsterState == M_ATTACKING) {
+	else if ([d isKindOfClass: Monster.class] &&
+	    ((Monster *)d).monsterState == M_ATTACKING)
 		n = 8;
-	} else if ([d isKindOfClass:Monster.class] &&
-	    ((Monster *)d).monsterState == M_PAIN) {
+	else if ([d isKindOfClass: Monster.class] &&
+	    ((Monster *)d).monsterState == M_PAIN)
 		n = 10;
-	} else if ((!d.move && !d.strafe) || !d.moving) {
+	else if ((!d.move && !d.strafe) || !d.moving)
 		n = 12;
-	} else if (!d.onFloor && d.timeInAir > 100) {
+	else if (!d.onFloor && d.timeInAir > 100)
 		n = 18;
-	} else {
+	else {
 		n = 14;
 		speed = 1200 / d.maxSpeed * scale;
 		if (hellpig)
@@ -86,14 +86,13 @@ extern int democlientnum;
 void
 renderclients()
 {
-	[players
-	    enumerateObjectsUsingBlock:^(Player *player, size_t i, bool *stop) {
-		    if ([player isKindOfClass:Player.class] &&
-		        (!demoplayback || i != democlientnum))
-			    renderclient(player,
-			        isteam(Player.player1.team, [player team]),
-			        @"monster/ogro", false, 1.0f);
-	    }];
+	[players enumerateObjectsUsingBlock: ^ (Player *player, size_t i,
+	    bool *stop) {
+		if ([player isKindOfClass: Player.class] &&
+		    (!demoplayback || i != democlientnum))
+			renderclient(player, isteam(Player.player1.team,
+			    [player team]), @"monster/ogro", false, 1.0f);
+	}];
 }
 
 // creation of scoreboard pseudo-menu
@@ -112,16 +111,16 @@ static OFMutableArray<OFString *> *scoreLines;
 static void
 renderscore(Player *d)
 {
-	OFString *lag = [OFString stringWithFormat:@"%d", d.lag];
-	OFString *name = [OFString stringWithFormat:@"(%@)", d.name];
-	OFString *line = [OFString stringWithFormat:@"%d\t%@\t%d\t%@\t%@",
+	OFString *lag = [OFString stringWithFormat: @"%d", d.lag];
+	OFString *name = [OFString stringWithFormat: @"(%@)", d.name];
+	OFString *line = [OFString stringWithFormat: @"%d\t%@\t%d\t%@\t%@",
 	    d.frags, (d.state == CS_LAGGED ? @"LAG" : lag), d.ping, d.team,
 	    (d.state == CS_DEAD ? name : d.name)];
 
 	if (scoreLines == nil)
 		scoreLines = [[OFMutableArray alloc] init];
 
-	[scoreLines addObject:line];
+	[scoreLines addObject: line];
 
 	menumanual(0, scoreLines.count - 1, line);
 }
@@ -135,7 +134,7 @@ static void
 addteamscore(Player *d)
 {
 	for (size_t i = 0; i < teamsUsed; i++) {
-		if ([teamName[i] isEqual:d.team]) {
+		if ([teamName[i] isEqual: d.team]) {
 			teamScore[i] += d.frags;
 			return;
 		}
@@ -157,20 +156,20 @@ renderscores()
 	if (!demoplayback)
 		renderscore(Player.player1);
 	for (Player *player in players)
-		if ([player isKindOfClass:Player.class])
+		if ([player isKindOfClass: Player.class])
 			renderscore(player);
 	sortmenu();
 	if (m_teammode) {
 		teamsUsed = 0;
 		for (Player *player in players)
-			if ([player isKindOfClass:Player.class])
+			if ([player isKindOfClass: Player.class])
 				addteamscore(player);
 		if (!demoplayback)
 			addteamscore(Player.player1);
 		OFMutableString *teamScores = [OFMutableString string];
 		for (size_t j = 0; j < teamsUsed; j++)
-			[teamScores appendFormat:@"[ %@: %d ]", teamName[j],
-			    teamScore[j]];
+			[teamScores appendFormat:
+			    @"[ %@: %d ]", teamName[j], teamScore[j]];
 		menumanual(0, scoreLines.count, @"");
 		menumanual(0, scoreLines.count + 1, teamScores);
 	}
@@ -178,7 +177,7 @@ renderscores()
 
 // sendmap/getmap commands, should be replaced by more intuitive map downloading
 
-COMMAND(sendmap, ARG_1STR, (^(OFString *mapname) {
+COMMAND(sendmap, ARG_1STR, (^ (OFString *mapname) {
 	if (mapname.length > 0)
 		save_world(mapname);
 	changemap(mapname);
@@ -204,14 +203,12 @@ COMMAND(sendmap, ARG_1STR, (^(OFString *mapname) {
 	enet_packet_resize(packet, p - start);
 	sendpackettoserv(packet);
 	conoutf(@"sending map %@ to server...", mapname);
-	OFString *msg =
-	    [OFString stringWithFormat:@"[map %@ uploaded to server, "
-	                               @"\"getmap\" to receive it]",
-	        mapname];
+	OFString *msg = [OFString stringWithFormat:
+	    @"[map %@ uploaded to server, \"getmap\" to receive it]", mapname];
 	toserver(msg);
 }))
 
-COMMAND(getmap, ARG_NONE, ^{
+COMMAND(getmap, ARG_NONE, ^ {
 	ENetPacket *packet =
 	    enet_packet_create(NULL, MAXTRANS, ENET_PACKET_FLAG_RELIABLE);
 	unsigned char *start = packet->data;

@@ -66,7 +66,7 @@ reloadtime(int gun)
 	return guns[gun].attackdelay;
 }
 
-COMMAND(weapon, ARG_3STR, ^(OFString *a1, OFString *a2, OFString *a3) {
+COMMAND(weapon, ARG_3STR, ^ (OFString *a1, OFString *a2, OFString *a3) {
 	selectgun((a1.length > 0 ? a1.cube_intValue : -1),
 	    (a2.length > 0 ? a2.cube_intValue : -1),
 	    (a3.length > 0 ? a3.cube_intValue : -1));
@@ -117,7 +117,7 @@ playerincrosshair()
 
 	OFVector3D o = Player.player1.origin;
 	for (Player *player in players) {
-		if (![Player isKindOfClass:Player.class])
+		if (![Player isKindOfClass: Player.class])
 			continue;
 
 		if (intersect(player, o, worldpos))
@@ -167,9 +167,9 @@ hit(int target, int damage, __kindof DynamicEntity *d, DynamicEntity *at)
 	OFVector3D o = d.origin;
 	if (d == Player.player1)
 		selfdamage(damage, (at == Player.player1) ? -1 : -2, at);
-	else if ([d isKindOfClass:Monster.class])
-		[d incurDamage:damage fromEntity:at];
-	else if ([d isKindOfClass:Player.class]) {
+	else if ([d isKindOfClass: Monster.class])
+		[d incurDamage: damage fromEntity: at];
+	else if ([d isKindOfClass: Player.class]) {
 		addmsg(1, 4, SV_DAMAGE, target, damage,
 		    ((Player *)d).lifeSequence);
 		playsound(S_PAIN1 + rnd(5), &o);
@@ -225,8 +225,8 @@ splash(Projectile *p, OFVector3D v, OFVector3D vold, int notthisplayer,
 
 		radialeffect(Player.player1, v, -1, qdam, p.owner);
 
-		[players enumerateObjectsUsingBlock:^(
-		    id player, size_t i, bool *stop) {
+		[players enumerateObjectsUsingBlock:
+		    ^ (id player, size_t i, bool *stop) {
 			if (i == notthisplayer)
 				return;
 
@@ -236,8 +236,8 @@ splash(Projectile *p, OFVector3D v, OFVector3D vold, int notthisplayer,
 			radialeffect(player, v, i, qdam, p.owner);
 		}];
 
-		[Monster.monsters enumerateObjectsUsingBlock:^(
-		    Monster *monster, size_t i, bool *stop) {
+		[Monster.monsters enumerateObjectsUsingBlock:
+		    ^ (Monster *monster, size_t i, bool *stop) {
 			if (i != notthismonster)
 				radialeffect(monster, v, i, qdam, p.owner);
 		}];
@@ -268,7 +268,7 @@ moveprojectiles(float time)
 			continue;
 
 		int qdam = guns[p.gun].damage * (p.owner.quadMillis ? 4 : 1);
-		if ([p.owner isKindOfClass:Monster.class])
+		if ([p.owner isKindOfClass: Monster.class])
 			qdam /= MONSTERDAMAGEFACTOR;
 		OFVector3D po = p.o, pto = p.to;
 		float dist = OFDistanceOfVectors3D(pto, po);
@@ -336,7 +336,7 @@ shootv(int gun, OFVector3D from, OFVector3D to, DynamicEntity *d, bool local)
 	case GUN_ICEBALL:
 	case GUN_SLIMEBALL:
 		pspeed = guns[gun].projspeed;
-		if ([d isKindOfClass:Monster.class])
+		if ([d isKindOfClass: Monster.class])
 			pspeed /= 2;
 		newprojectile(from, to, (float)pspeed, local, d, gun);
 		break;
@@ -368,7 +368,7 @@ raydamage(
 	int qdam = guns[d.gunSelect].damage;
 	if (d.quadMillis)
 		qdam *= 4;
-	if ([d isKindOfClass:Monster.class])
+	if ([d isKindOfClass: Monster.class])
 		qdam /= MONSTERDAMAGEFACTOR;
 	if (d.gunSelect == GUN_SG) {
 		int damage = 0;
@@ -423,7 +423,7 @@ shoot(DynamicEntity *d, OFVector3D targ)
 	if (d.quadMillis && attacktime > 200)
 		playsoundc(S_ITEMPUP);
 	shootv(d.gunSelect, from, to, d, true);
-	if (![d isKindOfClass:Monster.class])
+	if (![d isKindOfClass: Monster.class])
 		addmsg(1, 8, SV_SHOT, d.gunSelect, (int)(from.x * DMF),
 		    (int)(from.y * DMF), (int)(from.z * DMF), (int)(to.x * DMF),
 		    (int)(to.y * DMF), (int)(to.z * DMF));
@@ -432,7 +432,8 @@ shoot(DynamicEntity *d, OFVector3D targ)
 	if (guns[d.gunSelect].projspeed)
 		return;
 
-	[players enumerateObjectsUsingBlock:^(id player, size_t i, bool *stop) {
+	[players enumerateObjectsUsingBlock:
+	    ^ (id player, size_t i, bool *stop) {
 		if (player != [OFNull null])
 			raydamage(player, from, to, d, i);
 	}];
@@ -441,6 +442,6 @@ shoot(DynamicEntity *d, OFVector3D targ)
 		if (monster != d)
 			raydamage(monster, from, to, d, -2);
 
-	if ([d isKindOfClass:Monster.class])
+	if ([d isKindOfClass: Monster.class])
 		raydamage(Player.player1, from, to, d, -1);
 }

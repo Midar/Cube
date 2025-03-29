@@ -33,7 +33,7 @@
 @property (direct, copy, nonatomic) OFString *name;
 
 - (OFData *)dataBySerializing;
-- (void)setFromSerializedData:(OFData *)data;
+- (void)setFromSerializedData: (OFData *)data;
 - (void)resetMovement;
 // reset player state not persistent accross spawns
 - (void)resetToSpawnState;

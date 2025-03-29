@@ -68,12 +68,12 @@ newname(OFString *name)
 	c2sinit = false;
 
 	if (name.length > 16)
-		name = [name substringToIndex:16];
+		name = [name substringToIndex: 16];
 
 	Player.player1.name = name;
 }
 
-COMMAND(name, ARG_1STR, ^(OFString *name) {
+COMMAND(name, ARG_1STR, ^ (OFString *name) {
 	newname(name);
 })
 
@@ -83,20 +83,20 @@ newteam(OFString *name)
 	c2sinit = false;
 
 	if (name.length > 5)
-		name = [name substringToIndex:5];
+		name = [name substringToIndex: 5];
 
 	Player.player1.team = name;
 }
 
-COMMAND(team, ARG_1STR, ^(OFString *name) {
+COMMAND(team, ARG_1STR, ^ (OFString *name) {
 	newteam(name);
 })
 
 void
 writeclientinfo(OFStream *stream)
 {
-	[stream writeFormat:@"name \"%@\"\nteam \"%@\"\n", Player.player1.name,
-	    Player.player1.team];
+	[stream writeFormat: @"name \"%@\"\nteam \"%@\"\n",
+			     Player.player1.name, Player.player1.team];
 }
 
 void
@@ -185,16 +185,16 @@ toserver(OFString *text)
 	ctext = text;
 }
 
-COMMAND(echo, ARG_VARI, ^(OFString *text) {
+COMMAND(echo, ARG_VARI, ^ (OFString *text) {
 	conoutf(@"%@", text);
 })
-COMMAND(say, ARG_VARI, ^(OFString *text) {
+COMMAND(say, ARG_VARI, ^ (OFString *text) {
 	toserver(text);
 })
-COMMAND(connect, ARG_1STR, ^(OFString *servername) {
+COMMAND(connect, ARG_1STR, ^ (OFString *servername) {
 	connects(servername);
 })
-COMMAND(disconnect, ARG_NONE, ^{
+COMMAND(disconnect, ARG_NONE, ^ {
 	trydisconnect();
 })
 
@@ -215,17 +215,17 @@ addmsg(int rel, int num, int type, ...)
 		return;
 	}
 
-	OFMutableData *msg = [OFMutableData dataWithItemSize:sizeof(int)
-	                                            capacity:num + 2];
-	[msg addItem:&num];
-	[msg addItem:&rel];
-	[msg addItem:&type];
+	OFMutableData *msg = [OFMutableData dataWithItemSize: sizeof(int)
+	                                            capacity: num + 2];
+	[msg addItem: &num];
+	[msg addItem: &rel];
+	[msg addItem: &type];
 
 	va_list marker;
 	va_start(marker, type);
 	for (int i = 0; i < num - 1; i++) {
 		int tmp = va_arg(marker, int);
-		[msg addItem:&tmp];
+		[msg addItem: &tmp];
 	}
 	va_end(marker);
 	[msg makeImmutable];
@@ -233,7 +233,7 @@ addmsg(int rel, int num, int type, ...)
 	if (messages == nil)
 		messages = [[OFMutableArray alloc] init];
 
-	[messages addObject:msg];
+	[messages addObject: msg];
 }
 
 void
@@ -249,7 +249,7 @@ bool senditemstoserver =
     false; // after a map change, since server doesn't have map data
 
 OFString *clientpassword;
-COMMAND(password, ARG_1STR, ^(OFString *p) {
+COMMAND(password, ARG_1STR, ^ (OFString *p) {
 	clientpassword = p;
 })
 
@@ -317,10 +317,9 @@ c2sinfo(Player *d)
 		putint(&p, (int)(d.velocity.y * DVF));
 		putint(&p, (int)(d.velocity.z * DVF));
 		// pack rest in 1 byte: strafe:2, move:2, onFloor:1, state:3
-		putint(&p,
-		    (d.strafe & 3) | ((d.move & 3) << 2) |
-		        (((int)d.onFloor) << 4) |
-		        ((editmode ? CS_EDITING : d.state) << 5));
+		putint(&p, (d.strafe & 3) | ((d.move & 3) << 2) |
+		    (((int)d.onFloor) << 4) |
+		    ((editmode ? CS_EDITING : d.state) << 5));
 
 		if (senditemstoserver) {
 			packet->flags = ENET_PACKET_FLAG_RELIABLE;
@@ -349,10 +348,10 @@ c2sinfo(Player *d)
 		}
 		for (OFData *msg in messages) {
 			// send messages collected during the previous frames
-			if (*(int *)[msg itemAtIndex:1])
+			if (*(int *)[msg itemAtIndex: 1])
 				packet->flags = ENET_PACKET_FLAG_RELIABLE;
-			for (int i = 0; i < *(int *)[msg itemAtIndex:0]; i++)
-				putint(&p, *(int *)[msg itemAtIndex:i + 2]);
+			for (int i = 0; i < *(int *)[msg itemAtIndex: 0]; i++)
+				putint(&p, *(int *)[msg itemAtIndex: i + 2]);
 		}
 		[messages removeAllObjects];
 		if (lastmillis - lastping > 250) {
