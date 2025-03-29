@@ -43,7 +43,7 @@ setvar(OFString *name, int i)
 	Variable *variable = Identifier.identifiers[name];
 
 	if ([variable isKindOfClass: Variable.class])
-		*variable.storage = i;
+		variable.value = i;
 }
 
 int
@@ -52,7 +52,7 @@ getvar(OFString *name)
 	Variable *variable = Identifier.identifiers[name];
 
 	if ([variable isKindOfClass: Variable.class])
-		return *variable.storage;
+		return variable.value;
 
 	return 0;
 }
@@ -144,7 +144,7 @@ lookup(OFString *n)
 
 	if ([identifier isKindOfClass: Variable.class]) {
 		return [OFString stringWithFormat:
-		    @"%d", *[identifier storage]];
+		    @"%d", [identifier value]];
 	} else if ([identifier isKindOfClass: Alias.class])
 		return [identifier action];
 
@@ -350,13 +350,12 @@ writecfg()
 	[stream writeString: @"\n"];
 
 	[Identifier.identifiers enumerateKeysAndObjectsUsingBlock:
-	    ^ (OFString *name, __kindof Identifier *identifier, bool *stop) {
-		if (![identifier isKindOfClass: Variable.class] ||
-		    ![identifier persisted])
+	    ^ (OFString *name, Variable *variable, bool *stop) {
+		if (![variable isKindOfClass: Variable.class] ||
+		    !variable.persisted)
 			return;
 
-		[stream writeFormat:
-		    @"%@ %d\n", identifier.name, *[identifier storage]];
+		[stream writeFormat: @"%@ %d\n", variable.name, variable.value];
 	}];
 	[stream writeString: @"\n"];
 

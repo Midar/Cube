@@ -42,25 +42,42 @@ allowedittoggle()
 	return allow;
 }
 
-VARF(rate, 0, 0, 25000,
+static int rate = 0;
+VARB(rate, 0, 25000, ^ { return rate; }, ^ (int value) {
+	rate = value;
+
 	if (clienthost && (!rate || rate > 1000))
-		enet_host_bandwidth_limit(clienthost, rate, rate));
+		enet_host_bandwidth_limit(clienthost, rate, rate);
+})
 
-void throttle();
+static int throttle_interval = 5;
+static int throttle_accel = 2;
+static int throttle_decel = 2;
 
-VARF(throttle_interval, 0, 5, 30, throttle());
-VARF(throttle_accel, 0, 2, 32, throttle());
-VARF(throttle_decel, 0, 2, 32, throttle());
-
-void
-throttle()
+static void
+throttle(void)
 {
 	if (!clienthost || connecting)
 		return;
+
 	assert(ENET_PEER_PACKET_THROTTLE_SCALE == 32);
+
 	enet_peer_throttle_configure(clienthost->peers,
 	    throttle_interval * 1000, throttle_accel, throttle_decel);
 }
+
+VARB(throttle_interval, 0, 30, ^ { return throttle_interval; }, ^ (int value) {
+	throttle_interval = value;
+	throttle();
+})
+VARB(throttle_accel, 0, 32, ^ { return throttle_accel; }, ^ (int value) {
+	throttle_accel = value;
+	throttle();
+})
+VARB(throttle_decel, 0, 32, ^ { return throttle_decel; }, ^ (int value) {
+	throttle_decel = value;
+	throttle();
+})
 
 static void
 newname(OFString *name)

@@ -8,8 +8,15 @@
 
 OF_APPLICATION_DELEGATE(Cube)
 
-VARF(gamespeed, 10, 100, 1000, if (multiplayer()) gamespeed = 100);
-VARP(minmillis, 0, 5, 1000);
+static int gamespeed = 100;
+VARB(gamespeed, 10, 1000, ^ { return gamespeed; }, ^ (int value) {
+	if (multiplayer())
+		gamespeed = 100;
+	else
+		gamespeed = value;
+})
+
+VARP(minmillis, 0, 5, 1000)
 
 @implementation Cube
 {

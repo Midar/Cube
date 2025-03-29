@@ -320,8 +320,11 @@ render_square(int wtex, float floor1, float floor2, float ceil1, float ceil2,
 int wx1, wy1, wx2, wy2;
 
 VAR(watersubdiv, 1, 4, 64);
-VARF(waterlevel, -128, -128, 127,
-    if (!noteditmode()) hdr.waterlevel = waterlevel);
+
+VARB(waterlevel, -128, 127, ^ { return hdr.waterlevel; }, ^ (int value) {
+	if (!noteditmode())
+		hdr.waterlevel = value;
+})
 
 static inline void
 vertw(int v1, float v2, int v3, struct sqr *c, float t1, float t2, float t)

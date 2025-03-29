@@ -24,8 +24,12 @@ OF_CONSTRUCTOR()
 		static const struct {
 			OFString *name;
 			int *storage;
-		} vars[4] = { { @"selx", &sel.x }, { @"sely", &sel.y },
-			{ @"selxs", &sel.xs }, { @"selys", &sel.ys } };
+		} vars[4] = {
+			{ @"selx", &sel.x },
+			{ @"sely", &sel.y },
+			{ @"selxs", &sel.xs },
+			{ @"selys", &sel.ys }
+		};
 
 		for (size_t i = 0; i < 4; i++) {
 			Variable *variable = [Variable
@@ -33,8 +37,9 @@ OF_CONSTRUCTOR()
 					 min: 0
 					 max: 4096
 				     storage: vars[i].storage
-				    function: NULL
-				   persisted: false];
+				   persisted: false
+				      getter: NULL
+				      setter: NULL];
 			Identifier.identifiers[vars[i].name] = variable;
 		}
 	});
@@ -634,13 +639,16 @@ COMMAND(perlin, ARG_3INT, ^ (int scale, int seed, int psize) {
 	sel.ys--;
 })
 
-VARF(
-    fullbright, 0, 0, 1, if (fullbright) {
-	    if (noteditmode())
-		    return;
-	    for (int i = 0; i < mipsize; i++)
-		    world[i].r = world[i].g = world[i].b = 176;
-    });
+static int fullbright = 0;
+VARB(fullbright, 0, 1, ^ { return fullbright; }, ^ (int value) {
+	if (fullbright) {
+		if (noteditmode())
+			return;
+
+		for (int i = 0; i < mipsize; i++)
+			world[i].r = world[i].g = world[i].b = 176;
+	}
+});
 
 COMMAND(edittag, ARG_1INT, ^ (int tag) {
 	EDITSELMP;

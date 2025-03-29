@@ -327,14 +327,17 @@ addstrip(int tex, int start, int n)
 
 #undef gamma
 
-VARFP(gamma, 30, 100, 300, {
-	float f = gamma / 100.0f;
+static int gamma = 100;
+VARBP(gamma, 30, 300, ^ { return gamma; }, ^ (int value) {
+	float f = value / 100.0f;
 	Uint16 ramp[256];
 
 	SDL_CalculateGammaRamp(f, ramp);
 
 	if (SDL_SetWindowGammaRamp(Cube.sharedInstance.window,
-	    ramp, ramp, ramp) == -1) {
+	    ramp, ramp, ramp) != -1)
+		gamma = value;
+	else {
 		conoutf(
 		    @"Could not set gamma (card/driver doesn't support it?)");
 		conoutf(@"sdl: %s", SDL_GetError());
@@ -362,7 +365,29 @@ VARP(fov, 10, 105, 120);
 int xtraverts;
 
 VAR(fog, 64, 180, 1024);
-VAR(fogcolour, 0, 0x8099B3, 0xFFFFFF);
+
+static OFColor *fogColor;
+VARB(fogcolour, 0, 0xFFFFFF, (^ {
+	float red, green, blue;
+
+	if (fogColor == nil)
+		return 0x8099B3;
+
+	[fogColor getRed: &red green: &green blue: &blue alpha: NULL];
+
+	return ((unsigned char)(red * 255.0f) << 16) |
+	    ((unsigned char)(green * 255.0f) << 8) |
+	    (unsigned char)(blue * 255.0f);
+}), ^ (int value) {
+	unsigned char red = (value >> 16) & 0xFF;
+	unsigned char green = (value >> 8) & 0xFF;
+	unsigned char blue = value & 0xFF;
+
+	fogColor = [OFColor colorWithRed: red / 255.0f
+				   green: green / 255.0f
+				    blue: blue / 255.0f
+				   alpha: 1.f];
+})
 
 VARP(hudgun, 0, 1, 1);
 
@@ -422,11 +447,8 @@ gl_drawframe(int w, int h, float curfps)
 
 	glFogi(GL_FOG_START, (fog + 64) / 8);
 	glFogi(GL_FOG_END, fog);
-	float fogc[4] = { (fogcolour >> 16) / 256.0f,
-		((fogcolour >> 8) & 255) / 256.0f, (fogcolour & 255) / 256.0f,
-		1.0f };
-	glFogfv(GL_FOG_COLOR, fogc);
-	glClearColor(fogc[0], fogc[1], fogc[2], 1.0f);
+	[fogColor cube_setAsGLFogColor];
+	[fogColor cube_setAsGLClearColor];
 
 	if (underwater) {
 		fovy += (float)sin(lastmillis / 1000.0) * 2.0f;

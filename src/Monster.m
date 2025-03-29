@@ -35,7 +35,11 @@ static int nextmonster, spawnremain, numkilled, monstertotal, mtimestart;
 				     move: move];
 }
 
-VARF(skill, 1, 3, 10, conoutf(@"skill is now %d", skill));
+static int skill = 3;
+VARB(skill, 1, 10, ^ { return skill; }, ^ (int value) {
+	skill = value;
+	conoutf(@"skill is now %d", skill);
+})
 
 // for savegames
 + (void)restoreAll
