@@ -166,7 +166,7 @@ extern void pruneundos(int maxremain);
 extern void line(int x1, int y1, float z1, int x2, int y2, float z2);
 extern void box(const struct block *b, float z1, float z2, float z3, float z4);
 extern void dot(int x, int y, float z);
-extern void linestyle(float width, int r, int g, int b);
+extern void linestyle(float width, OFColor *color);
 extern void newsphere(OFVector3D o, float max, int type);
 extern void renderspheres(int time);
 extern void gl_drawhud(

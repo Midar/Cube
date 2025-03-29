@@ -4,6 +4,7 @@
 
 #import "Command.h"
 #import "Entity.h"
+#import "OFColor+Cube.h"
 #import "Player.h"
 #import "Variable.h"
 
@@ -20,10 +21,10 @@ line(int x1, int y1, float z1, int x2, int y2, float z2)
 }
 
 void
-linestyle(float width, int r, int g, int b)
+linestyle(float width, OFColor *color)
 {
 	glLineWidth(width);
-	glColor3ub(r, g, b);
+	[color cube_setAsGLColor];
 }
 
 void
@@ -59,9 +60,12 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 	glBegin(GL_QUADS);
 	if (border)
-		glColor3d(0.5, 0.3, 0.4);
+		[[OFColor colorWithRed:0.5f
+				 green:0.3f
+				  blue:0.4f
+				 alpha:1.0f] cube_setAsGLColor];
 	else
-		glColor3d(1.0, 1.0, 1.0);
+		[OFColor.white cube_setAsGLColor];
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y1);
 	glVertex2i(x2, y2);
@@ -70,7 +74,10 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	glDisable(GL_BLEND);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glBegin(GL_POLYGON);
-	glColor3d(0.2, 0.7, 0.4);
+	[[OFColor colorWithRed:0.2f
+			 green:0.7f
+			  blue:0.4f
+			 alpha:1.0f] cube_setAsGLColor];
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y1);
 	glVertex2i(x2, y2);
@@ -126,7 +133,10 @@ renderspheres(int time)
 	for (struct sphere *p, **pp = &slist; (p = *pp) != NULL;) {
 		glPushMatrix();
 		float size = p->size / p->max;
-		glColor4f(1.0f, 1.0f, 1.0f, 1.0f - size);
+		[[OFColor colorWithRed:1.0f
+				 green:1.0f
+				  blue:1.0f
+				 alpha:1.0f - size] cube_setAsGLColor];
 		glTranslatef(p->o.x, p->o.z, p->o.y);
 		glRotatef(lastmillis / 5.0f, 1, 1, 1);
 		glScalef(p->size, p->size, p->size);
@@ -351,9 +361,15 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBlendFunc(GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
 		glBegin(GL_QUADS);
 		if (dblend)
-			glColor3d(0.0f, 0.9f, 0.9f);
+			[[OFColor colorWithRed:0.0f
+					 green:0.9f
+					  blue:0.9f
+					 alpha:1.0f] cube_setAsGLColor];
 		else
-			glColor3d(0.9f, 0.5f, 0.0f);
+			[[OFColor colorWithRed:0.9f
+					 green:0.5f
+					  blue:0.0f
+					 alpha:1.0f] cube_setAsGLColor];
 		glVertex2i(0, 0);
 		glVertex2i(VIRTW, 0);
 		glVertex2i(VIRTW, VIRTH);
@@ -381,14 +397,17 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 		glBindTexture(GL_TEXTURE_2D, 1);
 		glBegin(GL_QUADS);
-		glColor3ub(255, 255, 255);
+		[OFColor.white cube_setAsGLColor];
 		if (crosshairfx) {
 			if (player1.gunWait)
-				glColor3ub(128, 128, 128);
+				[OFColor.gray cube_setAsGLColor];
 			else if (player1.health <= 25)
-				glColor3ub(255, 0, 0);
+				[OFColor.red cube_setAsGLColor];
 			else if (player1.health <= 50)
-				glColor3ub(255, 128, 0);
+				[[OFColor colorWithRed:1.0f
+						 green:0.5f
+						  blue:0.0f
+						 alpha:1.0f] cube_setAsGLColor];
 		}
 		float chsize = (float)crosshairsize;
 		glTexCoord2d(0.0, 0.0);

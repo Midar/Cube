@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "OFColor+Cube.h"
+
 short char_coords[96][4] = {
 	{ 0, 0, 25, 64 },       //!
 	{ 25, 0, 54, 64 },      //"
@@ -148,7 +150,7 @@ draw_text(OFString *string, int left, int top, int gl_num)
 {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glBindTexture(GL_TEXTURE_2D, gl_num);
-	glColor3ub(255, 255, 255);
+	[OFColor.white cube_setAsGLColor];
 
 	int x = left;
 	int y = top;
@@ -168,7 +170,10 @@ draw_text(OFString *string, int left, int top, int gl_num)
 		}
 
 		if (c == '\f') {
-			glColor3ub(64, 255, 128);
+			[[OFColor colorWithRed:0.25f
+					 green:1.0f
+					  blue:0.5f
+					 alpha:1.0f] cube_setAsGLColor];
 			continue;
 		}
 

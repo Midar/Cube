@@ -2,6 +2,8 @@
 
 #include "cube.h"
 
+#import "OFColor+Cube.h"
+
 struct md2_header {
 	int magic;
 	int version;
@@ -157,9 +159,7 @@ snap(int sn, float f)
 	glRotatef(yaw + 180, 0, -1, 0);
 	glRotatef(pitch, 0, 0, 1);
 
-	float red, green, blue;
-	[light getRed:&red green:&green blue:&blue alpha:NULL];
-	glColor3f(red, green, blue);
+	[light cube_setAsGLColor];
 
 	if (_displaylist && frame == 0 && range == 1) {
 		glCallList(_displaylist);

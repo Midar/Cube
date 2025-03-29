@@ -221,14 +221,23 @@ cursorupdate() // called every frame from hud
 			float h3 = sheight(s, SWS(s, 1, 1, ssize), z);
 			float h4 = sheight(s, SWS(s, 0, 1, ssize), z);
 			if (s->tag)
-				linestyle(GRIDW, 0xFF, 0x40, 0x40);
+				linestyle(GRIDW, [OFColor colorWithRed:1.0f
+								 green:0.25f
+								  blue:0.25f
+								 alpha:1.0f]);
 			else if (s->type == FHF || s->type == CHF)
-				linestyle(GRIDW, 0x80, 0xFF, 0x80);
+				linestyle(GRIDW, [OFColor colorWithRed:0.5f
+								 green:1.0f
+								  blue:0.5f
+								 alpha:1.0f]);
 			else
-				linestyle(GRIDW, 0x80, 0x80, 0x80);
+				linestyle(GRIDW, OFColor.gray);
 			struct block b = { ix, iy, 1, 1 };
 			box(&b, h1, h2, h3, h4);
-			linestyle(GRID8, 0x40, 0x40, 0xFF);
+			linestyle(GRID8, [OFColor colorWithRed:0.25f
+							 green:0.25f
+							  blue:1.0f
+							 alpha:1.0f]);
 			if (!(ix & GRIDM))
 				line(ix, iy, h1, ix, iy + 1, h4);
 			if (!(ix + 1 & GRIDM))
@@ -242,18 +251,21 @@ cursorupdate() // called every frame from hud
 
 	if (!SOLID(s)) {
 		float ih = sheight(s, s, z);
-		linestyle(GRIDS, 0xFF, 0xFF, 0xFF);
+		linestyle(GRIDS, OFColor.white);
 		struct block b = { cx, cy, 1, 1 };
 		box(&b, ih, sheight(s, SWS(s, 1, 0, ssize), z),
 		    sheight(s, SWS(s, 1, 1, ssize), z),
 		    sheight(s, SWS(s, 0, 1, ssize), z));
-		linestyle(GRIDS, 0xFF, 0x00, 0x00);
+		linestyle(GRIDS, OFColor.red);
 		dot(cx, cy, ih);
 		ch = (int)ih;
 	}
 
 	if (selset) {
-		linestyle(GRIDS, 0xFF, 0x40, 0x40);
+		linestyle(GRIDS, [OFColor colorWithRed:1.0f
+						 green:0.25f
+						  blue:0.25f
+						 alpha:1.0f]);
 		box(&sel, (float)selh, (float)selh, (float)selh, (float)selh);
 	}
 }

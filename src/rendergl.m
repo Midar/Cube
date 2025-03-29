@@ -6,6 +6,7 @@
 
 #import "Command.h"
 #import "Monster.h"
+#import "OFColor+Cube.h"
 #import "OFString+Cube.h"
 #import "Player.h"
 #import "Variable.h"
@@ -471,7 +472,7 @@ gl_drawframe(int w, int h, float curfps)
 	glRotated(player1.pitch, -1.0, 0.0, 0.0);
 	glRotated(player1.yaw, 0.0, 1.0, 0.0);
 	glRotated(90.0, 1.0, 0.0, 0.0);
-	glColor3f(1.0f, 1.0f, 1.0f);
+	[OFColor.white cube_setAsGLColor];
 	glDisable(GL_FOG);
 	glDepthFunc(GL_GREATER);
 	draw_envbox(14, fog * 4 / 3);
