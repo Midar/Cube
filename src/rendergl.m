@@ -54,7 +54,8 @@ gl_init(int w, int h)
 
 	char *exts = (char *)glGetString(GL_EXTENSIONS);
 
-	if (strstr(exts, "GL_EXT_texture_env_combine"))
+	if (strstr(exts, "GL_EXT_texture_env_combine") ||
+	    strstr(exts, "GL_ARB_texture_env_combine"))
 		hasoverbright = true;
 	else
 		conoutf(@"WARNING: cannot use overbright lighting, using old "
