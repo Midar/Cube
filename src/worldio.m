@@ -19,6 +19,7 @@ backup(OFString *name, OFString *backupname)
 	[OFFileManager.defaultManager moveItemAtPath: name toPath: backupname];
 }
 
+// FIXME: Should be OFIRI
 static OFString *cgzname, *bakname, *pcfname, *mcfname;
 
 static void
@@ -145,13 +146,17 @@ writemap(OFString *mname, int msize, unsigned char *mdata)
 	setnames(mname);
 	backup(cgzname, bakname);
 
-	FILE *f = fopen([cgzname cStringWithEncoding: OFLocale.encoding], "wb");
-	if (!f) {
+	@try {
+		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent: cgzname];
+		OFStream *stream = [OFIRIHandler openItemAtIRI: IRI mode: @"w"];
+		[stream writeBuffer: mdata length: msize];
+		[stream close];
+	} @catch (id e) {
 		conoutf(@"could not write map to %@", cgzname);
 		return;
 	}
-	fwrite(mdata, 1, msize, f);
-	fclose(f);
+
 	conoutf(@"wrote map %@ as file %@", mname, cgzname);
 }
 
@@ -267,17 +272,28 @@ COMMAND(savemap, ARG_1STR, ^ (OFString *mname) {
 void
 load_world(OFString *mname)
 {
+	OFGZIPStream *stream;
+
 	stopifrecording();
 	cleardlights();
 	pruneundos(0);
 	setnames(mname);
-	gzFile f = gzopen([cgzname cStringWithEncoding: OFLocale.encoding],
-	    "rb9");
-	if (!f) {
+
+	@try {
+		OFIRI *IRI = [Cube.sharedInstance.gameDataIRI
+		    IRIByAppendingPathComponent: cgzname];
+		OFStream *compressedStream = [OFIRIHandler openItemAtIRI: IRI
+								    mode: @"r"];
+		stream = [OFGZIPStream streamWithStream: compressedStream
+						   mode: @"r"];
+		[stream readIntoBuffer: &hdr
+			   exactLength: sizeof(struct header) -
+					sizeof(int) * 16];
+	} @catch (id e) {
 		conoutf(@"could not read map %@", cgzname);
 		return;
 	}
-	gzread(f, &hdr, sizeof(struct header) - sizeof(int) * 16);
+
 	endianswap(&hdr.version, sizeof(int), 4);
 	if (strncmp(hdr.head, "CUBE", 4) != 0)
 		fatal(@"while reading map: header malformatted");
@@ -286,7 +302,8 @@ load_world(OFString *mname)
 	if (sfactor < SMALLEST_FACTOR || sfactor > LARGEST_FACTOR)
 		fatal(@"illegal map size");
 	if (hdr.version >= 4) {
-		gzread(f, &hdr.waterlevel, sizeof(int) * 16);
+		[stream readIntoBuffer: &hdr.waterlevel
+			   exactLength: sizeof(int) * 16];
 		endianswap(&hdr.waterlevel, sizeof(int), 16);
 	} else {
 		hdr.waterlevel = -100000;
@@ -294,7 +311,8 @@ load_world(OFString *mname)
 	[ents removeAllObjects];
 	for (int i = 0; i < hdr.numents; i++) {
 		struct persistent_entity tmp;
-		gzread(f, &tmp, sizeof(struct persistent_entity));
+		[stream readIntoBuffer: &tmp
+			   exactLength: sizeof(struct persistent_entity)];
 		endianswap(&tmp, sizeof(short), 4);
 
 		Entity *e = [Entity entity];
@@ -323,10 +341,10 @@ load_world(OFString *mname)
 	struct sqr *t = NULL;
 	for (int k = 0; k < cubicsize; k++) {
 		struct sqr *s = &world[k];
-		int type = gzgetc(f);
+		int type = [stream readInt8];
 		switch (type) {
 		case 255: {
-			int n = gzgetc(f);
+			int n = [stream readInt8];
 			for (int i = 0; i < n; i++, k++)
 				memcpy(&world[k], t, sizeof(struct sqr));
 			k--;
@@ -335,17 +353,17 @@ load_world(OFString *mname)
 		case 254: // only in MAPVERSION<=2
 		{
 			memcpy(s, t, sizeof(struct sqr));
-			s->r = s->g = s->b = gzgetc(f);
-			gzgetc(f);
+			s->r = s->g = s->b = [stream readInt8];
+			[stream readInt8];
 			break;
 		}
 		case SOLID: {
 			s->type = SOLID;
-			s->wtex = gzgetc(f);
-			s->vdelta = gzgetc(f);
+			s->wtex = [stream readInt8];
+			s->vdelta = [stream readInt8];
 			if (hdr.version <= 2) {
-				gzgetc(f);
-				gzgetc(f);
+				[stream readInt8];
+				[stream readInt8];
 			}
 			s->ftex = DEFAULT_FLOOR;
 			s->ctex = DEFAULT_CEIL;
@@ -361,20 +379,21 @@ load_world(OFString *mname)
 				      @"%d @ %d",
 				    type, k);
 			s->type = type;
-			s->floor = gzgetc(f);
-			s->ceil = gzgetc(f);
+			s->floor = [stream readInt8];
+			s->ceil = [stream readInt8];
 			if (s->floor >= s->ceil)
 				s->floor = s->ceil - 1; // for pre 12_13
-			s->wtex = gzgetc(f);
-			s->ftex = gzgetc(f);
-			s->ctex = gzgetc(f);
+			s->wtex = [stream readInt8];
+			s->ftex = [stream readInt8];
+			s->ctex = [stream readInt8];
 			if (hdr.version <= 2) {
-				gzgetc(f);
-				gzgetc(f);
+				[stream readInt8];
+				[stream readInt8];
 			}
-			s->vdelta = gzgetc(f);
-			s->utex = (hdr.version >= 2) ? gzgetc(f) : s->wtex;
-			s->tag = (hdr.version >= 5) ? gzgetc(f) : 0;
+			s->vdelta = [stream readInt8];
+			s->utex = (hdr.version >= 2
+			    ? [stream readInt8] : s->wtex);
+			s->tag = (hdr.version >= 5 ? [stream readInt8] : 0);
 			s->type = type;
 		}
 		}
@@ -384,7 +403,7 @@ load_world(OFString *mname)
 		if (!SOLID(s))
 			texuse[s->utex] = texuse[s->ftex] = texuse[s->ctex] = 1;
 	}
-	gzclose(f);
+	[stream close];
 	calclight();
 	settagareas();
 	int xs, ys;
