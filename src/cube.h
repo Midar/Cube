@@ -3,6 +3,7 @@
 #import <ObjFW/ObjFW.h>
 
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
 
 #include "tools.h"
 
@@ -354,9 +355,6 @@ enum {
 # include <GL/glext.h>
 # include <GL/glu.h>
 #endif
-
-#include <SDL.h>
-#include <SDL_image.h>
 
 #include <enet/enet.h>
 
