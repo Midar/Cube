@@ -61,11 +61,10 @@ executable('client',
     sdlimage_dep,
     sdlmixer_dep,
     zlib_dep,
+    enet_dep,
     extra_deps
   ],
-  include_directories: [enet_includes],
   link_args: client_link_args,
-  link_with: [enet],
   win_subsystem: 'windows')
 
 executable('server',
@@ -81,9 +80,8 @@ executable('server',
   objc_args: ['-DSTANDALONE'],
   dependencies: [
     objfw_dep,
-    sdl_dep
+    sdl_dep,
+    enet_dep
   ],
-  include_directories: [enet_includes],
   link_args: server_link_args,
-  link_with: [enet],
   win_subsystem: 'console')

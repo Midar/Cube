@@ -129,10 +129,10 @@ connects(OFString *servername)
 		return;
 	}
 
-	clienthost = enet_host_create(NULL, 1, rate, rate);
+	clienthost = enet_host_create(NULL, 1, 0, rate, rate);
 
 	if (clienthost) {
-		enet_host_connect(clienthost, &address, 1);
+		enet_host_connect(clienthost, &address, 0, 1);
 		enet_host_flush(clienthost);
 		connecting = lastmillis;
 		connattempts = 0;
@@ -147,7 +147,7 @@ disconnect(bool onlyclean, bool async)
 {
 	if (clienthost) {
 		if (!connecting && !disconnecting) {
-			enet_peer_disconnect(clienthost->peers);
+			enet_peer_disconnect(clienthost->peers, 0);
 			enet_host_flush(clienthost);
 			disconnecting = lastmillis;
 		}

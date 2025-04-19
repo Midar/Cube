@@ -103,7 +103,7 @@ disconnect_client(int n, OFString *reason)
 {
 	[OFStdOut writeFormat: @"disconnecting client (%@) [%@]\n",
 			       clients[n].hostname, reason];
-	enet_peer_disconnect(clients[n].peer);
+	enet_peer_disconnect(clients[n].peer, 0);
 	clients[n].type = ST_EMPTY;
 	send2(true, -1, SV_CDIS, n);
 }
@@ -546,7 +546,8 @@ initserver(bool dedicated, int uprate, OFString *sdesc, OFString *ip,
 		if (ip.length > 0 &&
 		    enet_address_set_host(&address, ip.UTF8String) < 0)
 			printf("WARNING: server ip not resolved");
-		serverhost = enet_host_create(&address, MAXCLIENTS, 0, uprate);
+		serverhost = enet_host_create(&address, MAXCLIENTS, 0, 0,
+		    uprate);
 		if (!serverhost)
 			fatal(@"could not create server host\n");
 		for (int i = 0; i < MAXCLIENTS; i++)

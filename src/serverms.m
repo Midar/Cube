@@ -16,7 +16,7 @@ httpgetsend(ENetAddress *ad, OFString *hostname, OFString *req, OFString *ref,
 	}
 	if (mssock != ENET_SOCKET_NULL)
 		enet_socket_destroy(mssock);
-	mssock = enet_socket_create(ENET_SOCKET_TYPE_STREAM, NULL);
+	mssock = enet_socket_create(ENET_SOCKET_TYPE_STREAM);
 	if (mssock == ENET_SOCKET_NULL) {
 		printf("could not open socket\n");
 		return;
@@ -163,10 +163,15 @@ servermsinit(OFString *master_, OFString *sdesc, bool listen)
 	serverdesc = sdesc;
 
 	if (listen) {
-		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
-		pongsock =
-		    enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM, &address);
-		if (pongsock == ENET_SOCKET_NULL)
+		pongsock = enet_socket_create(ENET_SOCKET_TYPE_DATAGRAM);
+		if (pongsock == ENET_SOCKET_NULL) {
 			fatal(@"could not create server info socket\n");
+			return;
+		}
+		ENetAddress address = { ENET_HOST_ANY, CUBE_SERVINFO_PORT };
+		if (enet_socket_bind(pongsock, &address) != 0) {
+			fatal(@"could not create server info socket\n");
+			return;
+		}
 	}
 }

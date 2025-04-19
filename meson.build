@@ -16,6 +16,7 @@ sdl_dep = dependency('SDL2')
 sdlimage_dep = dependency('SDL2_image')
 sdlmixer_dep = dependency('SDL2_mixer')
 zlib_dep = dependency('zlib')
+enet_dep = dependency('libenet')
 
 client_link_args = []
 server_link_args = []
@@ -32,5 +33,4 @@ else
   extra_deps += dependency('x11')
 endif
 
-subdir('enet')
 subdir('src')
