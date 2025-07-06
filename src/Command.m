@@ -1,7 +1,7 @@
 #import "Command.h"
 #import "OFString+Cube.h"
 
-#include <cube.h>
+#include "cube.h"
 
 static OFArray<OFString *> *
 padArguments(OFArray<OFString *> *arguments, size_t count)

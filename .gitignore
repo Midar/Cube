@@ -1,4 +1,16 @@
 *.cfg
+*.dep
+*.o
+.deps
+/aclocal.m4
+/autom4te.cache
 /build
+/buildsys.mk
+/config.log
+/config.status
+/configure
 /data
+/extra.mk
 /packages
+/src/cube
+/src/server/cube_server

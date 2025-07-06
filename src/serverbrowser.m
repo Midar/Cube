@@ -1,7 +1,7 @@
 // serverbrowser.cpp: eihrul's concurrent resolver, and server browser window
 // management
 
-#include "SDL_thread.h"
+#include <SDL2/SDL_thread.h>
 #include "cube.h"
 
 #import "Command.h"

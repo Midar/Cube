@@ -1,0 +1,8 @@
+GUI_LDFLAGS = @GUI_LDFLAGS@
+OPENGL_LIBS = @OPENGL_LIBS@
+SDL_CFLAGS = @SDL_CFLAGS@
+SDL_LIBS = @SDL_LIBS@
+enet_CFLAGS = @enet_CFLAGS@
+enet_LIBS = @enet_LIBS@
+zlib_CFLAGS = @zlib_CFLAGS@
+zlib_LIBS = @zlib_LIBS@
