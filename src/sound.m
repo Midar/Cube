@@ -4,7 +4,7 @@
 #import "Player.h"
 #import "Variable.h"
 
-#include <SDL2/SDL_mixer.h>
+#include <SDL_mixer.h>
 
 VARP(soundvol, 0, 255, 255);
 VARP(musicvol, 0, 128, 255);
