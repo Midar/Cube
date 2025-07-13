@@ -136,8 +136,7 @@ renderspheres(int time)
 		[[OFColor colorWithRed: 1.0f
 				 green: 1.0f
 				  blue: 1.0f
-				 alpha: (size <= 1.0f : 1.0f - size : 0.0f)]
-		    cube_setAsGLColor];
+				 alpha: 1.0f - size] cube_setAsGLColor];
 		glTranslatef(p->o.x, p->o.z, p->o.y);
 		glRotatef(lastmillis / 5.0f, 1, 1, 1);
 		glScalef(p->size, p->size, p->size);
