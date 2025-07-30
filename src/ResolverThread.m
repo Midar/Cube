@@ -2,7 +2,7 @@
 
 #import "ResolverResult.h"
 
-extern SDL_sem *resolversem;
+extern SDL_Semaphore *resolversem;
 extern OFMutableArray<OFString *> *resolverqueries;
 extern OFMutableArray<ResolverResult *> *resolverresults;
 
@@ -10,7 +10,7 @@ extern OFMutableArray<ResolverResult *> *resolverresults;
 - (id)main
 {
 	while (!_stop) {
-		SDL_SemWait(resolversem);
+		SDL_WaitSemaphore(resolversem);
 
 		@synchronized(ResolverThread.class) {
 			if (resolverqueries.count == 0)

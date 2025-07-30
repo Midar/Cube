@@ -91,29 +91,17 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 		return false;
 	}
 
-	if (s->format->BitsPerPixel != 24) {
-		SDL_PixelFormat *format =
-		    SDL_AllocFormat(SDL_PIXELFORMAT_RGB24);
-		if (format == NULL) {
+	if (s->format != SDL_PIXELFORMAT_RGB24) {
+		SDL_Surface *converted =
+			    SDL_ConvertSurface(s, SDL_PIXELFORMAT_RGB24);
+		if (converted == NULL) {
 			conoutf(@"texture cannot be converted to 24bpp: %@",
 			    IRI.string);
 			return false;
 		}
 
-		@try {
-			SDL_Surface *converted =
-			    SDL_ConvertSurface(s, format, 0);
-			if (converted == NULL) {
-				conoutf(@"texture cannot be converted "
-				    @"to 24bpp: %@", IRI.string);
-				return false;
-			}
-
-			SDL_FreeSurface(s);
-			s = converted;
-		} @finally {
-			SDL_FreeFormat(format);
-		}
+		SDL_DestroySurface(s);
+		s = converted;
 	}
 
 #if 0
@@ -157,7 +145,7 @@ installtex(int tnum, OFIRI *IRI, int *xs, int *ys, bool clamp)
 	if (*xs != s->w)
 		free(scaledimg);
 
-	SDL_FreeSurface(s);
+	SDL_DestroySurface(s);
 
 	return true;
 }
@@ -327,23 +315,6 @@ addstrip(int tex, int start, int n)
 }
 
 #undef gamma
-
-static int gamma = 100;
-VARBP(gamma, 30, 300, ^ { return gamma; }, ^ (int value) {
-	float f = value / 100.0f;
-	Uint16 ramp[256];
-
-	SDL_CalculateGammaRamp(f, ramp);
-
-	if (SDL_SetWindowGammaRamp(Cube.sharedInstance.window,
-	    ramp, ramp, ramp) != -1)
-		gamma = value;
-	else {
-		conoutf(
-		    @"Could not set gamma (card/driver doesn't support it?)");
-		conoutf(@"sdl: %s", SDL_GetError());
-	}
-})
 
 void
 transplayer()

@@ -1,8 +1,9 @@
 // serverbrowser.cpp: eihrul's concurrent resolver, and server browser window
 // management
 
-#include "SDL_thread.h"
 #include "cube.h"
+
+#include <SDL3/SDL_thread.h>
 
 #import "Command.h"
 #import "ResolverResult.h"
@@ -12,7 +13,7 @@
 static OFMutableArray<ResolverThread *> *resolverthreads;
 OFMutableArray<OFString *> *resolverqueries;
 OFMutableArray<ResolverResult *> *resolverresults;
-SDL_sem *resolversem;
+SDL_Semaphore *resolversem;
 static int resolverlimit = 1000;
 
 void
@@ -59,8 +60,7 @@ resolverclear()
 		[resolverqueries removeAllObjects];
 		[resolverresults removeAllObjects];
 
-		while (SDL_SemTryWait(resolversem) == 0)
-			;
+		while (!SDL_TryWaitSemaphore(resolversem));
 
 		for (size_t i = 0; i < resolverthreads.count; i++)
 			resolverstop(i, true);
@@ -72,7 +72,7 @@ resolverquery(OFString *name)
 {
 	@synchronized(ResolverThread.class) {
 		[resolverqueries addObject: name];
-		SDL_SemPost(resolversem);
+		SDL_SignalSemaphore(resolversem);
 	}
 }
 

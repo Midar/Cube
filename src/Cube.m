@@ -32,7 +32,7 @@ VARP(minmillis, 0, 5, 1000)
 {
 	@autoreleasepool {
 		bool dedicated, windowed;
-		int par = 0, uprate = 0, maxcl = 4;
+		int uprate = 0, maxcl = 4;
 		OFString *__autoreleasing sdesc, *__autoreleasing ip;
 		OFString *__autoreleasing master, *__autoreleasing passwd;
 
@@ -98,7 +98,7 @@ VARP(minmillis, 0, 5, 1000)
 		    [_userDataIRI IRIByAppendingPathComponent: @"savegames"]
 						createParents: true];
 
-		if (SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO | par) < 0)
+		if (!SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO))
 			fatal(@"Unable to initialize SDL");
 
 		initEntities();
@@ -115,16 +115,17 @@ VARP(minmillis, 0, 5, 1000)
 		log(@"world");
 		empty_world(7, true);
 
-		log(@"video: sdl");
-		if (SDL_InitSubSystem(SDL_INIT_VIDEO) < 0)
-			fatal(@"Unable to initialize SDL Video");
-
 		if (_width == 0 || _height == 0) {
-			SDL_DisplayMode mode;
+			SDL_DisplayID display = SDL_GetPrimaryDisplay();
+			int numModes = 0;
+			SDL_DisplayMode **modes = SDL_GetFullscreenDisplayModes(
+			    display, &numModes);
 
-			if (SDL_GetDesktopDisplayMode(0, &mode) == 0) {
-				_width = mode.w;
-				_height = mode.h;
+			if (modes != NULL) {
+				_width = modes[0]->w;
+				_height = modes[0]->h;
+
+				SDL_free(modes);
 			} else {
 				_width = 1920;
 				_height = 1080;
@@ -134,16 +135,15 @@ VARP(minmillis, 0, 5, 1000)
 		log(@"video: mode");
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		if ((_window = SDL_CreateWindow("cube engine",
-		    SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-		    _width, _height, SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL |
+		    _width, _height, SDL_WINDOW_OPENGL |
 		    (!windowed ? SDL_WINDOW_FULLSCREEN : 0))) == NULL ||
 		    SDL_GL_CreateContext(_window) == NULL)
 			fatal(@"Unable to create OpenGL screen");
 
 		log(@"video: misc");
-		SDL_SetWindowGrab(_window, SDL_TRUE);
-		SDL_SetRelativeMouseMode(SDL_TRUE);
-		SDL_ShowCursor(0);
+		SDL_SetWindowMouseGrab(_window, true);
+		SDL_SetWindowRelativeMouseMode(_window, true);
+		SDL_HideCursor();
 
 		log(@"gl");
 		gl_init(_width, _height);
@@ -241,21 +241,20 @@ VARP(minmillis, 0, 5, 1000)
 			int lasttype = 0, lastbut = 0;
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
-				case SDL_QUIT:
+				case SDL_EVENT_QUIT:
 					[self quit];
 					break;
-				case SDL_KEYDOWN:
-				case SDL_KEYUP:
+				case SDL_EVENT_KEY_DOWN:
+				case SDL_EVENT_KEY_UP:
 					if (_repeatsKeys ||
 					    event.key.repeat == 0)
-						keypress(event.key.keysym.sym,
-						    (event.key.state ==
-						    SDL_PRESSED));
+						keypress(event.key.key,
+						    event.key.down);
 					break;
-				case SDL_TEXTINPUT:
+				case SDL_EVENT_TEXT_INPUT:
 					input(@(event.text.text));
 					break;
-				case SDL_MOUSEMOTION:
+				case SDL_EVENT_MOUSE_MOTION:
 					if (ignore) {
 						ignore--;
 						break;
@@ -263,8 +262,8 @@ VARP(minmillis, 0, 5, 1000)
 					mousemove(event.motion.xrel,
 					    event.motion.yrel);
 					break;
-				case SDL_MOUSEBUTTONDOWN:
-				case SDL_MOUSEBUTTONUP:
+				case SDL_EVENT_MOUSE_BUTTON_DOWN:
+				case SDL_EVENT_MOUSE_BUTTON_UP:
 					if (lasttype == event.type &&
 					    lastbut == event.button.button)
 						// why?? get event twice without
@@ -272,7 +271,7 @@ VARP(minmillis, 0, 5, 1000)
 						break;
 
 					keypress(-event.button.button,
-					    event.button.state != 0);
+					    event.button.down);
 					lasttype = event.type;
 					lastbut = event.button.button;
 					break;
@@ -290,7 +289,7 @@ VARP(minmillis, 0, 5, 1000)
 	cleangl();
 	cleansound();
 	cleanupserver();
-	SDL_ShowCursor(1);
+	SDL_ShowCursor();
 	SDL_Quit();
 }
 
@@ -308,11 +307,12 @@ VARP(minmillis, 0, 5, 1000)
 {
 	SDL_Surface *image;
 	SDL_Surface *temp;
+	SDL_PixelFormat format =
+	    SDL_GetPixelFormatForMasks(24, 0x0000FF, 0x00FF00, 0xFF0000, 0);
 
-	if ((image = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height, 24,
-	    0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
-		if ((temp = SDL_CreateRGBSurface(SDL_SWSURFACE, _width, _height,
-		    24, 0x0000FF, 0x00FF00, 0xFF0000, 0)) != NULL) {
+	if ((image = SDL_CreateSurface(_width, _height, format)) != NULL) {
+		temp = SDL_CreateSurface(_width, _height, format);
+		if (temp != NULL) {
 			glReadPixels(0, 0, _width, _height, GL_RGB,
 			    GL_UNSIGNED_BYTE, image->pixels);
 
@@ -329,10 +329,10 @@ VARP(minmillis, 0, 5, 1000)
 			SDL_SaveBMP(temp,
 			    [_userDataIRI IRIByAppendingPathComponent: path]
 			    .fileSystemRepresentation.UTF8String);
-			SDL_FreeSurface(temp);
+			SDL_DestroySurface(temp);
 		}
 
-		SDL_FreeSurface(image);
+		SDL_DestroySurface(image);
 	}
 }
 

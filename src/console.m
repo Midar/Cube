@@ -130,9 +130,9 @@ saycommand(OFString *init)
 {
 	saycommandon = (init != nil);
 	if (saycommandon)
-		SDL_StartTextInput();
+		SDL_StartTextInput(Cube.sharedInstance.window);
 	else
-		SDL_StopTextInput();
+		SDL_StopTextInput(Cube.sharedInstance.window);
 
 	if (!editmode)
 		Cube.sharedInstance.repeatsKeys = saycommandon;
@@ -207,9 +207,9 @@ keypress(int code, bool isDown)
 				complete(commandbuf);
 				break;
 
-			case SDLK_v:
+			case SDLK_V:
 				if (SDL_GetModState() &
-				    (KMOD_LCTRL | KMOD_RCTRL)) {
+				    (SDL_KMOD_LCTRL | SDL_KMOD_RCTRL)) {
 					pasteconsole();
 					return;
 				}
