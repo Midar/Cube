@@ -1,4 +1,4 @@
-project('Cube', ['c', 'objc'],
+project('Cube', 'objc',
   meson_version: '>=1.5.0',
   default_options: {
     'optimization': '2'
