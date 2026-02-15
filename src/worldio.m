@@ -54,7 +54,7 @@ setnames(OFString *name)
 // mipmapper to generate more efficient mips. the reason it is done on save is
 // to reduce the amount spend in the mipmapper (as that is done in realtime).
 
-inline bool
+static inline bool
 nhf(struct sqr *s)
 {
 	return s->type != FHF && s->type != CHF;

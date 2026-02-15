@@ -334,12 +334,12 @@ vertw(int v1, float v2, int v3, struct sqr *c, float t1, float t2, float t)
 	    c, t1, t2);
 }
 
-inline float
+static inline float
 dx(float x)
 {
 	return x + (float)sin(x * 2 + lastmillis / 1000.0f) * 0.04f;
 }
-inline float
+static inline float
 dy(float x)
 {
 	return x + (float)sin(x * 2 + lastmillis / 900.0f + PI / 5) * 0.05f;
