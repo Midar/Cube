@@ -13,6 +13,6 @@ find_package(SDL2_mixer REQUIRED)
 find_package(ZLIB REQUIRED)
 
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(ENET REQUIRED libenet)
+pkg_check_modules(ENET REQUIRED IMPORTED_TARGET libenet)
 
 add_subdirectory(src)

@@ -61,14 +61,34 @@ target_link_libraries(
 	PRIVATE
 	ObjFW::ObjFW
 	ObjFW::ARC
-	SDL2
-	SDL2_image
-	SDL2_mixer
-	GL
-	GLU
-	z
-	enet
+	SDL2::SDL2
+	SDL2_image::SDL2_image
+	SDL2_mixer::SDL2_mixer
+	PkgConfig::ENET
+	ZLIB::ZLIB
 )
+if(WIN32)
+	target_link_libraries(
+		client
+		PRIVATE
+		opengl32
+		glu32
+		winmm
+	)
+elseif(APPLE)
+	target_link_libraries(
+		client
+		PRIVATE
+		"-framework OpenGL"
+	)
+else()
+	target_link_libraries(
+		client
+		PRIVATE
+		GL
+		GLU
+	)
+endif()
 
 add_executable(
 	server
@@ -86,6 +106,13 @@ target_link_libraries(
 	PRIVATE
 	ObjFW::ObjFW
 	ObjFW::ARC
-	SDL2
-	enet
+	SDL2::SDL2
+	PkgConfig::ENET
 )
+if(WIN32)
+	target_link_libraries(
+		server
+		PRIVATE
+		winmm
+	)
+endif()
