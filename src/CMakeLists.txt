@@ -1,0 +1,91 @@
+add_executable(
+	client
+	WIN32
+	Alias.m
+	Client.m
+	Command.m
+	ConsoleLine.m
+	Cube.m
+	DynamicEntity.m
+	Entity.m
+	Identifier.m
+	KeyMapping.m
+	MD2.m
+	MapModelInfo.m
+	Menu.m
+	MenuItem.m
+	Monster.m
+	OFColor+Cube.m
+	OFString+Cube.m
+	Player.m
+	Projectile.m
+	ResolverResult.m
+	ResolverThread.m
+	ServerEntity.m
+	ServerInfo.m
+	Variable.m
+	clients.m
+	clientextras.m
+	clientgame.m
+	clients2c.m
+	commands.m
+	console.m
+	editing.m
+	entities.m
+	init.m
+	menus.m
+	physics.m
+	rendercubes.m
+	renderextras.m
+	rendergl.m
+	rendermd2.m
+	renderparticles.m
+	rendertext.m
+	rndmap.m
+	savegamedemo.m
+	server.m
+	serverbrowser.m
+	serverms.m
+	serverutil.m
+	sound.m
+	tools.m
+	weapon.m
+	world.m
+	worldio.m
+	worldlight.m
+	worldocull.m
+	worldrender.m
+)
+target_link_libraries(
+	client
+	PRIVATE
+	ObjFW::ObjFW
+	ObjFW::ARC
+	SDL2
+	SDL2_image
+	SDL2_mixer
+	GL
+	GLU
+	z
+	enet
+)
+
+add_executable(
+	server
+	Client.m
+	Entity.m
+	ServerEntity.m
+	server.m
+	serverms.m
+	serverutil.m
+	tools.m
+)
+target_compile_definitions(server PRIVATE -DSTANDALONE)
+target_link_libraries(
+	server
+	PRIVATE
+	ObjFW::ObjFW
+	ObjFW::ARC
+	SDL2
+	enet
+)
