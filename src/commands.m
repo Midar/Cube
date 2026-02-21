@@ -207,7 +207,7 @@ execute(OFString *string, bool isDown)
 	char *copy __attribute__((__cleanup__(cleanup))) =
 	    strdup(string.UTF8String);
 	char *p = copy;
-	const int MAXWORDS = 25; // limit, remove
+#define MAXWORDS 25 // limit, remove
 	OFString *w[MAXWORDS];
 	int val = 0;
 	for (bool cont = true; cont;) {

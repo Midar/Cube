@@ -269,9 +269,8 @@ COMMAND(servermenu, ARG_NONE, ^ {
 })
 
 COMMAND(updatefrommaster, ARG_NONE, ^ {
-	const int MAXUPD = 32000;
-	unsigned char buf[MAXUPD];
-	unsigned char *reply = retrieveservers(buf, MAXUPD);
+	unsigned char buf[32000];
+	unsigned char *reply = retrieveservers(buf, 32000);
 	if (!*reply || strstr((char *)reply, "<html>") ||
 	    strstr((char *)reply, "<HTML>"))
 		conoutf(@"master server not replying");

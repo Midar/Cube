@@ -11,7 +11,7 @@
 
 static OFMutableArray<ConsoleLine *> *conlines;
 
-const int ndraw = 5;
+#define ndraw 5
 const int WORDWRAP = 80;
 int conskip = 0;
 
