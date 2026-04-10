@@ -12,7 +12,7 @@ add_global_arguments(
   language: 'objc')
 
 objfw_dep = dependency('objfw')
-sdl_dep = dependency('SDL2')
+sdl_dep = dependency('sdl2')
 sdlimage_dep = dependency('SDL2_image')
 sdlmixer_dep = dependency('SDL2_mixer')
 zlib_dep = dependency('zlib')
