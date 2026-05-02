@@ -122,7 +122,7 @@ render_particles(int time)
 		glBindTexture(GL_TEXTURE_2D, pt->tex);
 		glBegin(GL_QUADS);
 
-		[pt->color cube_setAsGLColor];
+		[pt->color _setAsGLColor];
 		float sz = pt->sz * particlesize / 100.0f;
 		// perf varray?
 		glTexCoord2f(0.0, 1.0);

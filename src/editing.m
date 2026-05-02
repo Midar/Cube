@@ -664,6 +664,6 @@ COMMAND(newent, ARG_5STR,
 	EDITSEL;
 
 	newentity(sel.x, sel.y, (int)Player.player1.origin.z, what,
-	    [a1 cube_intValueWithBase: 0], [a2 cube_intValueWithBase: 0],
-	    [a3 cube_intValueWithBase: 0], [a4 cube_intValueWithBase: 0]);
+	    [a1 _intValueWithBase: 0], [a2 _intValueWithBase: 0],
+	    [a3 _intValueWithBase: 0], [a4 _intValueWithBase: 0]);
 })

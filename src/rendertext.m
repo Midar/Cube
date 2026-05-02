@@ -150,7 +150,7 @@ draw_text(OFString *string, int left, int top, int gl_num)
 {
 	glBlendFunc(GL_ONE, GL_ONE);
 	glBindTexture(GL_TEXTURE_2D, gl_num);
-	[OFColor.white cube_setAsGLColor];
+	[OFColor.white _setAsGLColor];
 
 	int x = left;
 	int y = top;
@@ -173,7 +173,7 @@ draw_text(OFString *string, int left, int top, int gl_num)
 			[[OFColor colorWithRed: 0.25f
 					 green: 1.0f
 					  blue: 0.5f
-					 alpha: 1.0f] cube_setAsGLColor];
+					 alpha: 1.0f] _setAsGLColor];
 			continue;
 		}
 

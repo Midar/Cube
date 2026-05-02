@@ -159,7 +159,7 @@ snap(int sn, float f)
 	glRotatef(yaw + 180, 0, -1, 0);
 	glRotatef(pitch, 0, 0, 1);
 
-	[light cube_setAsGLColor];
+	[light _setAsGLColor];
 
 	if (_displaylist && frame == 0 && range == 1) {
 		glCallList(_displaylist);

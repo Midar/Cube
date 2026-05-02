@@ -67,9 +67,9 @@ reloadtime(int gun)
 }
 
 COMMAND(weapon, ARG_3STR, ^ (OFString *a1, OFString *a2, OFString *a3) {
-	selectgun((a1.length > 0 ? a1.cube_intValue : -1),
-	    (a2.length > 0 ? a2.cube_intValue : -1),
-	    (a3.length > 0 ? a3.cube_intValue : -1));
+	selectgun((a1.length > 0 ? a1._intValue : -1),
+	    (a2.length > 0 ? a2._intValue : -1),
+	    (a3.length > 0 ? a3._intValue : -1));
 })
 
 // create random spread of rays for the shotgun

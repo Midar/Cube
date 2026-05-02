@@ -24,7 +24,7 @@ void
 linestyle(float width, OFColor *color)
 {
 	glLineWidth(width);
-	[color cube_setAsGLColor];
+	[color _setAsGLColor];
 }
 
 void
@@ -63,9 +63,9 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 		[[OFColor colorWithRed: 0.5f
 				 green: 0.3f
 				  blue: 0.4f
-				 alpha: 1.0f] cube_setAsGLColor];
+				 alpha: 1.0f] _setAsGLColor];
 	else
-		[OFColor.white cube_setAsGLColor];
+		[OFColor.white _setAsGLColor];
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y1);
 	glVertex2i(x2, y2);
@@ -77,7 +77,7 @@ blendbox(int x1, int y1, int x2, int y2, bool border)
 	[[OFColor colorWithRed: 0.2f
 			 green: 0.7f
 			  blue: 0.4f
-			 alpha: 1.0f] cube_setAsGLColor];
+			 alpha: 1.0f] _setAsGLColor];
 	glVertex2i(x1, y1);
 	glVertex2i(x2, y1);
 	glVertex2i(x2, y2);
@@ -140,7 +140,7 @@ renderspheres(int time)
 		[[OFColor colorWithRed: 1.0f
 				 green: 1.0f
 				  blue: 1.0f
-				 alpha: 1.0f - size] cube_setAsGLColor];
+				 alpha: 1.0f - size] _setAsGLColor];
 		glTranslatef(p->o.x, p->o.z, p->o.y);
 		glRotatef(lastmillis / 5.0f, 1, 1, 1);
 		glScalef(p->size, p->size, p->size);
@@ -366,12 +366,12 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 			[[OFColor colorWithRed: 0.0f
 					 green: 0.9f
 					  blue: 0.9f
-					 alpha: 1.0f] cube_setAsGLColor];
+					 alpha: 1.0f] _setAsGLColor];
 		else
 			[[OFColor colorWithRed: 0.9f
 					 green: 0.5f
 					  blue: 0.0f
-					 alpha: 1.0f] cube_setAsGLColor];
+					 alpha: 1.0f] _setAsGLColor];
 		glVertex2i(0, 0);
 		glVertex2i(VIRTW, 0);
 		glVertex2i(VIRTW, VIRTH);
@@ -399,18 +399,17 @@ gl_drawhud(int w, int h, int curfps, int nquads, int curvert, bool underwater)
 		glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 		glBindTexture(GL_TEXTURE_2D, 1);
 		glBegin(GL_QUADS);
-		[OFColor.white cube_setAsGLColor];
+		[OFColor.white _setAsGLColor];
 		if (crosshairfx) {
 			if (player1.gunWait)
-				[OFColor.gray cube_setAsGLColor];
+				[OFColor.gray _setAsGLColor];
 			else if (player1.health <= 25)
-				[OFColor.red cube_setAsGLColor];
+				[OFColor.red _setAsGLColor];
 			else if (player1.health <= 50)
 				[[OFColor colorWithRed: 1.0f
 						 green: 0.5f
 						  blue: 0.0f
-						 alpha: 1.0f]
-				    cube_setAsGLColor];
+						 alpha: 1.0f] _setAsGLColor];
 		}
 		float chsize = (float)crosshairsize;
 		glTexCoord2d(0.0, 0.0);

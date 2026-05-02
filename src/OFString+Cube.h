@@ -1,7 +1,7 @@
 #import <ObjFW/ObjFW.h>
 
 @interface OFString (Cube)
-@property (readonly, nonatomic) int cube_intValue;
+@property (readonly, nonatomic) int _intValue;
 
-- (int)cube_intValueWithBase: (unsigned char)base;
+- (int)_intValueWithBase: (unsigned char)base;
 @end

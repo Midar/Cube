@@ -106,7 +106,7 @@ COMMAND(keymap, ARG_3STR, ^ (OFString *code, OFString *key, OFString *action) {
 	if (keyMappings == nil)
 		keyMappings = [[OFMutableArray alloc] init];
 
-	KeyMapping *mapping = [KeyMapping mappingWithCode: code.cube_intValue
+	KeyMapping *mapping = [KeyMapping mappingWithCode: code._intValue
 						     name: key];
 	mapping.action = action;
 	[keyMappings addObject: mapping];

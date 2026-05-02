@@ -141,7 +141,7 @@ respawn()
 int sleepwait = 0;
 static OFString *sleepcmd = nil;
 COMMAND(sleep, ARG_2STR, ^ (OFString *msec, OFString *cmd) {
-	sleepwait = msec.cube_intValue + lastmillis;
+	sleepwait = msec._intValue + lastmillis;
 	sleepcmd = cmd;
 })
 

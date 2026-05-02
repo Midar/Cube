@@ -1,7 +1,7 @@
 #import <ObjFW/ObjFW.h>
 
 @interface OFColor (Cube)
-- (void)cube_setAsGLColor;
-- (void)cube_setAsGLClearColor;
-- (void)cube_setAsGLFogColor;
+- (void)_setAsGLColor;
+- (void)_setAsGLClearColor;
+- (void)_setAsGLFogColor;
 @end

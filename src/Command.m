@@ -52,34 +52,34 @@ padArguments(OFArray<OFString *> *arguments, size_t count)
 		if (isDown) {
 			arguments = padArguments(arguments, 2);
 			((void (^)(int))_block)(
-			    [arguments[1] cube_intValueWithBase: 0]);
+			    [arguments[1] _intValueWithBase: 0]);
 		}
 		break;
 	case ARG_2INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 3);
 			((void (^)(int, int))_block)(
-			    [arguments[1] cube_intValueWithBase: 0],
-			    [arguments[2] cube_intValueWithBase: 0]);
+			    [arguments[1] _intValueWithBase: 0],
+			    [arguments[2] _intValueWithBase: 0]);
 		}
 		break;
 	case ARG_3INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 4);
 			((void (^)(int, int, int))_block)(
-			    [arguments[1] cube_intValueWithBase: 0],
-			    [arguments[2] cube_intValueWithBase: 0],
-			    [arguments[3] cube_intValueWithBase: 0]);
+			    [arguments[1] _intValueWithBase: 0],
+			    [arguments[2] _intValueWithBase: 0],
+			    [arguments[3] _intValueWithBase: 0]);
 		}
 		break;
 	case ARG_4INT:
 		if (isDown) {
 			arguments = padArguments(arguments, 5);
 			((void (^)(int, int, int, int))_block)(
-			    [arguments[1] cube_intValueWithBase: 0],
-			    [arguments[2] cube_intValueWithBase: 0],
-			    [arguments[3] cube_intValueWithBase: 0],
-			    [arguments[4] cube_intValueWithBase: 0]);
+			    [arguments[1] _intValueWithBase: 0],
+			    [arguments[2] _intValueWithBase: 0],
+			    [arguments[3] _intValueWithBase: 0],
+			    [arguments[4] _intValueWithBase: 0]);
 		}
 		break;
 	case ARG_NONE:

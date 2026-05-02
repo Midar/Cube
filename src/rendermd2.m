@@ -61,10 +61,10 @@ COMMAND(mapmodel, ARG_5STR, ^ (OFString *rad, OFString *h, OFString *zoff,
     OFString *snap, OFString *name) {
 	MD2 *m = loadmodel([name stringByReplacingOccurrencesOfString: @"\\"
 							   withString: @"/"]);
-	m.mmi = [MapModelInfo infoWithRad: rad.cube_intValue
-					h: h.cube_intValue
-				     zoff: zoff.cube_intValue
-				     snap: snap.cube_intValue
+	m.mmi = [MapModelInfo infoWithRad: rad._intValue
+					h: h._intValue
+				     zoff: zoff._intValue
+				     snap: snap._intValue
 				     name: m.loadname];
 
 	if (mapmodels == nil)

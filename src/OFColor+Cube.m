@@ -3,7 +3,7 @@
 #import "OFColor+Cube.h"
 
 @implementation OFColor (Cube)
-- (void)cube_setAsGLColor
+- (void)_setAsGLColor
 {
 	float red, green, blue, alpha;
 
@@ -12,7 +12,7 @@
 	glColor4f(red, green, blue, alpha);
 }
 
-- (void)cube_setAsGLClearColor
+- (void)_setAsGLClearColor
 {
 	float red, green, blue, alpha;
 
@@ -21,7 +21,7 @@
 	glClearColor(red, green, blue, alpha);
 }
 
-- (void)cube_setAsGLFogColor
+- (void)_setAsGLFogColor
 {
 	float color[4];
 

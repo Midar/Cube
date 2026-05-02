@@ -3,7 +3,7 @@
 #include "cube.h"
 
 @implementation OFString (Cube)
-- (int)cube_intValue
+- (int)_intValue
 {
 	@try {
 		return self.intValue;
@@ -16,7 +16,7 @@
 	}
 }
 
-- (int)cube_intValueWithBase: (unsigned char)base
+- (int)_intValueWithBase: (unsigned char)base
 {
 	@try {
 		return [self intValueWithBase: base];

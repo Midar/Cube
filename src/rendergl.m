@@ -195,7 +195,7 @@ COMMAND(texturereset, ARG_NONE, ^ {
 })
 
 COMMAND(texture, ARG_2STR, (^ (OFString *aframe, OFString *name) {
-	int num = curtexnum++, frame = aframe.cube_intValue;
+	int num = curtexnum++, frame = aframe._intValue;
 
 	if (num < 0 || num >= 256 || frame < 0 || frame >= MAXFRAMES)
 		return;
@@ -448,8 +448,8 @@ gl_drawframe(int w, int h, float curfps)
 
 	glFogi(GL_FOG_START, (fog + 64) / 8);
 	glFogi(GL_FOG_END, fog);
-	[fogColor cube_setAsGLFogColor];
-	[fogColor cube_setAsGLClearColor];
+	[fogColor _setAsGLFogColor];
+	[fogColor _setAsGLClearColor];
 
 	if (underwater) {
 		fovy += (float)sin(lastmillis / 1000.0) * 2.0f;
@@ -491,7 +491,7 @@ gl_drawframe(int w, int h, float curfps)
 	glRotated(player1.pitch, -1.0, 0.0, 0.0);
 	glRotated(player1.yaw, 0.0, 1.0, 0.0);
 	glRotated(90.0, 1.0, 0.0, 0.0);
-	[OFColor.white cube_setAsGLColor];
+	[OFColor.white _setAsGLColor];
 	glDisable(GL_FOG);
 	glDepthFunc(GL_GREATER);
 	draw_envbox(14, fog * 4 / 3);

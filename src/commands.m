@@ -182,7 +182,7 @@ executeIdentifier(__kindof Identifier *identifier,
 			[identifier printValue];
 		else
 			[identifier setValue:
-			    [arguments[1] cube_intValueWithBase: 0]];
+			    [arguments[1] _intValueWithBase: 0]];
 	}
 
 	if ([identifier isKindOfClass: Alias.class]) {
@@ -394,7 +394,7 @@ COMMAND(if, ARG_3STR, ^ (OFString *cond, OFString *thenp, OFString *elsep) {
 })
 
 COMMAND(loop, ARG_2STR, ^ (OFString *times, OFString *body) {
-	int t = times.cube_intValue;
+	int t = times._intValue;
 
 	for (int i = 0; i < t; i++) {
 		intset(@"i", i);
@@ -441,7 +441,7 @@ COMMAND(listlen, ARG_1EST, ^ (OFString *a_) {
 })
 
 COMMAND(at, ARG_2STR, ^ (OFString *s_, OFString *pos) {
-	int n = pos.cube_intValue;
+	int n = pos._intValue;
 	char *copy __attribute__((__cleanup__(cleanup))) =
 	    strdup(s_.UTF8String);
 	char *s = copy;
