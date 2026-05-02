@@ -62,6 +62,7 @@ target_link_libraries(
 	ObjFW::ObjFW
 	ObjFW::ARC
 	SDL2::SDL2
+	SDL2::SDL2main
 	SDL2_image::SDL2_image
 	SDL2_mixer::SDL2_mixer
 	PkgConfig::ENET
@@ -107,6 +108,7 @@ target_link_libraries(
 	ObjFW::ObjFW
 	ObjFW::ARC
 	SDL2::SDL2
+	SDL2::SDL2main
 	PkgConfig::ENET
 )
 if(WIN32)
