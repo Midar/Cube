@@ -117,7 +117,7 @@ playerincrosshair()
 
 	OFVector3D o = Player.player1.origin;
 	for (Player *player in players) {
-		if (![Player isKindOfClass: Player.class])
+		if (![player isKindOfClass: Player.class])
 			continue;
 
 		if (intersect(player, o, worldpos))
