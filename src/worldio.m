@@ -173,7 +173,7 @@ OFData *
 readmap(OFString *mname)
 {
 	setnames(mname);
-	return [OFData dataWithContentsOfFile: mname];
+	return [OFData dataWithContentsOfFile: cgzname];
 }
 
 // save map as .cgz file. uses 2 layers of compression: first does simple
