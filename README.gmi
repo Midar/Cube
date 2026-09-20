@@ -22,3 +22,37 @@ Permission is granted to anyone to use this software for any purpose, including 
 The license covers the source code found in the "src" directory of this archive, the included enet network library which Cube uses is covered by an MIT-style license, which is however compatible with the above license for all practical purposes.
 
 Game media included in the Cube game (maps, textures, sounds, models etc.) are not covered by this license, and may have individual copyrights and distribution restrictions (see individual readmes).
+
+## Building Cube
+
+Cube can be built either with Meson or with CMake:
+
+Meson:
+```
+$ meson setup build
+$ meson compile -C build
+$ ./build/src/client
+```
+
+CMake:
+```
+$ cmake -B build
+$ make -C build
+$ ./build/src/client
+```
+
+The following dependencies need to be installed:
+* ObjFW >= 1.5
+* SDL2
+* SDL2_image
+* SDL2_mixer
+* ZLIB
+* enet
+
+## Contributing
+
+Contributions are very welcome - just create a pull request:
+=> https://git.nil.im/js/Cube/compare/main...main Create PR
+
+Please follow the AI policy for all contributions:
+=> documentation/ai-policy.gmi AI policy
