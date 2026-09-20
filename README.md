@@ -15,7 +15,7 @@ LICENSE
 Cube game engine source code, any release.
 
 Copyright (C) 2001-2005 Wouter van Oortmerssen.
-Copyright (C) 2024-2025 Jonathan Schleifer.
+Copyright (C) 2024-2026 Jonathan Schleifer.
 
 This software is provided 'as-is', without any express or implied
 warranty.  In no event will the authors be held liable for any damages
