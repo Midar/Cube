@@ -15,8 +15,17 @@ struct persistent_entity {
 void
 backup(OFString *name, OFString *backupname)
 {
-	[OFFileManager.defaultManager removeItemAtPath: backupname];
-	[OFFileManager.defaultManager moveItemAtPath: name toPath: backupname];
+	@try {
+		[OFFileManager.defaultManager removeItemAtPath: backupname];
+		[OFFileManager.defaultManager moveItemAtPath: name
+						      toPath: backupname];
+	} @catch (OFRemoveItemFailedException *e) {
+		if (e.errNo != ENOENT)
+			@throw e;
+	} @catch (OFMoveItemFailedException *e) {
+		if (e.errNo != ENOENT)
+			@throw e;
+	}
 }
 
 // FIXME: Should be OFIRI
