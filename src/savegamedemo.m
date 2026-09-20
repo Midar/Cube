@@ -484,7 +484,7 @@ demoplaybackstep()
 			if (i + 1 < playerhistory.count)
 				b = playerhistory[i + 1];
 
-			Player.player1 = b;
+			Player.player1 = [b copy];
 			// interpolate pos & angles
 			if (a != b) {
 				DynamicEntity *c = b;
@@ -505,7 +505,8 @@ demoplaybackstep()
 				// if teleport or spawn, don't interpolate
 				if (dist < 16) {
 					catmulrom(z.origin, a.origin, b.origin,
-					    c.origin, bf, b.origin);
+					    c.origin, bf,
+					    Player.player1.origin);
 					OFVector3D vz = OFMakeVector3D(
 					    z.yaw, z.pitch, z.roll);
 					OFVector3D va = OFMakeVector3D(
@@ -529,9 +530,9 @@ demoplaybackstep()
 					c.yaw = vc.x;
 					c.pitch = vc.y;
 					c.roll = vc.z;
-					b.yaw = vp1.x;
-					b.pitch = vp1.y;
-					b.roll = vp1.z;
+					Player.player1.yaw = vp1.x;
+					Player.player1.pitch = vp1.y;
+					Player.player1.roll = vp1.z;
 				}
 				fixplayer1range();
 			}
