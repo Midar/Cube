@@ -18,23 +18,31 @@
 
 - (OFComparisonResult)compare: (id)otherObject
 {
-	MenuItem *otherItem;
-
 	if (![otherObject isKindOfClass: MenuItem.class])
 		@throw [OFInvalidArgumentException exception];
 
 	int x, y;
 	@try {
-		x = _text.intValue;
+		OFString *text = _text;
+		size_t pos = [text rangeOfString: @"\t"].location;
+		if (pos != OFNotFound)
+			text = [text substringToIndex: pos];
+
+		x = text.intValue;
 	} @catch (OFInvalidFormatException *e) {
 		x = 0;
 	} @catch (OFOutOfRangeException *e) {
 		x = 0;
 	}
 
-	@
-	try {
-		y = otherItem.text.intValue;
+	MenuItem *otherItem = otherObject;
+	@try {
+		OFString *text = otherItem.text;
+		size_t pos = [text rangeOfString: @"\t"].location;
+		if (pos != OFNotFound)
+			text = [text substringToIndex: pos];
+
+		y = text.intValue;
 	} @catch (OFInvalidFormatException *e) {
 		y = 0;
 	} @catch (OFOutOfRangeException *e) {
