@@ -104,7 +104,7 @@ otherplayers()
 {
 	[players enumerateObjectsUsingBlock: ^ (Player *player, size_t i,
 	    bool *stop) {
-		if ([player isKindOfClass: Player.class])
+		if (![player isKindOfClass: Player.class])
 			return;
 
 		const int lagtime = lastmillis - player.lastUpdate;
