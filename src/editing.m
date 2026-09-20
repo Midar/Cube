@@ -641,13 +641,12 @@ COMMAND(perlin, ARG_3INT, ^ (int scale, int seed, int psize) {
 
 static int fullbright = 0;
 VARB(fullbright, 0, 1, ^ { return fullbright; }, ^ (int value) {
-	if (fullbright) {
-		if (noteditmode())
-			return;
+	if (noteditmode())
+		return;
 
+	if ((fullbright = value))
 		for (int i = 0; i < mipsize; i++)
 			world[i].r = world[i].g = world[i].b = 176;
-	}
 });
 
 COMMAND(edittag, ARG_1INT, ^ (int tag) {
