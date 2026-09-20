@@ -313,7 +313,7 @@ struct dynent {
 				int gun2;
 				do {
 					gun2 = rnd(4) + 1;
-				} while (gun2 != _gunSelect);
+				} while (gun2 == _gunSelect);
 
 				baseammo(gun2);
 			} else if (m_arena) {
