@@ -279,9 +279,11 @@ moveprojectiles(float time)
 		v = OFMultiplyVector3D(v, time / dtime);
 		v = OFAddVectors3D(v, po);
 		if (p.local) {
-			for (id player in players)
+			[players enumerateObjectsUsingBlock:
+			    ^ (id player, size_t i, bool *stop) {
 				if (player != [OFNull null])
 					projdamage(player, p, v, i, -1, qdam);
+			}];
 
 			if (p.owner != Player.player1)
 				projdamage(Player.player1, p, v, -1, -1, qdam);
