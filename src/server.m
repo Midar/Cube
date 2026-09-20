@@ -469,14 +469,15 @@ serverslice(int seconds, unsigned int timeout)
 			Client *c = addclient();
 			c.type = ST_TCPIP;
 			c.peer = event.peer;
-			c.peer->data = (void *)(clients.count - 1);
+			size_t cIndex = [clients indexOfObject: c];
+			c.peer->data = (void *)cIndex;
 			char hn[1024];
 			c.hostname = (enet_address_get_host(
 			    &c.peer->address, hn, sizeof(hn)) == 0
 			    ? @(hn) : @"localhost");
 			[OFStdOut writeFormat: @"client connected (%@)\n",
 					       c.hostname];
-			send_welcome(lastconnect = clients.count - 1);
+			send_welcome(lastconnect = cIndex);
 			break;
 		}
 		case ENET_EVENT_TYPE_RECEIVE:
@@ -528,7 +529,7 @@ localconnect()
 	Client *c = addclient();
 	c.type = ST_LOCAL;
 	c.hostname = @"local";
-	send_welcome(clients.count - 1);
+	send_welcome([clients indexOfObject: c]);
 }
 
 void
