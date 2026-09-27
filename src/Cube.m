@@ -276,6 +276,12 @@ VARP(minmillis, 0, 5, 1000)
 					lasttype = event.type;
 					lastbut = event.button.button;
 					break;
+				case SDL_MOUSEWHEEL:
+					keypress(
+					    event.wheel.y > 0 ? -4 : -5, 1);
+					keypress(
+					    event.wheel.y > 0 ? -4 : -5, 0);
+					break;
 				}
 			}
 		}
