@@ -242,8 +242,10 @@ refreshservers()
 
 		menumanual(1, i, si.full);
 
-		if (!--maxmenu)
+		if (!--maxmenu) {
+			*stop = true;
 			return;
+		}
 	}];
 }
 
